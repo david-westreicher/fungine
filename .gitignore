@@ -3,6 +3,7 @@
 /screens/
 /.metadata/
 .gitignore~
+libs/natives
 
 #eclipse
 
