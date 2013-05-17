@@ -1,0 +1,440 @@
+<html>
+<head>
+<title>ping-pong</title>
+<style type="text/css">
+p {
+width: 200px;
+background-color: rgba(100,100,100,0.7);
+  margin-top: 0em;
+  margin-bottom: 0em;
+  color: #FFFFFF;
+  font-size:10px;
+}
+.slider {
+  background-color: rgba(100,100,100,0.7);
+  height: 16px;
+  width: 200px;
+}
+.sliderBG {
+width: 200px;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
+	box-shadow:inset 0px 1px 0px 0px #ffffff;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+	background-color:#ededed;
+	border-radius:6px;
+	border:1px solid #dcdcdc;
+	color:#777777;
+	font-family:arial;
+	font-size:15px;
+	font-weight:bold;
+	padding:6px 0px;
+	margin:2px 0px;
+	text-shadow:1px 1px 0px #ffffff;
+	
+}
+  .slider .knob {
+    background: #FFFFFF;
+    width: 16px;
+    height: 16px;
+  }
+
+#fontSize {
+  height: 50px;
+  line-height: 50px;
+}
+
+.advanced {
+  margin: 5px 0;
+  background: #CCC;
+}
+  .advanced .knob {
+    cursor: pointer;
+    -moz-border-radius: 6px;
+    -webkit-border-radius: 6px;
+    border-radius: 6px;
+  }
+#red .knob {
+  background: red;
+}
+#green .knob {
+  background: green;
+}
+#blue .knob {
+  background: blue;
+}
+#right {
+  position: absolute;
+  bottom:5px;
+  right: 5px;
+}
+
+.buttonNice {
+width: 200px;
+	-moz-box-shadow:inset 0px 1px 0px 0px #ffffff;
+	-webkit-box-shadow:inset 0px 1px 0px 0px #ffffff;
+	box-shadow:inset 0px 1px 0px 0px #ffffff;
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #ededed), color-stop(1, #dfdfdf) );
+	background:-moz-linear-gradient( center top, #ededed 5%, #dfdfdf 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#ededed', endColorstr='#dfdfdf');
+	background-color:#ededed;
+	-moz-border-radius:6px;
+	-webkit-border-radius:6px;
+	border-radius:6px;
+	border:1px solid #dcdcdc;
+	display:inline-block;
+	color:#777777;
+	font-family:arial;
+	font-size:12px;
+	font-weight:bold;
+	padding:2px 24px;
+	text-decoration:none;
+	text-shadow:1px 1px 0px #ffffff;
+}.buttonNice:hover {
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #dfdfdf), color-stop(1, #ededed) );
+	background:-moz-linear-gradient( center top, #dfdfdf 5%, #ededed 100% );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#dfdfdf', endColorstr='#ededed');
+	background-color:#dfdfdf;
+}.buttonNice:active {
+	position:relative;
+	top:1px;
+}
+</style>
+<link rel="stylesheet" href="mooRainbow.css" type="text/css" /> 
+<script type="text/javascript" src="mootools-core-1.4.5-full-compat.js"></script>
+<script type="text/javascript" src="mootools-more-1.4.0.2.js"></script>
+<script type="text/javascript" src="mooRainbow.js"></script>
+
+<script type="text/javascript">
+var objs = null;
+function sendReceiveObjects(objs){
+	window.objs = objs;
+}
+function sendReceiveSettings(settings){
+	setButton("wireframeButton", settings["isWireframe"]);
+	setButton( "dDebugButton",settings["isdDebug"]);
+	setButton( "dofButton",settings["isDof"]);
+	setButton( "ssaoButton",settings["isSSAO"]);
+
+	//console.log(blurSlider);
+	blurSlider.set(settings["blur"]*500.0);
+	ambientSlider.set(settings["ambient"]*1000.0);
+	fpsSlider.set(settings["tFPS"]*10.0);
+	ssaoSlider.set(settings["ssao"]*500.0);
+	fovSlider.set(settings["fov"]*5.0);
+	eyegapSlider.set(settings["eyegap"]*2000.0);
+	stereoSkewSlider.set(settings["stereoskew"]*200.0);
+}
+
+function setButton(id,val){
+	var btn = document.getElementById(id);
+	btn.value = btn.buttonText+(val?":ON":":OFF");
+	btn.executeAction = val;
+}
+
+var isPausing=true;
+function onPause(exec){
+	console.log("onpause");
+	isPausing=!isPausing;
+	if(isPausing){
+		fungineCallback.execute('loop.pauseLogic()');
+		pauseButton.value="Continue";
+	}else{
+		fungineCallback.execute('loop.continueLogic()');
+		pauseButton.value="Pause";
+	}
+}
+
+function createButtonLogic(btnID,text,defaultVal,action){
+ var btn = document.getElementById(btnID);
+ btn.value = text+(defaultVal?":ON":":OFF");
+ btn.executeAction = defaultVal;
+ btn.buttonText = text;
+ btn.onclick = function(){
+	console.log("button onClick:"+action+"="+(btn.executeAction?"true":"false"));
+	btn.executeAction = !btn.executeAction;
+	fungineCallback.execute(action+"="+(btn.executeAction?"true":"false"));
+	btn.value = text+(btn.executeAction?":ON":":OFF");
+ }
+}
+function load(game)
+{
+		/*console.log(window);
+		for (var member in window) {
+        	console.log(member);
+   		}*/
+   	//console.log(window.game);
+   	//console.log(window.Berkelium);
+   	//console.log(window.externalHost);
+	//console.log(game);
+	
+	//window.game();
+	//window.execute("loop.renderer.USE_OBJECT_INTERP=false");
+	//window.externalHost.postMessage('['+ ']', 'urn:asd');
+}
+
+var blurSlider=null;
+window.addEvent('domready', function(){
+var r = new MooRainbow('titleColor', {
+		'startColor': [58, 142, 246],
+		onChange: function(color) { 
+       this.element.value = color.hex; 
+       var rgb = color.rgb;
+        if(fungineCallback.execute)
+     		fungineCallback.execute('world.gameObjects.get('+currObject+').setColor('+rgb[0].toFixed(5)/255.0+','+rgb[1].toFixed(5)/255.0+','+rgb[2].toFixed(5)/255.0+')');
+    	} 
+	});
+  window.mootools = this;
+	console.log("this");
+	console.log(this);
+  var color = [0.0, 0.0, 0.0];
+  var pos = [0.0, 0.0, 0.0];
+  var rot = [0.0, 0.0, 0.0];
+  var currObject = 0;
+    var slider = $('objSlider');
+  $$('.slider').each(function(slider, i){
+    var sl = new Slider(slider, slider.getElement('.knob'), {
+      steps: 1000,
+      initialStep: 500,
+		offset: 0,
+      wheel: true,
+      onChange: function(){
+      	if(i==0){
+      		if(window.objs){
+      			currObject = Math.floor(window.objs.length*this.step.toFixed(5)/1000.0);
+      			currObject = Math.min(window.objs.length-1,currObject);
+      			console.log(currObject);
+				document.getElementById("content").innerHTML = window.objs[currObject].type+currObject;
+				
+				for(var member in window.objs[currObject].vals){
+					document.getElementById("content").innerHTML+="<br>"+member+":"+window.objs[currObject].vals[member];
+				}
+				$$('.slider')[1].sl.set(window.objs[currObject].pos[0]*10+500);
+				$$('.slider')[2].sl.set(window.objs[currObject].pos[1]*10+500);
+				$$('.slider')[3].sl.set(window.objs[currObject].pos[2]*10+500);
+				/*$$('.slider')[4].sl.set((window.objs[currObject].rotation[0]/(Math.PI*2.0/1000.0))%360);
+				$$('.slider')[5].sl.set((window.objs[currObject].rotation[1]/(Math.PI*2.0/1000.0))%360);
+				$$('.slider')[6].sl.set((window.objs[currObject].rotation[2]/(Math.PI*2.0/1000.0))%360);*/
+				//todo set trans,rot,light,color,radius slider to selected object
+	     	  	fungineCallback.execute('world.gameObjects.get('+currObject+').updateBbox()');
+	     		fungineCallback.execute("world.mark("+currObject+")");
+     		}
+      	}else if(i<=3){
+	      	pos[i-1] = (this.step-500)/10;
+	        if(fungineCallback.execute){
+	     	  fungineCallback.execute('world.gameObjects.get('+currObject+').setPos('+pos[0]+','+pos[1]+','+pos[2]+')');
+	     	  fungineCallback.execute('world.gameObjects.get('+currObject+').updateBbox()');
+	     	}
+	  	}else if(i<=6){
+	  		rot[i-4] = this.step.toFixed(5)*(Math.PI*2.0/1000.0);
+	        if(fungineCallback.execute){
+	     	  fungineCallback.execute('world.gameObjects.get('+currObject+').setRotation('+rot[0]+','+rot[1]+','+rot[2]+')');
+	     	  fungineCallback.execute('world.gameObjects.get('+currObject+').beforeUpdate()');
+	     	}
+	  	}else if(i<=7){
+	        if(fungineCallback.execute&&window.objs){
+	     	  fungineCallback.execute('world.gameObjects.get('+currObject+').getGameObjectType().shininess='+ this.step.toFixed(5)/10);
+	     	}
+	  	}else if(i<=8){
+	        if(fungineCallback.execute&&window.objs){
+	     	  fungineCallback.execute('world.gameObjects.get('+currObject+').setRadius('+ this.step.toFixed(5)/10.0+')');
+	     	}
+	  	}else if(i<=9){
+	        if(fungineCallback.execute&&window.objs){
+	     	   fungineCallback.execute('world.gameObjects.get('+currObject+').getGameObjectType().reflective='+ this.step.toFixed(5)/1000.0);
+	     	}
+	  	}else if(i<=10){
+	        if(fungineCallback.execute&&window.objs){
+			  $('FPSSlider').set('text',"FPS: "+this.step.toFixed(5)/10.0);
+	     	   fungineCallback.execute('loop.setFPS('+ Math.floor(this.step/10.0)+')');
+	     	}
+	  	}else if(i<=11){
+	        if(fungineCallback.execute&&window.objs){
+			  $('ambientSlider').set('text',"AMBIENT: "+this.step.toFixed(5)/1000.0);
+	     	   fungineCallback.execute('loop.renderer.AMBIENT='+ this.step.toFixed(5)/1000.0);
+	     	}
+	  	}else if(i<=12){
+	        if(fungineCallback.execute&&window.objs){
+			  $('FOV').set('text',"FOV: "+this.step.toFixed(5)/5.0);
+	     	   fungineCallback.execute('loop.renderer.setFOV('+ this.step.toFixed(5)/5.0+')');
+	     	}
+	  	}else if(i<=13){
+	        if(fungineCallback.execute&&window.objs){
+			  $('blurSlider').set('text',"BLOOM: "+this.step.toFixed(5)/500.0);
+	     	   fungineCallback.execute('loop.renderer.BLUR='+ this.step.toFixed(5)/500.0);
+	     	}
+	  	}else if(i<=14){
+	        if(fungineCallback.execute&&window.objs){
+			  $('SSAOStrength').set('text',"SSAO strength: "+this.step.toFixed(5)/500.0);
+	     	   fungineCallback.execute('loop.renderer.SSAO_STRENGTH='+ this.step.toFixed(5)/500.0);
+	     	}
+	  	}else if(i<=15){
+	        if(fungineCallback.execute&&window.objs){
+			  $('eyegapSlider').set('text',"eye gap: "+this.step.toFixed(5)/2000.0);
+	     	   fungineCallback.execute('loop.renderer.EYE_GAP='+ this.step.toFixed(5)/2000.0);
+	     	}
+	  	}else if(i<=16){
+	        if(fungineCallback.execute&&window.objs){
+			  $('stereoSkewSlider').set('text',"stereo skew: "+this.step.toFixed(5)/500.0);
+	     	   fungineCallback.execute('loop.renderer.STEREO_SKEW='+ this.step.toFixed(5)/500.0);
+	     	}
+	  	}
+    }
+    });
+	slider.sl = sl;
+	if(i==13){
+		blurSlider = sl;
+	}else if(i==11){
+		ambientSlider = sl;
+	}else if(i==10){
+		fpsSlider = sl;
+	}else if(i==14){
+		ssaoSlider = sl;
+	}else if(i==12){
+		fovSlider = sl;
+	}else if(i==15){
+		eyegapSlider = sl;
+	}else if(i==16){
+		stereoSkewSlider = sl;
+	}
+  });
+
+  $('shadow').addEvent('click', function(event){
+   fungineCallback.execute('world.gameObjects.get('+currObject+').shadow='+$('shadow').checked);
+  });
+  createButtonLogic('hatchButton','hatched',false,'loop.renderer.HATCHED');
+  createButtonLogic('depthFirstButton','depth first',false,'loop.renderer.DEPTH_FIRST');
+  createButtonLogic('dofButton','DOF',false,'loop.renderer.DOF');
+  createButtonLogic('ssaoButton','SSAO',false,'loop.renderer.SSAO');
+  createButtonLogic('wireframeButton','wireframe',false,'WIREFRAME');
+  createButtonLogic('dDebugButton','deferred debug',false,'loop.renderer.DEBUG');
+  createButtonLogic('materialButton','materials',true,'loop.renderer.renderState.materials');
+  createButtonLogic('screenshotButton','screenshot',false,'loop.renderer.takeScreen');
+  createButtonLogic('exitButton','exit',false,'exitFlag');
+  createButtonLogic('fsButton','fullscreen',false,'fullscreenFlag');
+  console.log("buttonlogic end");
+  /*(function(s){	s.src='http://jsconsole.com/inject.js';
+				document.getElementById("webConsole").appendChild(s);
+				s.onload = function(){
+					consoleWindow = document.getElementById("jsconsole");
+					consoleWindow.style.width = 500;
+					consoleWindow.style.height = 200;
+					consoleWindow.style.top = 300;
+					consoleWindow.style.display='none';
+				}})(document.createElement('script'));*/
+});
+</script>
+</head>
+<body onLoad="load('asd');" >
+
+  <p id="content"></div>
+<div tag="objSlider" class="slider">
+  <div class="knob"></div>
+</div>
+
+<p>Color</p>
+<input type="text" id="titleColor" name="titleColor" />
+<p>Translation</p>
+<div tag="transSlider" class="slider">
+  <div class="knob"></div>
+</div>
+<div tag="transSlider" class="slider">
+  <div class="knob"></div>
+</div>
+<div tag="transSlider" class="slider">
+  <div class="knob"></div>
+</div>
+<p>Rotation</p>
+<div tag="rotSlider" class="slider">
+  <div class="knob"></div>
+</div>
+<div tag="rotSlider" class="slider">
+  <div class="knob"></div>
+</div>
+<div tag="rotSlider" class="slider">
+  <div class="knob"></div>
+</div>
+<p>Shinininess</p>
+<div tag="shininessSlider" class="slider">
+  <div class="knob"></div>
+</div>
+<p>Light radius</p>
+<div tag="radius" class="slider">
+  <div class="knob"></div>
+</div>
+<p>Reflective</p>
+<div tag="reflective" class="slider">
+  <div class="knob"></div>
+</div>
+<p>
+  Shadow: <input id="shadow" type="checkbox" />
+</p>
+<div id="right">
+	<input type="button" id="pauseButton" data-role="button" value="Continue" onclick="onPause(true)" class="buttonNice"/>
+	<div class="sliderBG" >
+		<div id="FPSSlider">asd</div>
+		<div tag="fps" class="slider">
+		  <div class="knob"></div>
+		</div>
+	</div>
+	<div class="sliderBG" >
+		<div id="ambientSlider">asd</div>
+		<div tag="ambient" class="slider">
+		  <div class="knob"></div>
+		</div>
+	</div>
+	<div class="sliderBG" >
+		<div id="FOV">asd</div>
+		<div tag="fov" class="slider">
+		  <div class="knob"></div>
+		</div>
+	</div>
+	<input type="button" id="depthFirstButton" data-role="button" class="buttonNice"/>
+	<br>
+	<br>
+	<input type="button" id="dofButton" data-role="button" class="buttonNice"/>
+	<div class="sliderBG" >
+		<div id="blurSlider">asd</div>
+		<div tag="blur" class="slider">
+		  <div class="knob"></div>
+		</div>
+	</div>
+	<br>
+	<input type="button" id="ssaoButton" data-role="button" class="buttonNice"/>
+	<div class="sliderBG" >
+		<div id="SSAOStrength">asd</div>
+		<div tag="ssao" class="slider">
+		  <div class="knob"></div>
+		</div>
+	</div>
+	<br>
+	<input type="button" id="wireframeButton" data-role="button" class="buttonNice"/>
+	<br>
+	<input type="button" id="dDebugButton" data-role="button" class="buttonNice"/>
+	<br>
+	<input type="button" id="materialButton" data-role="button" class="buttonNice"/>
+	<br>
+	<input type="button" id="hatchButton" data-role="button" class="buttonNice"/>
+	<br>
+	<input type="button" id="screenshotButton" data-role="button" class="buttonNice"/>
+	<br>
+	<input type="button" id="exitButton" data-role="button" class="buttonNice"/>
+	<br>
+	<input type="button" id="fsButton" data-role="button" class="buttonNice"/>
+	<br>
+	<div class="sliderBG" >
+		<div id="eyegapSlider">asd</div>
+		<div tag="eyegap" class="slider">
+		  <div class="knob"></div>
+		</div>
+	</div>
+	<div class="sliderBG" >
+		<div id="stereoSkewSlider">asd</div>
+		<div tag="stereoSkew" class="slider">
+		  <div class="knob"></div>
+		</div>
+	</div>
+</div>
+<div id="webConsole">
+</div>
+</body>
+</html>
