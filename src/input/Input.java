@@ -9,7 +9,7 @@ public class Input {
 	public Input() {
 		mouse = new Mouse();
 		keyboard = new KeyBoard();
-		jinput = new JInputWrapper();
+		// jinput = new JInputWrapper();
 	}
 
 	public void update() {

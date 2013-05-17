@@ -10,8 +10,11 @@ import java.util.Map;
 import net.java.games.input.Component;
 import net.java.games.input.Controller;
 import net.java.games.input.DirectAndRawInputEnvironmentPlugin;
+import net.java.games.input.LinuxEnvironmentPlugin;
 import util.Log;
 import util.RepeatedThread;
+
+import com.sun.jna.Platform;
 
 public class JInputWrapper {
 
@@ -63,23 +66,32 @@ public class JInputWrapper {
 
 			@Override
 			public void run() {
-				allControllers = DirectAndRawInputEnvironmentPlugin
-						.getDefaultEnvironment().getControllers();
+				allControllers = getControllers();
 				refreshNextTime = true;
 			}
 		}).start();
-		new RepeatedThread(10000, Thread.MIN_PRIORITY, "JInputWrapper_updater") {
+		new RepeatedThread(1000, Thread.MIN_PRIORITY, "JInputWrapper_updater") {
 
 			@Override
 			protected void executeRepeatedly() {
-				allControllers = new DirectAndRawInputEnvironmentPlugin()
-						.getControllers();
+				allControllers = getControllers();
+				Log.log(this, "refresh " + controllerNum + ","
+						+ allControllers.length);
 				int currentControllerNum = allControllers.length;
 				if (currentControllerNum != controllerNum) {
 					refreshNextTime = true;
 				}
 			}
 		}.start();
+	}
+
+	protected Controller[] getControllers() {
+		if (Platform.isWindows())
+			return DirectAndRawInputEnvironmentPlugin.getDefaultEnvironment()
+					.getControllers();
+		else
+			return LinuxEnvironmentPlugin.getDefaultEnvironment()
+					.getControllers();
 	}
 
 	public void refresh() {
@@ -96,7 +108,9 @@ public class JInputWrapper {
 		for (Controller c : allControllers) {
 			addController(c);
 		}
-		Player[] playersArr = IO.readFromJson("controller.cfg", Player[].class);
+		Player[] playersArr = IO.readFromJson(
+				"controller" + (Platform.isWindows() ? "-win" : "-unix")
+						+ ".cfg", Player[].class);
 		if (playersArr != null) {
 			Log.log(this, "Successfully loaded controller config: "
 					+ playersArr.length + " players");
@@ -112,7 +126,9 @@ public class JInputWrapper {
 			playersArr = new Player[1];
 			playersArr[0] = new Player();
 			playersArr[0].add("up", "Logitech RumblePad 2 USB0;Button 0");
-			IO.writeToJson("controller.cfg", playersArr);
+			IO.writeToJson("controller"
+					+ (Platform.isWindows() ? "-win" : "-unix") + ".cfg",
+					playersArr);
 		}
 	}
 
@@ -139,6 +155,7 @@ public class JInputWrapper {
 
 	public void update() {
 		if (refreshNextTime) {
+			Log.log(this, "refresh");
 			refresh();
 			refreshNextTime = false;
 		}

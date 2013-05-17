@@ -75,7 +75,7 @@ public class IO {
 	public static <T> T[] readFromJson(String file, Type t) {
 		BufferedReader br = read(file);
 		if (br == null)
-			return (T[]) new Object[0];
+			return null;
 		T result[] = new Gson().fromJson(br, t);
 		try {
 			br.close();

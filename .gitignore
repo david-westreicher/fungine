@@ -4,6 +4,7 @@
 /.metadata/
 .gitignore~
 libs/natives
+games
 
 #eclipse
 

@@ -21,7 +21,7 @@ public class JRift implements VR {
 
 			@Override
 			protected void onStopped() {
-				//TODO causes thread to never terminate: or.destroy();
+				// TODO causes thread to never terminate: or.destroy();
 			}
 
 			@Override

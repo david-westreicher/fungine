@@ -1,7 +1,6 @@
 package test;
 
 import game.Game;
-
 import io.IO;
 
 import java.io.File;
@@ -18,8 +17,11 @@ public class OpenGLTest {
 
 	public static void main(String[] args) {
 		Log.getInstance();
-		if (args.length > 0)
+		if (args.length > 0) {
 			Settings.RESSOURCE_FOLDER = args[0] + File.separator;
+			Log.log(OpenGLTest.class, "Ressource folder is: "
+					+ Settings.RESSOURCE_FOLDER);
+		}
 		if (args.length > 1)
 			try {
 				readSettings(args[1]);
@@ -30,8 +32,6 @@ public class OpenGLTest {
 			} catch (IllegalAccessException e) {
 				e.printStackTrace();
 			}
-		// Log.log(OpenGLTest.class, "Ressource folder is: "
-		// + Settings.RESSOURCE_FOLDER);
 
 		Log.getInstance().excludeFromLogging(Reflection.class);
 		Log.getInstance().excludeFromLogging(AwesomiumHelper.class);
