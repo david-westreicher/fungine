@@ -4,7 +4,7 @@ import rendering.RenderUpdater;
 
 public class Rift {
 	public static final float HScreenSize = 0.14976f;
-	public static final float VScreenSize = 0.0935f;
+	public static final float VScreenSize = 0.0936f;
 	public static final float VScreenCenter = VScreenSize / 2;
 	public static final float EyeToScreenDistance = 0.041f;
 	public static final float LensSeparationDistance = 0.064f;

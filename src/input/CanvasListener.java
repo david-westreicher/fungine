@@ -65,32 +65,38 @@ public class CanvasListener implements MouseListener, KeyListener {
 
 	@Override
 	public void keyPressed(KeyEvent e) {
-		input.keyboard.pressed(e.getKeyChar());
-		RenderUpdater.getBrowser().keyEvent(e, true);
+		if (!e.isAutoRepeat()) {
+			input.keyboard.pressed(e.getKeyChar());
+			RenderUpdater.getBrowser().keyEvent(e, true);
+		}
 	}
 
 	@Override
 	public void keyReleased(KeyEvent e) {
-		if (e.getKeyCode() == KeyEvent.VK_F1) {
-			Settings.USE_BROWSER = !Settings.USE_BROWSER;
-			if (Settings.USE_BROWSER) {
-				Game.INSTANCE.loop.pauseLogic();
-				Game.INSTANCE.hideMouse(false);
-				Settings.SHOW_STATUS = false;
-				RenderUpdater.getBrowser().debugSite();
-			} else {
-				Settings.SHOW_STATUS = true;
-				Game.INSTANCE.loop.continueLogic();
-				RenderUpdater.getBrowser().restoreSite();
+		if (!e.isAutoRepeat()) {
+			if (e.getKeyCode() == KeyEvent.VK_F1) {
+				Settings.USE_BROWSER = !Settings.USE_BROWSER;
+				if (Settings.USE_BROWSER) {
+					Game.INSTANCE.loop.pauseLogic();
+					Game.INSTANCE.hideMouse(false);
+					Settings.SHOW_STATUS = false;
+					RenderUpdater.getBrowser().debugSite();
+				} else {
+					Settings.SHOW_STATUS = true;
+					Game.INSTANCE.loop.continueLogic();
+					RenderUpdater.getBrowser().restoreSite();
+				}
 			}
+			input.keyboard.released(e.getKeyChar());
+			RenderUpdater.getBrowser().keyEvent(e, false);
 		}
-		input.keyboard.released(e.getKeyChar());
-		RenderUpdater.getBrowser().keyEvent(e, false);
 	}
 
 	@Override
 	public void keyTyped(KeyEvent e) {
-		RenderUpdater.getBrowser().keyTyped(e);
+		if (!e.isAutoRepeat()) {
+			RenderUpdater.getBrowser().keyTyped(e);
+		}
 	}
 
 	@Override
