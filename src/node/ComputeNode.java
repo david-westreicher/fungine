@@ -28,7 +28,7 @@ public abstract class ComputeNode {
 	}
 
 	protected void compute() {
-		Log.log(this, "compute");
+		//Log.log(this, "compute");
 	}
 
 	public void updateOutputs() {
