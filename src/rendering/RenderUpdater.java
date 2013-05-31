@@ -80,6 +80,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	private Matrix4f modelView = new Matrix4f();
 	private Matrix4f projection = new Matrix4f();
 	private boolean takeScreen = false;
+	private List<float[][]> debugLines = new ArrayList<float[][]>();
 
 	public RenderUpdater() {
 		renderer = new OpenGLRendering(this);
@@ -360,6 +361,11 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		 * * size); } gl.glEnd(); } gl.glPopMatrix();
 		 */
 		gl.glBegin(GL2.GL_LINES);
+		gl.glColor4f(1, 0, 0, 1);
+		for (float line[][] : debugLines) {
+			gl.glVertex3fv(line[0], 0);
+			gl.glVertex3fv(line[1], 0);
+		}
 		{
 			gl.glColor4f(1, 0, 0, 1);
 			gl.glVertex3f(0, 0, 0);
@@ -811,6 +817,14 @@ public class RenderUpdater implements Updatable, GLEventListener {
 
 	public static Browser getBrowser() {
 		return browser;
+	}
+
+	public void addDebugLine(float from[], float to[]) {
+		debugLines.add(new float[][] { from, to });
+	}
+
+	public void clearDebugLines() {
+		debugLines.clear();
 	}
 	/*
 	 * private Vector3f computeTranslation(Camera cam, float size) {
