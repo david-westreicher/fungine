@@ -83,11 +83,15 @@ public class ObjLoader {
 				: Settings.RESSOURCE_FOLDER, s);
 		String line;
 		int lineNum = 0;
+		boolean shouldNormalizeVerts = true;
 		try {
 			while ((line = br.readLine()) != null && !line.startsWith("e")) {
 				// if (lineNum++ % 10000 == 0)
 				// Log.log(this, "line number: " + lineNum);
 				String[] split = line.split("\\s+");
+				if (line.startsWith("normalizeVerts")) {
+					shouldNormalizeVerts = false;
+				}
 				if (line.startsWith("mtllib")) {
 					materialLibrary = new MaterialLibrary(s.substring(0,
 							s.lastIndexOf("/") + 1)
@@ -192,7 +196,8 @@ public class ObjLoader {
 			});
 
 			if (hasNormals || hasUV) {
-				normalize(correctVertices);
+				if (shouldNormalizeVerts)
+					normalize(correctVertices);
 				// Log.log(this, "normallist: " + normalList);
 				// Log.log(this, "normals: " + correctNormals);
 				// Log.log(this, "vertices: " + correctVertices);
