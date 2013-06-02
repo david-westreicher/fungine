@@ -9,6 +9,8 @@ import javax.vecmath.Vector3f;
 
 import physics.PhysicsTest;
 import util.Log;
+import util.MathHelper;
+import util.MathHelper.Tansformation;
 
 import com.bulletphysics.dynamics.RigidBody;
 
@@ -30,9 +32,7 @@ public class GameObject extends VariableHolder {
 	public boolean marked;
 	public boolean render = true;
 	public float angle;
-	private static Vector3f tmpVector = new Vector3f();
-	private static Vector3f tmp2Vector = new Vector3f();
-	private static Matrix3f tmpMatrix = new Matrix3f();
+	private Quat4f quaternion;
 
 	public GameObject(String name) {
 		setType(name);
@@ -48,14 +48,11 @@ public class GameObject extends VariableHolder {
 	}
 
 	public void updateRotation() {
-		if (GameObjectType.getType(type).shape == null && get("parent") == null) {
-			rotationMatrix.setIdentity();
-			tmpMatrix.rotY(rotation[1]);
-			rotationMatrix.mul(tmpMatrix);
-			tmpMatrix.rotX(rotation[0]);
-			rotationMatrix.mul(tmpMatrix);
-			tmpMatrix.rotZ(rotation[2]);
-			rotationMatrix.mul(tmpMatrix);
+		if (quaternion != null) {
+			rotationMatrix.set(quaternion);
+		} else if (GameObjectType.getType(type).shape == null
+				&& get("parent") == null) {
+			MathHelper.setRotationMatrix(rotationMatrix, rotation);
 		}
 		updateRotationMatrixArray();
 	}
@@ -84,6 +81,24 @@ public class GameObject extends VariableHolder {
 		bbox[3] = pos[1] + size[1] / 2;
 		bbox[4] = pos[2] - size[2] / 2;
 		bbox[5] = pos[2] + size[2] / 2;
+	}
+
+	public void setQuaternion(float[] v) {
+		if (quaternion == null)
+			quaternion = new Quat4f();
+		quaternion.set(v);
+	}
+
+	public void setTransformation(float realPoints[][], float currPoints[][]) {
+		Tansformation transform = MathHelper.getTransformation(realPoints,
+				currPoints);
+		if (quaternion == null)
+			quaternion = new Quat4f();
+		quaternion.set(transform.rotation);
+		pos[0] = transform.translation.x;
+		pos[1] = transform.translation.y;
+		pos[2] = transform.translation.z;
+		updateRotation();
 	}
 
 	public void setPos(float x, float y) {
@@ -135,16 +150,6 @@ public class GameObject extends VariableHolder {
 		size[2] = z;
 	}
 
-	public String toString2() {
-		return type + ", pos:[" + pos[0] + "," + pos[1] + "]";
-	}
-
-	@Override
-	public String toString() {
-		return "GameObject [pos=" + Arrays.toString(pos) + ", color="
-				+ Arrays.toString(color) + "]";
-	}
-
 	public void setType(String name) {
 		GameObjectType goType = GameObjectType.getType(name);
 		if (goType == null) {
@@ -160,37 +165,8 @@ public class GameObject extends VariableHolder {
 			force[i] = 0;
 	}
 
-	public void setForce(float x, float y, float z) {
-		force[0] = x;
-		force[1] = y;
-		force[2] = z;
-	}
-
-	public void setFixed(boolean b) {
-		fixed = b;
-	}
-
 	public void computeRelativeTransform(GameObject child) {
-		float[] relPos = (float[]) child.get("relPos");
-		if (relPos == null) {
-			child.set("parent", this);
-			relPos = new float[] { child.pos[0], child.pos[1], child.pos[2] };
-			child.set("relPos", relPos);
-		}
-		Matrix3f relRot = (Matrix3f) child.get("relRot");
-		if (relRot == null) {
-			child.updateRotation();
-			relRot = (Matrix3f) child.rotationMatrix.clone();
-			child.set("relRot", relRot);
-		}
-		tmp2Vector.set(relPos);
-		rotationMatrix.transform(tmp2Vector);
-		tmpVector.set(pos);
-		tmpVector.add(tmp2Vector);
-		child.pos[0] = tmpVector.x;
-		child.pos[1] = tmpVector.y;
-		child.pos[2] = tmpVector.z;
-		child.rotationMatrix.mul(rotationMatrix, relRot);
+		MathHelper.computeRelativeTransform(this, child);
 	}
 
 	public void setLinearVelocity(float x, float y) {
@@ -208,17 +184,6 @@ public class GameObject extends VariableHolder {
 				(y == 0) ? vel.y : y, (z == 0) ? vel.z : z));
 	}
 
-	public float[] getEulerFromVector(float vec[]) {
-		tmpVector.set(vec);
-		tmpVector.normalize();
-		return new float[] {
-				(float) (-Math.atan2(
-						tmpVector.y,
-						Math.sqrt(tmpVector.x * tmpVector.x + tmpVector.z
-								* tmpVector.z))),
-				(float) (Math.atan2(tmpVector.x, tmpVector.z)), 0 };
-	}
-
 	public RigidBody getRigidBody() {
 		return PhysicsTest.ids.get(this);
 	}
@@ -230,6 +195,12 @@ public class GameObject extends VariableHolder {
 
 	public GameObjectType getGameObjectType() {
 		return GameObjectType.getType(type);
+	}
+
+	@Override
+	public String toString() {
+		return "GameObject [pos=" + Arrays.toString(pos) + ", color="
+				+ Arrays.toString(color) + "]";
 	}
 
 }
