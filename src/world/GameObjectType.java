@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import physics.AbstractCollisionShape;
+
 import rendering.GameObjectRenderer;
 import rendering.RenderState;
 import script.GameScript;
@@ -15,7 +17,7 @@ public class GameObjectType extends VariableHolder {
 
 	public GameObjectRenderer renderer = null;
 	public GameScript script = null;
-	public CollisionShape shape = null;
+	public AbstractCollisionShape shape = null;
 	public String name;
 
 	public float shininess = (float) (Math.random() * 2000);
@@ -42,4 +44,5 @@ public class GameObjectType extends VariableHolder {
 	public static Collection<GameObjectType> getTypes() {
 		return allTypes.values();
 	}
+	
 }

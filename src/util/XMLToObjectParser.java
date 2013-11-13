@@ -13,8 +13,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+import physics.AbstractCollisionShape;
 import physics.HeightfieldTerrainShape;
-import physics.PhysicsTest;
+import physics.BulletPhysics;
 import rendering.AnimationRenderer;
 import rendering.ChunkRenderer;
 import rendering.ModelRenderer;
@@ -63,37 +64,37 @@ public class XMLToObjectParser extends DefaultHandler {
 			} else if (currentTag.equals("script")) {
 				currentObject.script = new GameScript(s);
 			} else if (currentTag.equals("physics")) {
-				float size = Float.parseFloat(split[1])
-						* PhysicsTest.PHYSICS_SCALE / 2;
-				float size2 = 100;
-				if (split.length >= 3) {
-					size2 = Float.parseFloat(split[2])
-							* PhysicsTest.PHYSICS_SCALE;
+				if (s.equals("box")) {
+					currentObject.shape = new AbstractCollisionShape.BoxShape();
+				} else if (s.equals("sphere")) {
+					currentObject.shape = new AbstractCollisionShape.SphereShape();
+				} else if (s.equals("capsule")) {
+					currentObject.shape = new AbstractCollisionShape.CapsuleShape();
 				}
-				if (split[0].equals("box"))
-					currentObject.shape = new BoxShape(new Vector3f(size, size,
-							size));
-				else if (split[0].equals("sphere"))
-					currentObject.shape = new SphereShape(size);
-				else if (split[0].equals("wall"))
-					currentObject.shape = new BoxShape(new Vector3f(1, size,
-							size));
-				else if (split[0].equals("capsule"))
-					currentObject.shape = new CapsuleShape(size, size2);
-				else if (split[0].equals("terrain")) {
-					float terrainSize = Float.parseFloat(split[1])
-							* PhysicsTest.PHYSICS_SCALE;
-					HeightfieldTerrainShape height = new HeightfieldTerrainShape(
-							TerrainRenderer.WIDTH + 1,
-							TerrainRenderer.HEIGHT + 1,
-							TerrainRenderer.getHeightField(), terrainSize,
-							-0.5f, 0.5f, HeightfieldTerrainShape.YAXIS, false);
-					float gridSpacing = terrainSize / TerrainRenderer.WIDTH;
-					Log.log(this, gridSpacing, size);
-					height.setLocalScaling(new Vector3f(gridSpacing, 1,
-							gridSpacing));
-					currentObject.shape = height;
-				}
+				/*
+				 * float size = Float.parseFloat(split[1])
+				 * BulletPhysics.PHYSICS_SCALE / 2; float size2 = 100; if
+				 * (split.length >= 3) { size2 = Float.parseFloat(split[2])
+				 * BulletPhysics.PHYSICS_SCALE; } if (split[0].equals("box"))
+				 * currentObject.shape = new BoxShape(new Vector3f(size, size,
+				 * size)); else if (split[0].equals("sphere"))
+				 * currentObject.shape = new SphereShape(size); else if
+				 * (split[0].equals("wall")) currentObject.shape = new
+				 * BoxShape(new Vector3f(1, size, size)); else if
+				 * (split[0].equals("capsule")) currentObject.shape = new
+				 * CapsuleShape(size, size2); else
+				 * 
+				 * if (split[0].equals("terrain")) { float terrainSize =
+				 * Float.parseFloat(split[1]) BulletPhysics.PHYSICS_SCALE;
+				 * HeightfieldTerrainShape height = new HeightfieldTerrainShape(
+				 * TerrainRenderer.WIDTH + 1, TerrainRenderer.HEIGHT + 1,
+				 * TerrainRenderer.getHeightField(), terrainSize, -0.5f, 0.5f,
+				 * HeightfieldTerrainShape.YAXIS, false); float gridSpacing =
+				 * terrainSize / TerrainRenderer.WIDTH; Log.log(this,
+				 * gridSpacing, size); height.setLocalScaling(new
+				 * Vector3f(gridSpacing, 1, gridSpacing)); currentObject.shape =
+				 * height; }
+				 */
 			} else if (currentTag.equals("renderer")) {
 				if (s.equals("terrain"))
 					currentObject.renderer = new TerrainRenderer();

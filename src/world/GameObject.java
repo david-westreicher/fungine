@@ -1,13 +1,15 @@
 package world;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Quat4f;
 import javax.vecmath.Vector3f;
 
-import physics.PhysicsTest;
+import physics.BulletPhysics;
 import util.Log;
 import util.MathHelper;
 import util.MathHelper.Tansformation;
@@ -15,6 +17,8 @@ import util.MathHelper.Tansformation;
 import com.bulletphysics.dynamics.RigidBody;
 
 public class GameObject extends VariableHolder {
+
+
 	public float[] bbox = new float[6];
 	public float[] pos = new float[3];
 	public float[] oldPos = new float[3];
@@ -22,10 +26,8 @@ public class GameObject extends VariableHolder {
 	public float[] rotation = new float[3];
 	public float[] color = new float[] { (float) Math.random(),
 			(float) Math.random(), (float) Math.random() };
-	public float friction = 0;
+	public transient PhysicsData physics = null;
 	private String type;
-	public float[] force = new float[3];
-	public boolean fixed = false;
 	public float[] rotationMatrixArray = new float[9];
 	public Matrix3f rotationMatrix = new Matrix3f(1, 0, 0, 0, 1, 0, 0, 0, 1);
 	public float alpha = 1;
@@ -33,6 +35,7 @@ public class GameObject extends VariableHolder {
 	public boolean render = true;
 	public float angle;
 	private Quat4f quaternion;
+
 
 	public GameObject(String name) {
 		setType(name);
@@ -48,10 +51,10 @@ public class GameObject extends VariableHolder {
 	}
 
 	public void updateRotation() {
+		GameObjectType type = GameObjectType.getType(this.type);
 		if (quaternion != null) {
 			rotationMatrix.set(quaternion);
-		} else if (GameObjectType.getType(type).shape == null
-				&& get("parent") == null) {
+		} else if (type != null && type.shape == null && get("parent") == null) {
 			MathHelper.setRotationMatrix(rotationMatrix, rotation);
 		}
 		updateRotationMatrixArray();
@@ -156,13 +159,10 @@ public class GameObject extends VariableHolder {
 			Log.err(this, "GameObjectType " + name + " doesn't exist!");
 			return;
 		}
+		if (goType.shape != null || name.equals(Joint.JOINT_OBJECT_TYPE_NAME))
+			physics = new PhysicsData();
 		vals.putAll(goType.getVars());
 		this.type = name;
-	}
-
-	public void resetForce() {
-		for (int i = 0; i < 3; i++)
-			force[i] = 0;
 	}
 
 	public void computeRelativeTransform(GameObject child) {
@@ -185,7 +185,7 @@ public class GameObject extends VariableHolder {
 	}
 
 	public RigidBody getRigidBody() {
-		return PhysicsTest.ids.get(this);
+		return BulletPhysics.ids.get(this);
 	}
 
 	public void setRotation(Quat4f o) {
@@ -201,6 +201,16 @@ public class GameObject extends VariableHolder {
 	public String toString() {
 		return "GameObject [pos=" + Arrays.toString(pos) + ", color="
 				+ Arrays.toString(color) + "]";
+	}
+
+	public void setQuaternion(double x, double y, double z, double w) {
+		if (quaternion == null)
+			quaternion = new Quat4f();
+		quaternion.set((float) x, (float) y, (float) z, (float) w);
+	}
+
+	public void setPos(float[] p, float s) {
+		setPos(p[0] * s, p[1] * s, p[2] * s);
 	}
 
 }

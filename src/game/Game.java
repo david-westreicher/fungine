@@ -7,7 +7,8 @@ import javax.script.ScriptException;
 import manager.Manageable;
 import manager.Manager;
 import manager.SoundManager;
-import physics.PhysicsTest;
+import physics.BulletPhysics;
+import physics.OdePhysics;
 import rendering.DeferredRenderer;
 import rendering.OpenGLRendering;
 import rendering.RenderUpdater;
@@ -34,7 +35,6 @@ public class Game {
 	public Input input = new Input();
 	public static boolean DEBUG = false;
 	public Camera cam = new Camera();
-	private boolean hasPhysics = false;
 	public boolean exitFlag = false;
 	public boolean fullscreenFlag = false;
 	public static VRFactory.VR vr;
@@ -117,8 +117,8 @@ public class Game {
 		} else if (c.equals("sound")) {
 			loop.sound = new SoundManager();
 		} else if (c.equals("physics")) {
-			hasPhysics = true;
-			((GameMechanics) loop.mechanics).physics = new PhysicsTest();
+			loop.mechanics.physics = new OdePhysics();// new
+														// BulletPhysics();
 		} else {
 			System.err.println("Can't add component: " + c);
 		}
@@ -137,13 +137,6 @@ public class Game {
 
 	public void hideMouse(boolean b) {
 		OpenGLRendering.hideMouse(b);
-		/*
-		 * if (loop.renderer != null) { if (b) { if (blankCursor == null)
-		 * blankCursor = Toolkit.getDefaultToolkit() .createCustomCursor( new
-		 * BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB), new Point(0, 0),
-		 * "blank cursor"); Util.c.setCursor(blankCursor); } else
-		 * Util.c.setCursor(null); }
-		 */
 	}
 
 	public void centerMouse() {
@@ -160,10 +153,6 @@ public class Game {
 
 	public int getHeight() {
 		return ((RenderUpdater) loop.renderer).height;
-	}
-
-	public boolean hasPhysics() {
-		return hasPhysics;
 	}
 
 	public static Game getInstance() {

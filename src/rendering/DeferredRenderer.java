@@ -22,9 +22,9 @@ import com.jogamp.opengl.util.texture.Texture;
 
 public class DeferredRenderer extends RenderUpdater {
 	private static final float SKYBOX_SCALE = 10;
-	private static final boolean RENDER_SKYBOX = false;
+	private static final boolean RENDER_SKYBOX = true;
 	protected static final int SHADOW_MAP_SIZE = 512;
-	private static boolean HATCHED = true;
+	private static boolean HATCHED = false;
 	public static boolean DEPTH_FIRST = false;
 	public static float SHADOW_FOV = 90;
 	public static float SSAO_STRENGTH = 0.43f;
@@ -32,7 +32,7 @@ public class DeferredRenderer extends RenderUpdater {
 	public static boolean DEBUG = false;
 	public static float AMBIENT = 0.2f;
 	public static boolean DOF = false;
-	public static float BLUR = 0.0f;
+	public static float BLUR = 0.1f;
 	private double[] bias = new double[] { 0.5, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0,
 			0.0, 0.0, 0.0, 0.5, 0.0, 0.5, 0.5, 0.5, 1.0 };
 	private ShaderScript deferredRenderer;
@@ -126,9 +126,9 @@ public class DeferredRenderer extends RenderUpdater {
 				createTex(2);
 				createTex(3);
 				createShadowFob(4, SHADOW_MAP_SIZE, SHADOW_MAP_SIZE);
-				// if (RENDER_SKYBOX)
-				cubeMap = createCubeMap(Settings.ENGINE_FOLDER
-						+ "img/black-pixel.jpg");
+				if (RENDER_SKYBOX)
+					cubeMap = createCubeMap(Settings.ENGINE_FOLDER
+							+ "img/black-pixel.jpg");
 			}
 		});
 		lightRenderer = new LightRenderer();

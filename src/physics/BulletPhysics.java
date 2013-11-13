@@ -33,12 +33,12 @@ import com.bulletphysics.linearmath.MotionState;
 import com.bulletphysics.linearmath.Transform;
 import com.bulletphysics.util.ObjectArrayList;
 
-public class PhysicsTest {
+public class BulletPhysics implements AbstractPhysics {
 	public List<LocalRayResult> results = new ArrayList<LocalRayResult>();
 
 	public static Map<GameObject, RigidBody> ids = new HashMap<GameObject, RigidBody>();
 	public static final float PHYSICS_SCALE = 1f / 100f;
-	private static PhysicsTest INSTANCE = null;
+	private static BulletPhysics INSTANCE = null;
 
 	private static DiscreteDynamicsWorld dynamicsWorld;
 	private long last;
@@ -47,7 +47,7 @@ public class PhysicsTest {
 	private static AxisAngle4f aa = new AxisAngle4f();
 	private static Transform trans = new Transform();
 
-	public PhysicsTest() {
+	public BulletPhysics() {
 		INSTANCE = this;
 		CollisionConfiguration collisionConfiguration = new DefaultCollisionConfiguration();
 		CollisionDispatcher dispatcher = new CollisionDispatcher(
@@ -106,7 +106,8 @@ public class PhysicsTest {
 
 	public void update(Map<String, List<GameObject>> objs) {
 		for (String s : objs.keySet()) {
-			CollisionShape cs = GameObjectType.getType(s).shape;
+			CollisionShape cs = GameObjectType.getType(s).shape
+					.getBulletShape();
 			if (cs != null)
 				for (GameObject go : objs.get(s)) {
 					if (!ids.containsKey(go)) {
@@ -149,11 +150,11 @@ public class PhysicsTest {
 		if (rigidBody != null) {
 			boolean hasForce = false;
 			for (int i = 0; i < 3; i++)
-				if (go.force[i] != 0)
+				if (go.physics.force[i] != 0)
 					hasForce = true;
 			if (hasForce) {
-				rigidBody.applyCentralForce(new Vector3f(go.force));
-				go.resetForce();
+				rigidBody.applyCentralForce(new Vector3f(go.physics.force));
+				go.physics.resetForce();
 			}
 		}
 	}
@@ -186,7 +187,7 @@ public class PhysicsTest {
 		Transform startTransform = new Transform();
 		startTransform.setIdentity();
 
-		float mass = go.fixed ? 0.0f : 1.0f;
+		float mass = go.physics.fixed ? 0.0f : 1.0f;
 
 		// rigidbody is dynamic if and only if mass is non zero,
 		// otherwise static
@@ -208,10 +209,10 @@ public class PhysicsTest {
 		RigidBodyConstructionInfo rbInfo = new RigidBodyConstructionInfo(mass,
 				myMotionState, cs, localInertia);
 		RigidBody body = new RigidBody(rbInfo);
-		body.applyCentralForce(new Vector3f(go.force));
-		body.setFriction(go.friction);
+		body.applyCentralForce(new Vector3f(go.physics.force));
+		body.setFriction(go.physics.friction);
 
-		go.resetForce();
+		go.physics.resetForce();
 		if (cs instanceof CapsuleShape) {
 			Log.log(this, "capsule found");
 			body.setSleepingThresholds(0, 0);
@@ -249,7 +250,7 @@ public class PhysicsTest {
 		return min;
 	}
 
-	public static PhysicsTest getInstance() {
+	public static BulletPhysics getInstance() {
 		return INSTANCE;
 	}
 
@@ -272,5 +273,11 @@ public class PhysicsTest {
 
 	public void dispose() {
 		dynamicsWorld.destroy();
+	}
+
+	@Override
+	public void restart() {
+		// TODO Auto-generated method stub
+		
 	}
 }

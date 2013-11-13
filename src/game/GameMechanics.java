@@ -6,7 +6,8 @@ import java.util.Map;
 import javax.script.CompiledScript;
 import javax.script.ScriptException;
 
-import physics.PhysicsTest;
+import physics.AbstractPhysics;
+import physics.BulletPhysics;
 import script.GameScript;
 import script.Script;
 import settings.Settings;
@@ -16,7 +17,8 @@ import world.GameObjectType;
 
 public class GameMechanics implements Updatable {
 
-	public PhysicsTest physics;
+	public AbstractPhysics physics;
+	private boolean restartPhysics = false;
 
 	public GameMechanics() {
 	}
@@ -67,9 +69,13 @@ public class GameMechanics implements Updatable {
 		} catch (NoSuchMethodException e1) {
 			e1.printStackTrace();
 		}
-		if (physics != null)
+		if (physics != null) {
+			if (restartPhysics) {
+				physics.restart();
+				restartPhysics = false;
+			}
 			physics.update(objs);
-
+		}
 		if (Game.DEBUG)
 			for (String type : objs.keySet()) {
 				for (GameObject go : objs.get(type)) {
@@ -80,4 +86,7 @@ public class GameMechanics implements Updatable {
 		Game.INSTANCE.input.mouse.reset();
 	}
 
+	public void restart() {
+		restartPhysics = true;
+	}
 }

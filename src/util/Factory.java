@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 
 import world.GameObject;
 import world.GameObjectType;
+import world.Joint;
 import world.PointLight;
 
 public class Factory {
@@ -23,6 +24,8 @@ public class Factory {
 	public GameObject createGameObject(String name) {
 		if (name.equals(PointLight.LIGHT_OBJECT_TYPE_NAME))
 			return new PointLight();
+		if (name.equals(Joint.JOINT_OBJECT_TYPE_NAME))
+			return new Joint();
 		return new GameObject(name);
 	}
 

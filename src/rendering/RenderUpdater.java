@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +54,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	public static float EYE_GAP = 0.23f;
 	public static float ZFar;
 	public static float ZNear;
-	public static double FOV_Y = 111;
+	public static double FOV_Y = 69;
 	private OpenGLRendering renderer;
 	public static GL2 gl;
 	public static GLUT glut = new GLUT();
@@ -80,7 +81,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	private Matrix4f modelView = new Matrix4f();
 	private Matrix4f projection = new Matrix4f();
 	private boolean takeScreen = false;
-	private List<float[][]> debugLines = new ArrayList<float[][]>();
+	private List<float[][]> debugLines = new LinkedList<float[][]>();
 
 	public RenderUpdater() {
 		renderer = new OpenGLRendering(this);
@@ -451,42 +452,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		}
 	}
 
-	private void transform(GameObjectType goType, GameObject go) {
-		if (USE_OBJECT_INTERP) {
-			// interp
-			float xSpeed = go.pos[0] - go.oldPos[0];
-			float ySpeed = go.pos[1] - go.oldPos[1];
-			float zSpeed = go.pos[2] - go.oldPos[2];
-			// TODO new interp rotation float rotSpeed =
-			// go.rotation - go.oldRotation;
-			gl.glTranslatef(go.pos[0] + xSpeed * interp, go.pos[1] + ySpeed
-					* interp, go.pos[2] + zSpeed * interp);
-		} else
-			gl.glTranslatef(go.pos[0], go.pos[1], go.pos[2]);
-		/*
-		 * gl.glRotatef(toDegree(go.angle), go.rotation[0], go.rotation[1],
-		 * go.rotation[2]);
-		 */
-		if (goType.shape == null || !Game.INSTANCE.hasPhysics()) {
-			gl.glRotatef(toDegree(go.rotation[0]), -1, 0, 0);
-			gl.glRotatef(toDegree(go.rotation[1]), 0, -1, 0);
-			gl.glRotatef(toDegree(go.rotation[2]), 0, 0, -1);
-		} else {
-			// interpolationQuat.set(go.oldQuat);
-			// interpolationQuat.interpolate(go.quat, interp);
-			// interpolationAxisAngle.set(interpolationQuat);
-			// gl.glRotatef(
-			// toDegree(interpolationAxisAngle.angle),
-			// interpolationAxisAngle.x,
-			// interpolationAxisAngle.y,
-			// interpolationAxisAngle.z);
-			gl.glRotatef(toDegree(go.angle), go.rotation[0], go.rotation[1],
-					go.rotation[2]);
-		}
-		gl.glScalef(go.size[0], go.size[1], go.size[2]);
-
-	}
-
 	private float toDegree(float f) {
 		return (float) (f * 180 / Math.PI);
 	}
@@ -820,12 +785,12 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	}
 
 	public void addDebugLine(float from[], float to[]) {
-		debugLines.add(new float[][] { from, to });
+		debugLines.add(0, new float[][] { from, to });
+		for (int i = 100; i < debugLines.size(); i++) {
+			debugLines.remove(i);
+		}
 	}
 
-	public void clearDebugLines() {
-		debugLines.clear();
-	}
 	/*
 	 * private Vector3f computeTranslation(Camera cam, float size) {
 	 * tmpVector3f.set(size, 0, 0); cam.rotationMatrix.transform(tmpVector3f);

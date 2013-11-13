@@ -1,6 +1,7 @@
 package game;
 
 import rendering.OpenGLRendering;
+import rendering.RenderUpdater;
 import util.Log;
 import util.RepeatedRunnable;
 import util.TickCounter;
@@ -11,8 +12,8 @@ public class GameLoop extends RepeatedRunnable {
 	private final int MAX_FRAMESKIP = 5;
 	private final int MAX_FPS = 200;
 	private int renderloops = 0;
-	public Updatable renderer;
-	public Updatable mechanics;
+	public RenderUpdater renderer;
+	public GameMechanics mechanics;
 	public Updatable sound;
 	private long nextTick;
 	private int loops;
@@ -41,6 +42,13 @@ public class GameLoop extends RepeatedRunnable {
 		loops = 0;
 		interpolation = 0;
 		super.start();
+	}
+
+	@Override
+	public void startPause() {
+		super.startPause();
+		if(mechanics!=null)
+			mechanics.restart();
 	}
 
 	@Override
