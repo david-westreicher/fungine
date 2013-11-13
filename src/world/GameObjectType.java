@@ -5,12 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import physics.AbstractCollisionShape;
-
 import rendering.GameObjectRenderer;
 import rendering.RenderState;
 import script.GameScript;
-
-import com.bulletphysics.collision.shapes.CollisionShape;
 
 public class GameObjectType extends VariableHolder {
 	private static Map<String, GameObjectType> allTypes = new HashMap<String, GameObjectType>();
@@ -44,5 +41,5 @@ public class GameObjectType extends VariableHolder {
 	public static Collection<GameObjectType> getTypes() {
 		return allTypes.values();
 	}
-	
+
 }

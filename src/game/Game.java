@@ -7,7 +7,6 @@ import javax.script.ScriptException;
 import manager.Manageable;
 import manager.Manager;
 import manager.SoundManager;
-import physics.BulletPhysics;
 import physics.OdePhysics;
 import rendering.DeferredRenderer;
 import rendering.OpenGLRendering;

@@ -1,7 +1,5 @@
 package world;
 
-import org.ode4j.ode.DBody;
-
 public class Joint extends GameObject {
 	public static final String JOINT_OBJECT_TYPE_NAME = "Joint";
 	public Type jointType = Type.BALL;

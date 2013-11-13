@@ -9,7 +9,6 @@ import javax.vecmath.Vector3f;
 
 import physics.OdePhysics;
 import physics.OdePhysics.CollisionCallback;
-import util.Log;
 
 public class LocomotionData {
 	public GameObject body;

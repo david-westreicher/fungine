@@ -1,6 +1,5 @@
 package util;
 
-import game.Game;
 import io.IO;
 
 import java.io.BufferedReader;
@@ -14,9 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import physics.IntersectionTest;
 import settings.Settings;
-import world.GameObject;
 
 public class ObjLoader {
 
@@ -255,67 +252,6 @@ public class ObjLoader {
 	private void voxelize() {
 		Voxel v = new Voxel(indices, vertices);
 		v.voxelize(name, 200);
-	}
-
-	private void oldVoxelize() {
-		int steps = 100;
-		float stepSize = 1.0f / (steps);
-		boolean voxels[][] = new boolean[steps + 1][steps + 1];
-		for (int indice = 0; indice < indices.length; indice++) {
-			for (int t = 0; t < indices[indice].capacity(); t += 3) {
-				float minx = Math.min(Math.min(
-						vertices.get(indices[indice].get(t) * 3 + 0),
-						vertices.get(indices[indice].get(t + 1) * 3 + 0)),
-						vertices.get(indices[indice].get(t + 2) * 3 + 0));
-				float maxx = Math.max(Math.max(
-						vertices.get(indices[indice].get(t) * 3 + 0),
-						vertices.get(indices[indice].get(t + 1) * 3 + 0)),
-						vertices.get(indices[indice].get(t + 2) * 3 + 0));
-				float miny = Math.min(Math.min(
-						vertices.get(indices[indice].get(t) * 3 + 1),
-						vertices.get(indices[indice].get(t + 1) * 3 + 1)),
-						vertices.get(indices[indice].get(t + 2) * 3 + 1));
-				float maxy = Math.max(Math.max(
-						vertices.get(indices[indice].get(t) * 3 + 1),
-						vertices.get(indices[indice].get(t + 1) * 3 + 1)),
-						vertices.get(indices[indice].get(t + 2) * 3 + 1));
-				minx = (minx + 0.5f) * steps;
-				maxx = (maxx + 0.5f) * steps;
-				miny = (miny + 0.5f) * steps;
-				maxy = (maxy + 0.5f) * steps;
-				for (int i = (int) minx; i <= maxx; i++) {
-					for (int j = (int) miny; j <= maxy; j++) {
-						float x = i * stepSize - 0.5f;
-						float y = j * stepSize - 0.5f;
-
-						boolean result = voxels[i][j];
-						if (!result
-								&& IntersectionTest.isIntersecting(new float[] {
-										x, y }, new float[] { x + stepSize,
-										y + stepSize }, vertices, indices, t,
-										indice)) {
-							voxels[i][j] = true;
-						}
-					}
-				}
-			}
-		}
-		for (int i = 0; i < steps; i++) {
-			for (int j = 0; j < steps; j++) {
-				if (voxels[i][j]) {
-					GameObject cube = Game.INSTANCE.factory
-							.createGameObject("Cube");
-					cube.setPos((i * stepSize - 0.5f + stepSize / 2) * 10, (j
-							* stepSize - 0.5f - stepSize / 2) * 10, 0);
-					cube.setSize(stepSize * 10, stepSize * 10, stepSize * 10);
-					Game.INSTANCE.world.add(cube);
-					System.out.print("x ");
-				} else {
-					System.out.print("  ");
-				}
-			}
-			System.out.print("\n");
-		}
 	}
 
 	private void newGroup(String name) {

@@ -1,23 +1,16 @@
 package world;
 
 import java.awt.Color;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 
-import physics.BulletPhysics;
 import util.Log;
 import util.MathHelper;
 import util.MathHelper.Tansformation;
 
-import com.bulletphysics.dynamics.RigidBody;
-
 public class GameObject extends VariableHolder {
-
 
 	public float[] bbox = new float[6];
 	public float[] pos = new float[3];
@@ -35,7 +28,6 @@ public class GameObject extends VariableHolder {
 	public boolean render = true;
 	public float angle;
 	private Quat4f quaternion;
-
 
 	public GameObject(String name) {
 		setType(name);
@@ -167,25 +159,6 @@ public class GameObject extends VariableHolder {
 
 	public void computeRelativeTransform(GameObject child) {
 		MathHelper.computeRelativeTransform(this, child);
-	}
-
-	public void setLinearVelocity(float x, float y) {
-		RigidBody rigidBody = getRigidBody();
-		if (rigidBody != null) {
-			Vector3f vel = rigidBody.getLinearVelocity(new Vector3f());
-			rigidBody.setLinearVelocity(new Vector3f(x, vel.y, y));
-		}
-	}
-
-	public void setLinearVelocity(float x, float y, float z) {
-		RigidBody rigidBody = getRigidBody();
-		Vector3f vel = rigidBody.getLinearVelocity(new Vector3f());
-		rigidBody.setLinearVelocity(new Vector3f((x == 0) ? vel.x : x,
-				(y == 0) ? vel.y : y, (z == 0) ? vel.z : z));
-	}
-
-	public RigidBody getRigidBody() {
-		return BulletPhysics.ids.get(this);
 	}
 
 	public void setRotation(Quat4f o) {

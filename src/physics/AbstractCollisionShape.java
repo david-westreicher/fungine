@@ -12,21 +12,12 @@ import org.ode4j.ode.OdeHelper;
 import util.MathHelper;
 import world.GameObject;
 
-import com.bulletphysics.collision.shapes.CollisionShape;
-
 public abstract class AbstractCollisionShape {
-
-	public abstract CollisionShape getBulletShape();
 
 	public abstract DGeom getOdeShape(DWorld world, DSpace space, GameObject go);
 
 	public static abstract class OdeShape extends AbstractCollisionShape {
 		protected float ODE_SCALE = OdePhysics.ODE_SCALE;
-
-		@Override
-		public CollisionShape getBulletShape() {
-			return null;
-		}
 
 		@Override
 		public DGeom getOdeShape(DWorld world, DSpace space, GameObject go) {

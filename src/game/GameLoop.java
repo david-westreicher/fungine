@@ -47,7 +47,7 @@ public class GameLoop extends RepeatedRunnable {
 	@Override
 	public void startPause() {
 		super.startPause();
-		if(mechanics!=null)
+		if (mechanics != null)
 			mechanics.restart();
 	}
 

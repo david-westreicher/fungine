@@ -20,8 +20,8 @@ public class PhysicsData {
 	}
 
 	public void setLocomoted(GameObject body, Joint jA, Joint jB, Joint jKneeA,
-			Joint jKneeB, GameObject jFootA, GameObject jFootB,
-			Joint jHeelA, Joint jHeelB, GameObject floor) {
+			Joint jKneeB, GameObject jFootA, GameObject jFootB, Joint jHeelA,
+			Joint jHeelB, GameObject floor) {
 		locomotion = new LocomotionData(body, jA, jB, jKneeA, jKneeB, jFootA,
 				jFootB, jHeelA, jHeelB, floor);
 	}

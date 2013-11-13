@@ -7,7 +7,6 @@ import javax.script.CompiledScript;
 import javax.script.ScriptException;
 
 import physics.AbstractPhysics;
-import physics.BulletPhysics;
 import script.GameScript;
 import script.Script;
 import settings.Settings;

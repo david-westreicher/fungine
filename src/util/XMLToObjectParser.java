@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.vecmath.Vector3f;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -14,8 +13,6 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import physics.AbstractCollisionShape;
-import physics.HeightfieldTerrainShape;
-import physics.BulletPhysics;
 import rendering.AnimationRenderer;
 import rendering.ChunkRenderer;
 import rendering.ModelRenderer;
@@ -25,10 +22,6 @@ import rendering.VoxelWorldRenderer;
 import script.GameScript;
 import settings.Settings;
 import world.GameObjectType;
-
-import com.bulletphysics.collision.shapes.BoxShape;
-import com.bulletphysics.collision.shapes.CapsuleShape;
-import com.bulletphysics.collision.shapes.SphereShape;
 
 public class XMLToObjectParser extends DefaultHandler {
 	private GameObjectType currentObject;
