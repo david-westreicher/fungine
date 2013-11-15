@@ -9,6 +9,7 @@ import javax.vecmath.Vector3f;
 
 import physics.OdePhysics;
 import physics.OdePhysics.CollisionCallback;
+import util.Log;
 
 public class LocomotionData {
 	public GameObject body;
@@ -63,11 +64,11 @@ public class LocomotionData {
 	}
 
 	public void addState(float jA, float jB, float jKneeA, float jKneeB,
-			float jHeelA, float jHeelB) {
-		Objective objective = (stateVals.size() % 2 == 0) ? new TimeObjective(
-				(int) (35 / (0.04f * OdePhysics.ITER_PER_FRAME)))
+			float jHeelA, float jHeelB, float time) {
+		Objective objective = (time != 0) ? new TimeObjective((int) (time
+				* (OdePhysics.STEPSIZE) / (0.02f / 60f)))
 				: new ContactObjective();
-		stateVals.add(new State(new float[] { 0, jA, jB, jKneeA, jKneeB,
+		stateVals.add(new State(new float[] { -0.f, jA, jB, jKneeA, jKneeB,
 				jHeelA, jHeelB }, objective));
 	}
 
@@ -86,8 +87,8 @@ public class LocomotionData {
 			// Log.log(this, currentState,
 			// ((TimeObjective) (state.objective)).remaining());
 		} else {
-			// Log.log(this, currentState);
 		}
+		Log.log(this, currentState);
 		if (state.objective()) {
 			state.reset();
 			currentState = (currentState + 1) % stateVals.size();
@@ -181,30 +182,23 @@ public class LocomotionData {
 	}
 
 	public static class TimeObjective implements Objective {
-		public int ticks = 0;
+		public int ticks;
 		public int oldTick;
-		private boolean reset = true;
 
 		public TimeObjective(int ticks) {
 			this.ticks = ticks;
-		}
-
-		public int remaining() {
-			return ticks - (Game.INSTANCE.loop.tick - oldTick);
+			oldTick = ticks;
 		}
 
 		@Override
 		public boolean isMet() {
-			if (reset) {
-				reset = false;
-				oldTick = Game.INSTANCE.loop.tick;
-			}
-			return (Game.INSTANCE.loop.tick - oldTick) > ticks;
+			Log.log(this, ticks);
+			return --ticks <= 0;
 		}
 
 		@Override
 		public void reset() {
-			reset = true;
+			ticks = oldTick;
 		}
 	}
 

@@ -1,5 +1,7 @@
 package physics;
 
+import game.Game;
+
 import java.util.Map;
 
 import javax.vecmath.Vector3f;
@@ -15,14 +17,15 @@ import world.Joint.Type;
 import world.LocomotionData;
 
 public class OdeLocomotion {
-	private static final double KP = 3.5;
-	private static final double KD = 2;
-	private static final float CV = 1800f;
-	private static final float CD = 0.02f;
+	private static final double KP = 4;
+	private static final double KD = KP / 1.5;
+	private static final float CV = 3000f;
+	private static final float CD = 0;
 	private static float calcAnlge;
 	private static float angleRate;
 	private static Vector3f tmp2 = new Vector3f();
 	private static Vector3f up = new Vector3f(0, 1, 0);
+	private static float maxTorque;
 
 	public static void locomote(Map<Joint, DJoint> jointMap,
 			LocomotionData loc, DBody dBody) {
@@ -47,7 +50,7 @@ public class OdeLocomotion {
 					propDerivControl(j, target, jointMap.get(j), null, null);
 			}
 		((DHingeJoint) jointMap.get(stanceHip))
-				.addTorque((-swingHipTorque - torsoTorque));
+				.addTorque(capTorque(-swingHipTorque - torsoTorque));
 		loc.step();
 	}
 
@@ -55,11 +58,13 @@ public class OdeLocomotion {
 			float currentTarget) {
 		float v = loc.getV();
 		float d = loc.getD();
-		Log.log(OdeLocomotion.class, loc.currentState, d, v, calcAnlge);
+		//if (Game.INSTANCE.loop.tick % (Game.INSTANCE.loop.TICKS_PER_SECOND / 2) == 0)
+		//	Log.log(OdeLocomotion.class, loc.currentState, d, v, calcAnlge,
+		//			maxTorque);
 		if (loc.currentState % 2 == 0)
-			return currentTarget + CD * d + CV * v;
+			return currentTarget + CD * d * Math.signum(CV) + CV * v;
 		else
-			return currentTarget + CD * d + -CV * v;
+			return currentTarget;// + 0 * d + CV * v;
 	}
 
 	private static float propDerivControl(Joint j, double currentTarget,
@@ -77,11 +82,17 @@ public class OdeLocomotion {
 			double angleRate1 = hinge.getAngleRate()
 					+ (body == null ? 0 : angleRate);
 			torque = (float) (KP * (currentTarget - angle1) - KD * angleRate1);
-			hinge.addTorque(torque);
+			hinge.addTorque(capTorque(torque));
 			return torque;
 		default:
 			return 0;
 		}
+	}
+
+	private static double capTorque(float torque) {
+		if (Math.abs(torque) > maxTorque)
+			maxTorque = Math.abs(torque);
+		return Math.min(Math.max(-40, torque), 40);
 	}
 
 	private static float calcAngle(GameObject go) {

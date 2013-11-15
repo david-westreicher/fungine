@@ -33,7 +33,7 @@ import world.LocomotionData;
 public class OdePhysics implements AbstractPhysics {
 	protected static final int MAX_CONTACTS = 100;
 	public static final float ODE_SCALE = 1f;
-	public static final int ITER_PER_FRAME = 50;
+	public static final float STEPSIZE = 0.02f / 60f;
 	private DSpace space;
 	private DWorld world;
 	private DJointGroup contactJoints = OdeHelper.createJointGroup();
@@ -48,9 +48,8 @@ public class OdePhysics implements AbstractPhysics {
 			DContactBuffer contacts = new DContactBuffer(MAX_CONTACTS);
 			for (int i = 0; i < MAX_CONTACTS; i++) {
 				DContact contact = contacts.get(i);
-				contact.surface.mode = OdeMath.dContactApprox0;
-				contact.surface.mu = 0.65;
-				contact.surface.mu2 = 0;
+				contact.surface.mode = OdeMath.dContactApprox1;
+				contact.surface.mu = 400;
 			}
 			int contactNum = OdeHelper.collide(o1, o2, 10,
 					contacts.getGeomBuffer());
@@ -65,11 +64,11 @@ public class OdePhysics implements AbstractPhysics {
 						contactJoints, contacts.get(i));
 				joint.attach(o1.getBody(), o2.getBody());
 			}
-			if (collWatch != null && collWatch[0] == o2 && maxDepth > 0.00001) {
+			if (collWatch != null && collWatch[0] == o2 && maxDepth > 0.001) {
 				Game.INSTANCE.loop.renderer.addDebugLine(
 						maxPos.toFloatArray(),
 						new float[] { (float) maxPos.get(0),
-								(float) (maxPos.get(1) + maxDepth) * 10,
+								(float) (maxPos.get(1) + maxDepth * 1000),
 								(float) maxPos.get(2) });
 				((CollisionCallback) collWatch[1]).call(
 						(GameObject) collWatch[2], (GameObject) collWatch[3]);
@@ -81,8 +80,10 @@ public class OdePhysics implements AbstractPhysics {
 		OdeHelper.initODE2(0);
 		world = OdeHelper.createWorld();
 		world.setGravity(0, -0.5, 0);
-		world.setCFM(0.005f);
-		world.setERP(0.2);
+		float kd = 1;
+		float kp = 1000f;
+		world.setCFM(1.0f / (STEPSIZE * kp + kd));
+		world.setERP(STEPSIZE * kp / (STEPSIZE * kp + kd));
 		// world.setAutoDisableFlag(true);
 		// world.setContactMaxCorrectingVel(0.1);
 		// world.setContactSurfaceLayer(0.001);
@@ -100,17 +101,21 @@ public class OdePhysics implements AbstractPhysics {
 	public void update(Map<String, List<GameObject>> objs) {
 		addNewGeomJoints(objs);
 
-		for (int i = 0; i < ITER_PER_FRAME; i++) {
+		for (int i = 0; i < GameLoop.TICKS_PER_SECOND/2; i++) {
 			updateForces();
 			space.collide(null, collideCallBack);
 			for (LocomotionData loc : locomoted) {
 				OdeLocomotion.locomote(jointMap, loc, bodyMap.get(loc.body)
 						.getBody());
 			}
-			world.step(0.04f / GameLoop.TICKS_PER_SECOND);
+			world.step(STEPSIZE);
 			contactJoints.empty();
+			updateRotPos();
 		}
 
+	}
+
+	private void updateRotPos() {
 		for (GameObject go : bodyMap.keySet()) {
 			DGeom geom = bodyMap.get(go);
 			go.setPos(geom.getPosition().toFloatArray(), 1.0f / ODE_SCALE);
