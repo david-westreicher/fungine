@@ -101,14 +101,16 @@ public class Game {
 			System.err.println(e.getMessage());
 			e.printStackTrace();
 		}
-		// Util.sleep(1000);
+		if (Settings.LOW_GRAPHICS)
+			Util.sleep(1000);
 		loop.endPause();
 	}
 
 	public void addComponent(String c) {
 		c = c.toLowerCase();
 		if (c.equals("deferredrenderer")) {
-			loop.renderer = new DeferredRenderer();
+			loop.renderer = Settings.LOW_GRAPHICS ? new RenderUpdater()
+					: new DeferredRenderer();
 		} else if (c.equals("skinrenderer")) {
 			loop.renderer = new TestSkinningRenderer();
 		} else if (c.equals("gamemechanics")) {

@@ -11,6 +11,7 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
 import manager.UberManager;
+import settings.Settings;
 import shader.Shader;
 import shader.ShaderScript;
 import util.Log;
@@ -24,7 +25,7 @@ import com.jogamp.common.nio.Buffers;
 public class ModelRenderer extends GameObjectRenderer {
 	private static final int NUM_RENDERED_INST = 30;
 
-	public int drawMode = GL2.GL_TRIANGLES;;
+	public int drawMode = GL2.GL_TRIANGLES;
 	protected int[] vboVertices = new int[1];
 	private int[] vboIndices;
 	protected int[] vboNormals = new int[1];
@@ -52,7 +53,7 @@ public class ModelRenderer extends GameObjectRenderer {
 	public boolean doubleSided = false;
 
 	public ModelRenderer() {
-		super(true);
+		super(!Settings.LOW_GRAPHICS);
 	}
 
 	public ModelRenderer(String s, boolean flippedCullface) {
@@ -76,14 +77,14 @@ public class ModelRenderer extends GameObjectRenderer {
 
 	public ModelRenderer(final FloatBuffer vertices, final FloatBuffer normals,
 			FloatBuffer colors) {
-		super(true);
+		super(!Settings.LOW_GRAPHICS);
 		init(vertices, normals, colors, null, null, null);
 	}
 
 	public ModelRenderer(FloatBuffer vertices, FloatBuffer normals,
 			FloatBuffer uvs, List<Material> materials, FloatBuffer weights,
 			FloatBuffer boneIndices, IntBuffer[] indices) {
-		super(true);
+		super(!Settings.LOW_GRAPHICS);
 		this.materials = materials;
 		init(vertices, normals, null, uvs, weights, boneIndices, indices);
 		// TODO Auto-generated constructor stub

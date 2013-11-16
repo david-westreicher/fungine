@@ -3,7 +3,6 @@ package settings;
 import java.io.File;
 
 public class Settings {
-
 	public static String RESSOURCE_FOLDER = "ressources" + File.separator;
 	public static String OBJECTS_XML = "objects.xml";
 	public static String MAIN_SCRIPT = "main.js";
@@ -16,4 +15,5 @@ public class Settings {
 	public static boolean VR = STEREO;
 	public static boolean USE_BROWSER = false;
 	public static boolean SHOW_STATUS = true;
+	public static final boolean LOW_GRAPHICS = true;
 }

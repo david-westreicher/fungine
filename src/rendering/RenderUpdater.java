@@ -434,19 +434,22 @@ public class RenderUpdater implements Updatable, GLEventListener {
 			else
 				for (GameObject go : objs) {
 					cgo = go;
-					/*
-					 * gl.glPushMatrix(); transform(goType, go);
-					 * 
-					 * gl.glMatrixMode(GL.GL_TEXTURE);
-					 * gl.glActiveTexture(GL.GL_TEXTURE7); gl.glPushMatrix();
-					 * transform(goType, go);
-					 * gl.glActiveTexture(GL.GL_TEXTURE0);
-					 */
-					renderer.draw(gl);
-					/*
-					 * gl.glPopMatrix(); gl.glMatrixMode(GL2.GL_MODELVIEW);
-					 * gl.glPopMatrix();
-					 */
+					gl.glColor3f(go.color[0], go.color[1], go.color[2]);
+					gl.glPushMatrix();
+					transform(goType, go);
+
+					gl.glMatrixMode(GL.GL_TEXTURE);
+					gl.glActiveTexture(GL.GL_TEXTURE7);
+					gl.glPushMatrix();
+					transform(goType, go);
+					gl.glActiveTexture(GL.GL_TEXTURE0);
+
+					renderer.drawSimple(gl);
+
+					gl.glPopMatrix();
+					gl.glMatrixMode(GL2.GL_MODELVIEW);
+					gl.glPopMatrix();
+
 				}
 			renderer.end(gl);
 		}
@@ -454,6 +457,42 @@ public class RenderUpdater implements Updatable, GLEventListener {
 
 	private float toDegree(float f) {
 		return (float) (f * 180 / Math.PI);
+	}
+
+	private void transform(GameObjectType goType, GameObject go) {
+		if (USE_OBJECT_INTERP) {
+			// interp
+			float xSpeed = go.pos[0] - go.oldPos[0];
+			float ySpeed = go.pos[1] - go.oldPos[1];
+			float zSpeed = go.pos[2] - go.oldPos[2];
+			// TODO new interp rotation float rotSpeed =
+			// go.rotation - go.oldRotation;
+			gl.glTranslatef(go.pos[0] + xSpeed * interp, go.pos[1] + ySpeed
+					* interp, go.pos[2] + zSpeed * interp);
+		} else
+			gl.glTranslatef(go.pos[0], go.pos[1], go.pos[2]);
+		/*
+		 * gl.glRotatef(toDegree(go.angle), go.rotation[0], go.rotation[1],
+		 * go.rotation[2]);
+		 */
+		if (goType.shape == null) {
+			gl.glRotatef(toDegree(go.rotation[0]), -1, 0, 0);
+			gl.glRotatef(toDegree(go.rotation[1]), 0, -1, 0);
+			gl.glRotatef(toDegree(go.rotation[2]), 0, 0, -1);
+		} else {
+			// interpolationQuat.set(go.oldQuat);
+			// interpolationQuat.interpolate(go.quat, interp);
+			// interpolationAxisAngle.set(interpolationQuat);
+			// gl.glRotatef(
+			// toDegree(interpolationAxisAngle.angle),
+			// interpolationAxisAngle.x,
+			// interpolationAxisAngle.y,
+			// interpolationAxisAngle.z);
+			gl.glRotatef(toDegree(go.angle), go.rotation[0], go.rotation[1],
+					go.rotation[2]);
+		}
+		gl.glScalef(go.size[0], go.size[1], go.size[2]);
+
 	}
 
 	protected void renderObjects(boolean depthOnly) {
