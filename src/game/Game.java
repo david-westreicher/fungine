@@ -118,8 +118,7 @@ public class Game {
 		} else if (c.equals("sound")) {
 			loop.sound = new SoundManager();
 		} else if (c.equals("physics")) {
-			loop.mechanics.physics = new OdePhysics();// new
-														// BulletPhysics();
+			loop.mechanics.physics = new OdePhysics();
 		} else {
 			System.err.println("Can't add component: " + c);
 		}

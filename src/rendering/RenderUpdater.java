@@ -488,11 +488,27 @@ public class RenderUpdater implements Updatable, GLEventListener {
 			// interpolationAxisAngle.x,
 			// interpolationAxisAngle.y,
 			// interpolationAxisAngle.z);
-			gl.glRotatef(toDegree(go.angle), go.rotation[0], go.rotation[1],
-					go.rotation[2]);
+			gl.glMultMatrixf(to4x4Matrix(go.rotationMatrix), 0);
+			// gl.glRotatef(toDegree(go.angle), go.rotation[0], go.rotation[1],
+			// go.rotation[2]);
 		}
 		gl.glScalef(go.size[0], go.size[1], go.size[2]);
 
+	}
+
+	private float[] to4x4Matrix(Matrix3f m) {
+		float matrix[] = new float[16];
+		matrix[0] = m.m00;
+		matrix[4] = m.m01;
+		matrix[8] = m.m02;
+		matrix[1] = m.m10;
+		matrix[5] = m.m11;
+		matrix[9] = m.m12;
+		matrix[2] = m.m20;
+		matrix[6] = m.m21;
+		matrix[10] = m.m22;
+		matrix[15] = 1;
+		return matrix;
 	}
 
 	protected void renderObjects(boolean depthOnly) {
@@ -549,7 +565,8 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		// gl.glEnable(GL2.GL_POINT_SMOOTH);
 		gl.glEnable(GL2.GL_VERTEX_PROGRAM_POINT_SIZE);
 		gl.glPointSize(10);
-		UberManager.initializeShaders();
+		if (!Settings.LOW_GRAPHICS)
+			UberManager.initializeShaders();
 	}
 
 	public void setProjection(int width, int height) {

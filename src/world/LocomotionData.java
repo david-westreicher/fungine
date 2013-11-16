@@ -66,7 +66,7 @@ public class LocomotionData {
 	public void addState(float jA, float jB, float jKneeA, float jKneeB,
 			float jHeelA, float jHeelB, float time) {
 		Objective objective = (time != 0) ? new TimeObjective((int) (time
-				* (OdePhysics.STEPSIZE) / (0.02f / 60f)))
+				* (0.02f / 60f) / (OdePhysics.STEPSIZE)))
 				: new ContactObjective();
 		stateVals.add(new State(new float[] { -0.f, jA, jB, jKneeA, jKneeB,
 				jHeelA, jHeelB }, objective));
@@ -83,12 +83,7 @@ public class LocomotionData {
 
 	public void step() {
 		State state = stateVals.get(currentState);
-		if (state.objective instanceof TimeObjective) {
-			// Log.log(this, currentState,
-			// ((TimeObjective) (state.objective)).remaining());
-		} else {
-		}
-		Log.log(this, currentState);
+		// Log.log(this, currentState);
 		if (state.objective()) {
 			state.reset();
 			currentState = (currentState + 1) % stateVals.size();
@@ -188,11 +183,12 @@ public class LocomotionData {
 		public TimeObjective(int ticks) {
 			this.ticks = ticks;
 			oldTick = ticks;
+			Log.log(this, ticks);
 		}
 
 		@Override
 		public boolean isMet() {
-			Log.log(this, ticks);
+			// Log.log(this, ticks);
 			return --ticks <= 0;
 		}
 

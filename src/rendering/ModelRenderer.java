@@ -71,8 +71,10 @@ public class ModelRenderer extends GameObjectRenderer {
 			Log.log(this, "voxelizing: " + s);
 		}
 		this.name = s;
-		UberManager.getShader(Shader.TRANSFORM_TEXTURE);
-		UberManager.getShader(Shader.TRANSFORM_SIMPLE);
+		if (!Settings.LOW_GRAPHICS) {
+			UberManager.getShader(Shader.TRANSFORM_TEXTURE);
+			UberManager.getShader(Shader.TRANSFORM_SIMPLE);
+		}
 	}
 
 	public ModelRenderer(final FloatBuffer vertices, final FloatBuffer normals,
@@ -189,6 +191,8 @@ public class ModelRenderer extends GameObjectRenderer {
 
 	@Override
 	public void init(GL2 gl) {
+		if (Settings.LOW_GRAPHICS)
+			return;
 		transformShader = UberManager.getShader(Shader.TRANSFORM_TEXTURE);
 		simpleTransform = UberManager.getShader(Shader.TRANSFORM_SIMPLE);
 		depthOnly = ((RenderUpdater) Game.INSTANCE.loop.renderer).renderState.depthOnly;

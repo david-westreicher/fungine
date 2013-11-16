@@ -24,6 +24,7 @@ import org.ode4j.ode.DWorld;
 import org.ode4j.ode.OdeHelper;
 import org.ode4j.ode.OdeMath;
 
+import settings.Settings;
 import util.Log;
 import world.GameObject;
 import world.GameObjectType;
@@ -101,7 +102,8 @@ public class OdePhysics implements AbstractPhysics {
 	public void update(Map<String, List<GameObject>> objs) {
 		addNewGeomJoints(objs);
 
-		for (int i = 0; i < GameLoop.TICKS_PER_SECOND/2; i++) {
+		for (int i = 0; i < (Settings.LOW_GRAPHICS ? 1
+				: GameLoop.TICKS_PER_SECOND); i++) {
 			updateForces();
 			space.collide(null, collideCallBack);
 			for (LocomotionData loc : locomoted) {
