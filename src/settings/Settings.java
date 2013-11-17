@@ -15,5 +15,5 @@ public class Settings {
 	public static boolean VR = STEREO;
 	public static boolean USE_BROWSER = false;
 	public static boolean SHOW_STATUS = true;
-	public static final boolean LOW_GRAPHICS = true;
+	public static boolean LOW_GRAPHICS = true;
 }
