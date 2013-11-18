@@ -2,7 +2,7 @@ package vr;
 
 import javax.vecmath.Matrix3f;
 
-import com.sun.jna.Platform;
+import settings.Settings;
 
 public class VRFactory {
 
@@ -15,7 +15,7 @@ public class VRFactory {
 	}
 
 	public static VR createVR() {
-		if (Platform.isWindows())
+		if (Settings.IS_WINDOWS)
 			return new JRift();
 		return new RiftFetcher();
 	}

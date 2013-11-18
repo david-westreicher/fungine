@@ -14,6 +14,11 @@ import util.Util;
 import browser.AwesomiumHelper;
 
 public class OpenGLTest {
+	static {
+		if (!Settings.IS_WINDOWS)
+			// fix for jdk1.6 on linux
+			System.setProperty("java.awt.headless", "false");
+	}
 
 	public static void main(String[] args) {
 		Log.getInstance();

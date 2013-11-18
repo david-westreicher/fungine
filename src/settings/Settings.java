@@ -2,6 +2,8 @@ package settings;
 
 import java.io.File;
 
+import com.sun.jna.Platform;
+
 public class Settings {
 	public static String RESSOURCE_FOLDER = "ressources" + File.separator;
 	public static String OBJECTS_XML = "objects.xml";
@@ -16,4 +18,5 @@ public class Settings {
 	public static boolean USE_BROWSER = false;
 	public static boolean SHOW_STATUS = true;
 	public static boolean LOW_GRAPHICS = true;
+	public static final boolean IS_WINDOWS = Platform.isWindows();
 }

@@ -31,7 +31,7 @@ public class AwesomiumHelper {
 	private static final FungineCallback fungineCallback = new FungineCallback();
 
 	static {
-		if (com.sun.jna.Platform.isWindows()) {
+		if (Settings.IS_WINDOWS) {
 			// System.setProperty("jna.library.path", "libs\\\\awesomium");
 			INSTANCE = (Awesomium) Native.loadLibrary("Awesomium",
 					Awesomium.class);
