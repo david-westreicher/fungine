@@ -62,9 +62,13 @@ public class AwesomiumWrapper extends Browser {
 		if (Game.INSTANCE.world.gameObjects.size() == 0)
 			return;
 		Gson gson = new Gson();
-		String objectString = gson.toJson(Game.INSTANCE.world.gameObjects);
-		AwesomiumHelper.executeJavascript("window.sendReceiveObjects("
-				+ objectString + ")");
+		try {
+			String objectString = gson.toJson(Game.INSTANCE.world.gameObjects);
+			AwesomiumHelper.executeJavascript("window.sendReceiveObjects("
+					+ objectString + ")");
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		}
 		String settingsString = gson
 				.toJson(((RenderUpdater) Game.INSTANCE.loop.renderer)
 						.getSettings());
