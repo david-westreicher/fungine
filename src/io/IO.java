@@ -3,11 +3,14 @@ package io;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.channels.FileChannel;
 
 import settings.Settings;
 import util.Log;
@@ -18,9 +21,15 @@ import com.google.gson.GsonBuilder;
 
 public class IO {
 
+	public interface LineReplacer {
+
+		public String replace(String line);
+
+	}
+
 	public interface LineComparer {
 
-		void compareLine(String line, StringBuilder sb);
+		public void compareLine(String line, StringBuilder sb);
 
 	}
 
@@ -120,5 +129,70 @@ public class IO {
 
 	public static String readToString(File f) {
 		return readToString(read(f.getPath(), ""), null);
+	}
+
+	public static void copyFile(File sourceFile, File destFile) {
+		try {
+			if (!destFile.exists()) {
+				destFile.createNewFile();
+			}
+
+			FileChannel source = null;
+			FileChannel destination = null;
+
+			try {
+				source = new FileInputStream(sourceFile).getChannel();
+				destination = new FileOutputStream(destFile).getChannel();
+				destination.transferFrom(source, 0, source.size());
+			} finally {
+				if (source != null) {
+					source.close();
+				}
+				if (destination != null) {
+					destination.close();
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	public static void replace(String oldFileName, LineReplacer lineReplacer) {
+		String tmpFileName = oldFileName + "~";
+
+		BufferedReader br = null;
+		BufferedWriter bw = null;
+		try {
+			br = new BufferedReader(new FileReader(oldFileName));
+			bw = new BufferedWriter(new FileWriter(tmpFileName));
+			String line;
+			while ((line = br.readLine()) != null) {
+				bw.write(lineReplacer.replace(line) + "\n");
+			}
+		} catch (Exception e) {
+			return;
+		} finally {
+			try {
+				if (br != null)
+					br.close();
+			} catch (IOException e) {
+				//
+			}
+			try {
+				if (bw != null)
+					bw.close();
+			} catch (IOException e) {
+				//
+			}
+		}
+		// Once everything is complete, delete old file..
+		File oldFile = new File(oldFileName);
+		oldFile.delete();
+
+		// And rename tmp file's name to old file name
+		File newFile = new File(tmpFileName);
+		newFile.renameTo(oldFile);
+
 	}
 }

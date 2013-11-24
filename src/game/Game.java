@@ -13,6 +13,7 @@ import rendering.OpenGLRendering;
 import rendering.RenderUpdater;
 import rendering.SpriteRenderer;
 import rendering.TestSkinningRenderer;
+import script.JavaScript;
 import script.Script;
 import settings.Settings;
 import util.Factory;
@@ -63,6 +64,7 @@ public class Game {
 		Util.sleep(10);
 		loop.startPause();
 		loop.exit();
+		JavaScript.reset();
 		Script.restart();
 		SpriteRenderer.createList();
 		Util.sleep(100);
@@ -71,7 +73,7 @@ public class Game {
 
 	public void start() {
 		world = new World();
-		// world.add(cam);
+		world.add(cam);
 		parseXML();
 		try {
 			Script.executeFunction(Settings.INIT_SCRIPT, "init", this,

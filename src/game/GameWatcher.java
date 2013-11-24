@@ -7,6 +7,7 @@ import javax.script.ScriptException;
 import manager.UberManager;
 import rendering.ModelRenderer;
 import rendering.RenderUpdater;
+import script.JavaScript;
 import script.Script;
 import settings.Settings;
 import util.Factory;
@@ -38,7 +39,9 @@ public class GameWatcher implements FolderListener {
 			GameLoop gl = game.loop;
 			gl.startPause();
 			Util.sleep(10);
+			JavaScript.reset();
 			Game.INSTANCE.world = new World();
+			Game.INSTANCE.world.add(Game.INSTANCE.cam);
 			try {
 				Script.executeFunction(Settings.MAIN_SCRIPT, "init",
 						Game.INSTANCE, Factory.INSTANCE);
@@ -61,7 +64,8 @@ public class GameWatcher implements FolderListener {
 			s = s.replace("\\", "/");
 			Log.log(this, folder);
 			if (folder.equals("scripts")) {
-				game.getManager("script").changed(s);
+				JavaScript.scriptChanged(s);
+				// game.getManager("script").changed(s);
 			} else if (folder.equals("img")) {
 				UberManager.textureChanged(s);
 			} else if (folder.equals("shader")) {

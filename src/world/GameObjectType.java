@@ -14,6 +14,7 @@ public class GameObjectType extends VariableHolder {
 
 	public GameObjectRenderer renderer = null;
 	public GameScript script = null;
+	public String runtimeScript = null;
 	public AbstractCollisionShape shape = null;
 	public String name;
 

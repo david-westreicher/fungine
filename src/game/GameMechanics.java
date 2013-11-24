@@ -1,13 +1,14 @@
 package game;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.script.CompiledScript;
 import javax.script.ScriptException;
 
 import physics.AbstractPhysics;
-import script.GameScript;
+import script.JavaScript;
+import script.JavaScript.RuntimeScript;
 import script.Script;
 import settings.Settings;
 import util.Log;
@@ -18,6 +19,7 @@ public class GameMechanics implements Updatable {
 
 	public AbstractPhysics physics;
 	private boolean restartPhysics = false;
+	private List<Runnable> runnables = new ArrayList<Runnable>();
 
 	public GameMechanics() {
 	}
@@ -34,9 +36,12 @@ public class GameMechanics implements Updatable {
 		Map<String, List<GameObject>> objs = Game.INSTANCE.world
 				.getAllObjects();
 		final int tick = Game.INSTANCE.loop.tick;
+		for (Runnable r : runnables)
+			r.run();
+		runnables.clear();
 
 		Game.INSTANCE.input.update();
-		Game.INSTANCE.cam.beforeUpdate();
+
 		for (String type : objs.keySet()) {
 			for (GameObject go : objs.get(type)) {
 				go.beforeUpdate();
@@ -45,18 +50,18 @@ public class GameMechanics implements Updatable {
 
 		for (String type : objs.keySet()) {
 			GameObjectType goType = GameObjectType.getType(type);
-			GameScript script = goType.script;
-			CompiledScript cScript = null;
-			if (script != null) {
-				cScript = script.script;
-				cScript.getEngine().put("objects", objs.get(type));
-				try {
-					cScript.eval();
-				} catch (ScriptException e) {
-					System.err.println(e.getMessage());
-					e.printStackTrace();
-				}
-			}
+			RuntimeScript rt = JavaScript.getScript(goType.runtimeScript,
+					goType);
+			if (rt != null)
+				rt.update(objs.get(type));
+			/*
+			 * GameScript script = goType.script; CompiledScript cScript = null;
+			 * if (script != null) { cScript = script.script;
+			 * cScript.getEngine().put("objects", objs.get(type)); try {
+			 * cScript.eval(); } catch (ScriptException e) { Log.err(this,
+			 * goType.name); System.err.println(e.getMessage());
+			 * e.printStackTrace(); } }
+			 */
 		}
 
 		try {
@@ -87,5 +92,9 @@ public class GameMechanics implements Updatable {
 
 	public void restart() {
 		restartPhysics = true;
+	}
+
+	public void addRunnable(Runnable runnable) {
+		runnables.add(runnable);
 	}
 }
