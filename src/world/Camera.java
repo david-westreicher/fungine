@@ -10,11 +10,11 @@ public class Camera extends GameObject {
 	public float focus;
 
 	static {
-		new GameObjectType("cam");
+		new GameObjectType("Cam");
 	}
 
 	public Camera() {
-		super("cam");
+		super("Cam");
 		// setPos(Settings.WIDTH / 2, Settings.HEIGHT / 2, 500);
 		// rotation[2] = (float) (Math.PI / 2);
 	}

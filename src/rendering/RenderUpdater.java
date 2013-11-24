@@ -190,12 +190,12 @@ public class RenderUpdater implements Updatable, GLEventListener {
 			gl.glViewport(0, 0, width, height);
 		endOrthoRender();
 
-		if (Settings.IS_WINDOWS)
-			gl.glFlush();
-		else
-			// use glFinish() for faulty linux driver
-			// https://github.com/ValveSoftware/Source-1-Games/issues/765
-			gl.glFinish();
+		// if (Settings.IS_WINDOWS)
+		gl.glFlush();
+		// else
+		// use glFinish() for faulty linux driver
+		// https://github.com/ValveSoftware/Source-1-Games/issues/765
+		// gl.glFinish();
 	}
 
 	protected void setupLook(GameObject go) {

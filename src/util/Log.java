@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import sun.org.mozilla.javascript.NativeArray;
+
 public class Log {
 	private static Log instance;
 	private static List<String> excludedClasses = new ArrayList<String>();
@@ -25,6 +27,10 @@ public class Log {
 		System.out.println(time() + "Logger: " + o);
 	}
 
+	public static void log(NativeArray o) {
+		System.out.println(time() + "Logger: " + print(o));
+	}
+
 	private static String print(Object o) {
 		StringBuilder sb = new StringBuilder();
 		if (o instanceof int[] || o instanceof Integer[]) {
@@ -37,6 +43,11 @@ public class Log {
 					sb.append(oi[i] + ", ");
 			}
 			sb.append("]");
+		} else if (o instanceof List<?>) {
+			List<?> l = (List<?>) o;
+			for (Object obj : l) {
+				sb.append(obj + ", ");
+			}
 		} else
 			sb.append(o.toString());
 		return sb.toString();
@@ -50,8 +61,11 @@ public class Log {
 		String className = inst.getClass().getName();
 		if (!excludedClasses.contains(className)) {
 			System.out.print(time() + className + ": ");
-			for (int i = 0; i < o.length; i++)
-				System.out.print(o[i] + ((i < o.length - 1) ? ", " : ""));
+			if (o == null)
+				System.out.print("null");
+			else
+				for (int i = 0; i < o.length; i++)
+					System.out.print(o[i] + ((i < o.length - 1) ? ", " : ""));
 			System.out.print("\n");
 		}
 	}

@@ -26,8 +26,8 @@ public class MathHelper {
 		currPoints = clone(currPoints);
 		float[] pCentroid = mul(sum(realPoints), 1.0f / realPoints.length);
 		float[] qCentroid = mul(sum(currPoints), 1.0f / currPoints.length);
-		float pPrime[][] = add(realPoints, pCentroid, -1);
-		float qPrime[][] = add(currPoints, qCentroid, -1);
+		float pPrime[][] = addOld(realPoints, pCentroid, -1);
+		float qPrime[][] = addOld(currPoints, qCentroid, -1);
 		Matrix4f m = new Matrix4f();
 		Matrix4f p = new Matrix4f();
 		Matrix4f q = new Matrix4f();
@@ -101,7 +101,7 @@ public class MathHelper {
 		q.m32 = fs[0];
 	}
 
-	private static float[][] add(float[][] realPoints, float[] pCentroid,
+	private static float[][] addOld(float[][] realPoints, float[] pCentroid,
 			float f) {
 		for (int i = 0; i < realPoints.length; i++)
 			for (int j = 0; j < pCentroid.length; j++) {
@@ -169,4 +169,34 @@ public class MathHelper {
 		tmpMatrix.rotZ(rotation[2]);
 		rotationMatrix.mul(tmpMatrix);
 	}
+
+	public static void clamp(float[] vel, float min, float max) {
+		for (int i = 0; i < vel.length; i++)
+			vel[i] = Math.min(Math.max(vel[i], min), max);
+	}
+
+	public static float clamp(double d, double min, double max) {
+		return (float) Math.min(Math.max(d, min), max);
+	}
+
+	public static void set(double[] tmp2, double... set) {
+		for (int i = 0; i < tmp2.length; i++)
+			tmp2[i] = set[i];
+	}
+
+	public static void set(float[] tmp2, float... set) {
+		for (int i = 0; i < tmp2.length; i++)
+			tmp2[i] = set[i];
+	}
+
+	public static void add(float[] acc, double[] seperate, double f) {
+		for (int i = 0; i < acc.length; i++)
+			acc[i] += seperate[i] * f;
+	}
+
+	public static void add(float[] acc, float[] seperate, float f) {
+		for (int i = 0; i < acc.length; i++)
+			acc[i] += seperate[i] * f;
+	}
+
 }

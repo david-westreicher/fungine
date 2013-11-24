@@ -1,5 +1,7 @@
 package world;
 
+import game.Game;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,6 +20,11 @@ public class World {
 
 	public void remove(GameObject go) {
 		gameObjects.remove(go);
+	}
+
+	public void clear() {
+		gameObjects.clear();
+		add(Game.INSTANCE.cam);
 	}
 
 	public Map<String, List<GameObject>> getVisibleObjects() {
