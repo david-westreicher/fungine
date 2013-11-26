@@ -290,7 +290,7 @@ public class ModelRenderer extends GameObjectRenderer {
 			ShaderScript.setUniformMatrix4("bones",
 					TestSkinningRenderer.bonesUniform, true);
 		}
-		ShaderScript.setUniform("interp", RenderUpdater.interp);
+		ShaderScript.setUniform("interp", RenderUpdater.INTERP);
 
 		GameObjectType got = GameObjectType.getType(gos.get(0).getType());
 		if (!depthOnly)
