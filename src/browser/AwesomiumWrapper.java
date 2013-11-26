@@ -106,11 +106,6 @@ public class AwesomiumWrapper extends Browser {
 	}
 
 	@Override
-	public float getFPS() {
-		return 0;
-	}
-
-	@Override
 	public void dispose(GL2 gl) {
 		AwesomiumHelper.dispose();
 	}

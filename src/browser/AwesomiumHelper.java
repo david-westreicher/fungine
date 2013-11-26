@@ -36,7 +36,8 @@ public class AwesomiumHelper {
 			INSTANCE = (Awesomium) Native.loadLibrary("Awesomium",
 					Awesomium.class);
 		} else {
-			// System.setProperty("jna.library.path", "/usr/lib/awesomium-1.6.5");
+			// System.setProperty("jna.library.path",
+			// "/usr/lib/awesomium-1.6.5");
 			INSTANCE = (Awesomium) Native.loadLibrary("awesomium-1.6.5",
 					Awesomium.class);
 		}

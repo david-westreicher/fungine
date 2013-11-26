@@ -28,8 +28,6 @@ public abstract class Browser {
 
 	public abstract void render(GL2 gl);
 
-	public abstract float getFPS();
-
 	public abstract void dispose(GL2 gl);
 
 	public abstract boolean isDummy();
@@ -70,11 +68,6 @@ public abstract class Browser {
 
 		@Override
 		public void render(GL2 gl) {
-		}
-
-		@Override
-		public float getFPS() {
-			return 0;
 		}
 
 		@Override
