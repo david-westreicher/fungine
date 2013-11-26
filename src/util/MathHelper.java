@@ -19,13 +19,15 @@ public class MathHelper {
 	private static Vector3f tmpVector = new Vector3f();
 	private static Vector3f tmp2Vector = new Vector3f();
 	private static Matrix3f tmpMatrix = new Matrix3f();
+	private static final float[] tmpDist = new float[] { 0, 0, 0 };
+	private static final double[] tmpDist2 = new double[] { 0, 0, 0 };
 
 	public static Tansformation getTransformation(float realPoints[][],
 			float currPoints[][]) {
 		realPoints = clone(realPoints);
 		currPoints = clone(currPoints);
-		float[] pCentroid = mul(sum(realPoints), 1.0f / realPoints.length);
-		float[] qCentroid = mul(sum(currPoints), 1.0f / currPoints.length);
+		float[] pCentroid = mulOld(sum(realPoints), 1.0f / realPoints.length);
+		float[] qCentroid = mulOld(sum(currPoints), 1.0f / currPoints.length);
 		float pPrime[][] = addOld(realPoints, pCentroid, -1);
 		float qPrime[][] = addOld(currPoints, qCentroid, -1);
 		Matrix4f m = new Matrix4f();
@@ -110,7 +112,7 @@ public class MathHelper {
 		return realPoints;
 	}
 
-	private static float[] mul(float[] fs, float f) {
+	private static float[] mulOld(float[] fs, float f) {
 		for (int i = 0; i < fs.length; i++)
 			fs[i] *= f;
 		return fs;
@@ -184,19 +186,92 @@ public class MathHelper {
 			tmp2[i] = set[i];
 	}
 
+	public static void set(float[] tmp2, double... set) {
+		for (int i = 0; i < tmp2.length; i++)
+			tmp2[i] = (float) set[i];
+	}
+
 	public static void set(float[] tmp2, float... set) {
 		for (int i = 0; i < tmp2.length; i++)
 			tmp2[i] = set[i];
 	}
 
 	public static void add(float[] acc, double[] seperate, double f) {
-		for (int i = 0; i < acc.length; i++)
+		int max = Math.min(acc.length, seperate.length);
+		for (int i = 0; i < max; i++)
+			acc[i] += seperate[i] * f;
+	}
+
+	public static void add(double[] acc, double[] seperate, double f) {
+		int max = Math.min(acc.length, seperate.length);
+		for (int i = 0; i < max; i++)
 			acc[i] += seperate[i] * f;
 	}
 
 	public static void add(float[] acc, float[] seperate, float f) {
-		for (int i = 0; i < acc.length; i++)
+		int max = Math.min(acc.length, seperate.length);
+		for (int i = 0; i < max; i++)
 			acc[i] += seperate[i] * f;
+	}
+
+	public static void normalize(float[] diff) {
+		mul(diff, 1.0f / length(diff));
+	}
+
+	public static float length(float[] diff) {
+		float length = 0;
+		for (int i = 0; i < diff.length; i++) {
+			length += diff[i] * diff[i];
+		}
+		return (float) Math.sqrt(length);
+	}
+
+	public static double length(double[] diff) {
+		double length = 0;
+		for (int i = 0; i < diff.length; i++) {
+			length += diff[i] * diff[i];
+		}
+		return Math.sqrt(length);
+	}
+
+	public static float lengthSquared(float[] diff) {
+		float length = 0;
+		for (int i = 0; i < diff.length; i++) {
+			length += diff[i] * diff[i];
+		}
+		return length;
+	}
+
+	public static double lengthSquared(double[] diff) {
+		float length = 0;
+		for (int i = 0; i < diff.length; i++) {
+			length += diff[i] * diff[i];
+		}
+		return length;
+	}
+
+	public static float[] distance(float[] pos, float[] pos2) {
+		for (int i = 0; i < tmpDist.length; i++) {
+			tmpDist[i] = pos[i] - pos2[i];
+		}
+		return tmpDist;
+	}
+
+	public static double[] distance(double[] pos, double[] pos2) {
+		for (int i = 0; i < tmpDist2.length; i++) {
+			tmpDist2[i] = pos[i] - pos2[i];
+		}
+		return tmpDist2;
+	}
+
+	public static void mul(float[] vel, float f) {
+		for (int i = 0; i < vel.length; i++)
+			vel[i] *= f;
+	}
+
+	public static void mul(double[] vel, double f) {
+		for (int i = 0; i < vel.length; i++)
+			vel[i] *= f;
 	}
 
 }
