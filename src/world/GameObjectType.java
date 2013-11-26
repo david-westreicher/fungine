@@ -8,16 +8,16 @@ import physics.AbstractCollisionShape;
 import rendering.GameObjectRenderer;
 import rendering.RenderState;
 import script.GameScript;
+import script.JavaScript;
 
 public class GameObjectType extends VariableHolder {
 	private static Map<String, GameObjectType> allTypes = new HashMap<String, GameObjectType>();
 
 	public GameObjectRenderer renderer = null;
 	public GameScript script = null;
-	public String runtimeScript = null;
+	private String runtimeScript = null;
 	public AbstractCollisionShape shape = null;
 	public String name;
-
 	public float shininess = (float) (Math.random() * 2000);
 	public float reflective = 0;
 	public boolean airShader = false;
@@ -41,6 +41,15 @@ public class GameObjectType extends VariableHolder {
 
 	public static Collection<GameObjectType> getTypes() {
 		return allTypes.values();
+	}
+
+	public String getRuntimeScript() {
+		return runtimeScript;
+	}
+
+	public void setRuntimeScript(String runtimeScript) {
+		this.runtimeScript = runtimeScript;
+		JavaScript.compileIfNew(runtimeScript);
 	}
 
 }

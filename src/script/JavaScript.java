@@ -7,7 +7,8 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +22,7 @@ import world.GameObject;
 import world.GameObjectType;
 
 public class JavaScript {
-	private static Map<String, RuntimeScript> allScripts = new HashMap<String, RuntimeScript>();
+	private static Map<String, List<RuntimeScript>> allScripts = new HashMap<String, List<RuntimeScript>>();
 
 	public interface RuntimeScript {
 		public void update(List<GameObject> go);
@@ -29,18 +30,18 @@ public class JavaScript {
 		public void init(GameObjectType gameObjectType);
 
 		public void exit();
+
+		public String getGameObjectType();
 	}
 
-	public static RuntimeScript getScript(String name, GameObjectType goType) {
-		if (name == null)
-			return null;
-		RuntimeScript ret = allScripts.get("scripts/" + name);
-		if (ret == null)
-			compile(name, goType);
-		return ret;
-	}
+	/*
+	 * public static RuntimeScript getScript(String name, GameObjectType goType)
+	 * { if (name == null) return null; RuntimeScript ret =
+	 * allScripts.get("scripts/" + name); if (ret == null) compile(name,
+	 * goType); return ret; }
+	 */
 
-	private static void compile(String name, final GameObjectType goType) {
+	private static void compile(final String name) {
 		String fileToCompile = Settings.RESSOURCE_FOLDER + "scripts/";
 		// TODO copy file into temp file for compiling with different name
 		String newFile = Settings.RESSOURCE_FOLDER.replaceAll(File.separator,
@@ -60,19 +61,27 @@ public class JavaScript {
 						new URL[] { u }, RuntimeScript.class.getClassLoader());
 				Class<?> cls = classLoader.loadClass(newFile.replace(".java",
 						""));
-				Object inst = cls.newInstance();
-				Log.log(JavaScript.class,
-						Arrays.toString(inst.getClass().getInterfaces()));
-				if (inst instanceof RuntimeScript)
-					Log.log(JavaScript.class, "instance of RuntimeSCript");
-				if (inst instanceof Object)
-					Log.log(JavaScript.class, "instance of Object");
-				final RuntimeScript object = (RuntimeScript) inst;
-				allScripts.put("scripts/" + name, object);
+				final List<RuntimeScript> rts = new ArrayList<RuntimeScript>();
+				final List<GameObjectType> gots = new ArrayList<GameObjectType>();
+				for (GameObjectType got : GameObjectType.getTypes()) {
+					if (name.equals(got.getRuntimeScript())) {
+						rts.add((RuntimeScript) cls.newInstance());
+						gots.add(got);
+					}
+				}
+
+				final List<RuntimeScript> oldScripts = allScripts
+						.get("scripts/" + name);
+
 				Game.INSTANCE.loop.mechanics.addRunnable(new Runnable() {
 					@Override
 					public void run() {
-						object.init(goType);
+						if (oldScripts != null)
+							for (RuntimeScript rs : oldScripts)
+								rs.exit();
+						for (int i = 0; i < gots.size(); i++)
+							rts.get(i).init(gots.get(i));
+						allScripts.put("scripts/" + name, rts);
 					}
 				});
 			} catch (MalformedURLException e) {
@@ -104,15 +113,28 @@ public class JavaScript {
 	}
 
 	public static void scriptChanged(String s) {
-		RuntimeScript rt = allScripts.remove(s);
-		if (rt != null)
-			rt.exit();
+		if (!s.contains("scripts/games"))
+			compile(s.substring("scripts/".length()));
 	}
 
 	public static void reset() {
-		for (RuntimeScript r : allScripts.values())
-			r.exit();
+		for (List<RuntimeScript> listRS : allScripts.values())
+			for (RuntimeScript rs : listRS)
+				rs.exit();
 		allScripts.clear();
+	}
+
+	public static Collection<RuntimeScript> getScripts() {
+		List<RuntimeScript> all = new ArrayList<RuntimeScript>();
+		for (List<RuntimeScript> list : allScripts.values()) {
+			all.addAll(list);
+		}
+		return all;
+	}
+
+	public static void compileIfNew(String runtimeScript) {
+		if (allScripts.get("scripts/" + runtimeScript) == null)
+			scriptChanged("scripts/" + runtimeScript);
 	}
 
 }

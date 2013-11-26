@@ -13,7 +13,6 @@ import script.Script;
 import settings.Settings;
 import util.Log;
 import world.GameObject;
-import world.GameObjectType;
 
 public class GameMechanics implements Updatable {
 
@@ -48,20 +47,9 @@ public class GameMechanics implements Updatable {
 			}
 		}
 
-		for (String type : objs.keySet()) {
-			GameObjectType goType = GameObjectType.getType(type);
-			RuntimeScript rt = JavaScript.getScript(goType.runtimeScript,
-					goType);
-			if (rt != null)
-				rt.update(objs.get(type));
-			/*
-			 * GameScript script = goType.script; CompiledScript cScript = null;
-			 * if (script != null) { cScript = script.script;
-			 * cScript.getEngine().put("objects", objs.get(type)); try {
-			 * cScript.eval(); } catch (ScriptException e) { Log.err(this,
-			 * goType.name); System.err.println(e.getMessage());
-			 * e.printStackTrace(); } }
-			 */
+		for (RuntimeScript rs : JavaScript.getScripts()) {
+			String typeName = rs.getGameObjectType();
+			rs.update(typeName == null ? null : objs.get(typeName));
 		}
 
 		try {

@@ -21,7 +21,7 @@ public class Factory {
 		return null;
 	}
 
-	public GameObject createGameObject(String name) {
+	public static GameObject createGameObject(String name) {
 		if (name.equals(PointLight.LIGHT_OBJECT_TYPE_NAME))
 			return new PointLight();
 		if (name.equals(Joint.JOINT_OBJECT_TYPE_NAME))
