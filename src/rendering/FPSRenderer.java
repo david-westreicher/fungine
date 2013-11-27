@@ -13,7 +13,8 @@ public class FPSRenderer {
 	private ByteBuffer buf;
 
 	public FPSRenderer(TextureHelper textures, GL2 gl) {
-		textures.createTex("debugTexture", WIDTH, HEIGHT, false, GL2.GL_REPEAT);
+		textures.createTex("debugTexture", WIDTH, HEIGHT, false, GL2.GL_REPEAT,
+				false);
 		buf = ByteBuffer.allocate(HEIGHT * 4);
 	}
 

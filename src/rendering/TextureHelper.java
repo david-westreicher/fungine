@@ -20,18 +20,13 @@ public class TextureHelper {
 	private Map<String, int[]> textures = new HashMap<String, int[]>();
 
 	protected void createTex(String name, int width, int height,
-			boolean linear, int texparam) {
+			boolean linear, int texparam, boolean withFrameBuffer) {
 		GL2 gl = RenderUpdater.gl;
 		int[] fboId = new int[1];
 		int[] texId = new int[1];
-		// int[] depId = new int[1];
-		gl.glGenFramebuffers(1, fboId, 0);
+		if (withFrameBuffer)
+			gl.glGenFramebuffers(1, fboId, 0);
 		gl.glGenTextures(1, texId, 0);
-		// gl.glGenRenderbuffers(1, depId, 0);
-
-		// gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, depId[0]);
-		// gl.glRenderbufferStorage(GL2.GL_RENDERBUFFER, GL2.GL_DEPTH_COMPONENT,
-		// width, height);
 
 		gl.glBindTexture(GL.GL_TEXTURE_2D, texId[0]);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER,
@@ -44,24 +39,26 @@ public class TextureHelper {
 				GL.GL_BGRA, GL.GL_UNSIGNED_BYTE, null);
 
 		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, fboId[0]);
-		gl.glFramebufferTexture2D(GL2.GL_FRAMEBUFFER, GL2.GL_COLOR_ATTACHMENT0,
-				GL.GL_TEXTURE_2D, texId[0], 0);
-		// gl.glFramebufferRenderbuffer(GL2.GL_FRAMEBUFFER,
-		// GL2.GL_DEPTH_ATTACHMENT, GL2.GL_RENDERBUFFER, depId[0]);
+		if (withFrameBuffer)
+			gl.glFramebufferTexture2D(GL2.GL_FRAMEBUFFER,
+					GL2.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, texId[0], 0);
 
-		addTexture(name, new int[] { texId[0], fboId[0] });
-
-		int status = gl.glCheckFramebufferStatus(GL2.GL_FRAMEBUFFER);
-		if (status == GL2.GL_FRAMEBUFFER_COMPLETE) {
-			gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
-			Log.log(this, "Frame buffer object successfully created");
-		} else {
-			throw new IllegalStateException("Frame Buffer Oject not created.");
+		addTexture(name, new int[] { texId[0], withFrameBuffer ? fboId[0] : 0 });
+		if (withFrameBuffer) {
+			int status = gl.glCheckFramebufferStatus(GL2.GL_FRAMEBUFFER);
+			if (status == GL2.GL_FRAMEBUFFER_COMPLETE) {
+				gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
+				Log.log(this, "Frame buffer object successfully created");
+			} else {
+				throw new IllegalStateException(
+						"Frame Buffer Oject not created.");
+			}
 		}
 	}
 
 	public void createTex(String name) {
-		createTex(name, Settings.WIDTH, Settings.HEIGHT, true, GL2.GL_CLAMP);
+		createTex(name, Settings.WIDTH, Settings.HEIGHT, true, GL2.GL_CLAMP,
+				true);
 	}
 
 	public void createShadowFob(String name, int width, int height) {
@@ -165,7 +162,7 @@ public class TextureHelper {
 	public int[] getTextureInformation(String name) {
 		int[] ret = textures.get(name);
 		if (ret == null)
-			throw new RuntimeException("Can't find texture: " + name);
+			Log.err(this, "Can't find texture: " + name);
 		return ret;
 	}
 
@@ -174,5 +171,17 @@ public class TextureHelper {
 			throw new RuntimeException("Texture " + name + " already exists");
 		else
 			textures.put(name, fob);
+	}
+
+	public void dispose(GL2 gl) {
+		for (int[] inf : textures.values()) {
+			if (inf.length == 2 && inf[0] != 0) {
+				gl.glDeleteTextures(1, new int[] { inf[0] }, 0);
+				if (inf[1] != 0) {
+					gl.glDeleteFramebuffers(1, new int[] { inf[1] }, 0);
+				}
+			}
+		}
+		textures.clear();
 	}
 }

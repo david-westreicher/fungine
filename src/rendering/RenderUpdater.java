@@ -383,14 +383,9 @@ public class RenderUpdater implements Updatable, GLEventListener {
 
 	private void transform(GameObjectType goType, GameObject go) {
 		if (USE_OBJECT_INTERP) {
-			// interp
-			float xSpeed = go.pos[0] - go.oldPos[0];
-			float ySpeed = go.pos[1] - go.oldPos[1];
-			float zSpeed = go.pos[2] - go.oldPos[2];
-			// TODO new interp rotation float rotSpeed =
-			// go.rotation - go.oldRotation;
-			gl.glTranslatef(go.pos[0] + xSpeed * INTERP, go.pos[1] + ySpeed
-					* INTERP, go.pos[2] + zSpeed * INTERP);
+			float interp[] = MathHelper.interp(go.pos, go.oldPos, INTERP,
+					SMOOTHSTEP_INTERP);
+			gl.glTranslatef(interp[0], interp[1], interp[2]);
 		} else
 			gl.glTranslatef(go.pos[0], go.pos[1], go.pos[2]);
 		if (goType.shape == null) {
@@ -401,20 +396,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 			gl.glMultMatrixf(MathHelper.to4x4Matrix(go.rotationMatrix), 0);
 		}
 		gl.glScalef(go.size[0], go.size[1], go.size[2]);
-
-	}
-
-	protected void renderObjects(boolean depthOnly) {
-		renderState.depthOnly = depthOnly;
-		if (depthOnly) {
-			gl.glColorMask(false, false, false, false);
-		}
-		// render this shit
-		renderObjects(renderObjs);
-
-		if (depthOnly)
-			gl.glColorMask(true, true, true, true);
-		renderState.depthOnly = false;
 	}
 
 	public void renderObjects(Map<String, List<GameObject>> renderObjs) {
@@ -425,12 +406,14 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	}
 
 	protected void renderObjects() {
-		renderObjects(false);
+		renderObjects(renderObjs);
 	}
 
 	@Override
 	public void dispose(GLAutoDrawable arg0) {
 		gl = arg0.getGL().getGL2();
+		UberManager.clearNow();
+		textures.dispose(gl);
 		Log.log(this, "gl dispose");
 	}
 

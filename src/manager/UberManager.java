@@ -127,20 +127,24 @@ public class UberManager {
 		RenderUpdater.executeInOpenGLContext(new Runnable() {
 			@Override
 			public void run() {
-				for (String s : textures.keySet()) {
-					Log.log(UberManager.class, "destroying " + s);
-					textures.get(s).destroy(RenderUpdater.gl);
-				}
-				textures.clear();
+				clearNow();
 			}
 		});
+	}
+
+	public static void clearNow() {
+		for (String s : textures.keySet()) {
+			Log.log(UberManager.class, "destroying " + s);
+			textures.get(s).destroy(RenderUpdater.gl);
+		}
+		textures.clear();
 	}
 
 	public static final class Worker extends RepeatedRunnable {
 		private List<Runnable> jobs = new LinkedList<Runnable>();
 
 		public Worker() {
-			super("IO Loader");
+			super("Ubermanager Loader");
 		}
 
 		public void addJob(Runnable job) {

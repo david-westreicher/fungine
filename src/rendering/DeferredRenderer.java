@@ -157,7 +157,7 @@ public class DeferredRenderer extends RenderUpdater {
 			gl.glLoadIdentity();
 			super.setupLook(l);
 			setTextureMatrix();
-			super.renderObjects(true);
+			renderObjects(true);
 			gl.glMatrixMode(GL2.GL_PROJECTION);
 			gl.glPopMatrix();
 			gl.glMatrixMode(GL2.GL_MODELVIEW);
@@ -273,7 +273,8 @@ public class DeferredRenderer extends RenderUpdater {
 	}
 
 	public void renderObjects() {
-		if (!UberManager.areShaderInitialized(shader.Shader.values()))
+		if (textures.getTextureInformation("gbuffer") == null
+				|| !UberManager.areShaderInitialized(shader.Shader.values()))
 			return;
 		deferredRenderer = UberManager.getShader(shader.Shader.DEFERRED);
 		textureShader = UberManager.getShader(shader.Shader.TEXTURE);
@@ -529,7 +530,7 @@ public class DeferredRenderer extends RenderUpdater {
 		// TODO render only vertices without normals, uv, materials into depth
 		// buffer
 		if (DEPTH_FIRST)
-			super.renderObjects(true);
+			renderObjects(true);
 		deferredRenderer.execute(gl);
 		initShaderUniforms();
 		super.renderObjects();
@@ -575,6 +576,19 @@ public class DeferredRenderer extends RenderUpdater {
 		float width = super.width;
 		float height = super.height;
 		drawQuad(num, width, height, scale, offset);
+	}
+
+	protected void renderObjects(boolean depthOnly) {
+		renderState.depthOnly = depthOnly;
+		if (depthOnly) {
+			gl.glColorMask(false, false, false, false);
+		}
+		// render this shit
+		renderObjects(renderObjs);
+
+		if (depthOnly)
+			gl.glColorMask(true, true, true, true);
+		renderState.depthOnly = false;
 	}
 
 	private void drawQuad(int num, float width, float height, float scale,
