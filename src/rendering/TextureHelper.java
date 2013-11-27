@@ -19,7 +19,8 @@ import com.jogamp.opengl.util.texture.TextureIO;
 public class TextureHelper {
 	private Map<String, int[]> textures = new HashMap<String, int[]>();
 
-	protected void createTex(String name, int width, int height) {
+	protected void createTex(String name, int width, int height,
+			boolean linear, int texparam) {
 		GL2 gl = RenderUpdater.gl;
 		int[] fboId = new int[1];
 		int[] texId = new int[1];
@@ -34,14 +35,13 @@ public class TextureHelper {
 
 		gl.glBindTexture(GL.GL_TEXTURE_2D, texId[0]);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER,
-				GL.GL_LINEAR);
+				linear ? GL.GL_LINEAR : GL.GL_NEAREST);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER,
-				GL.GL_LINEAR);
-		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, GL2.GL_CLAMP);
-		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, GL2.GL_CLAMP);
-		gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA, width, height, 0,
-				GL.GL_RGBA, GL.GL_UNSIGNED_BYTE,
-				Buffers.newDirectByteBuffer(width * height * 4));
+				linear ? GL.GL_LINEAR : GL.GL_NEAREST);
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, texparam);
+		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, texparam);
+		gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA8, width, height, 0,
+				GL.GL_BGRA, GL.GL_UNSIGNED_BYTE, null);
 
 		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, fboId[0]);
 		gl.glFramebufferTexture2D(GL2.GL_FRAMEBUFFER, GL2.GL_COLOR_ATTACHMENT0,
@@ -61,7 +61,7 @@ public class TextureHelper {
 	}
 
 	public void createTex(String name) {
-		createTex(name, Settings.WIDTH, Settings.HEIGHT);
+		createTex(name, Settings.WIDTH, Settings.HEIGHT, true, GL2.GL_CLAMP);
 	}
 
 	public void createShadowFob(String name, int width, int height) {

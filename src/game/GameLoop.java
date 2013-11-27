@@ -23,6 +23,7 @@ public class GameLoop extends RepeatedRunnable {
 	public int tick = 0;
 	private boolean pauseLogic;
 	public long timePerTick;
+	public long timePerRender;
 
 	public GameLoop() {
 		super("GameLoopThread");
@@ -90,7 +91,9 @@ public class GameLoop extends RepeatedRunnable {
 			else
 				interpolation = (float) (System.nanoTime() + SKIP_TICKS - nextTick)
 						/ (float) (SKIP_TICKS);
+			long timePerRenderStart = System.currentTimeMillis();
 			renderer.update(interpolation);
+			timePerRender = System.currentTimeMillis() - timePerRenderStart;
 			renderloops++;
 			/*
 			 * } else { Thread.yield(); Util.sleep(1); }

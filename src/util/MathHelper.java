@@ -20,7 +20,7 @@ public class MathHelper {
 	private static Vector3f tmp2Vector = new Vector3f();
 	private static Matrix3f tmpMatrix = new Matrix3f();
 	private static final float[] tmpDist = new float[] { 0, 0, 0 };
-	private static final double[] tmpDist2 = new double[] { 0, 0, 0 };
+	private static double[] tmpDist2 = new double[] { 0, 0, 0 };
 
 	public static Tansformation getTransformation(float realPoints[][],
 			float currPoints[][]) {
@@ -258,6 +258,7 @@ public class MathHelper {
 	}
 
 	public static double[] distance(double[] pos, double[] pos2) {
+		tmpDist2 = tmpDist2.clone();
 		for (int i = 0; i < tmpDist2.length; i++) {
 			tmpDist2[i] = pos[i] - pos2[i];
 		}

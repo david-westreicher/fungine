@@ -68,6 +68,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	private boolean takeScreen = false;
 	protected TextureHelper textures = new TextureHelper();
 	private List<float[][]> debugLines = new LinkedList<float[][]>();
+	private FPSRenderer fpsRenderer;
 
 	public RenderUpdater() {
 		renderer = new OpenGLRendering(this);
@@ -244,27 +245,31 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	}
 
 	private void renderText() {
-
 		gl.glColor3f(1, 0, 0);
 		GameLoop loop = Game.INSTANCE.loop;
 		// text
-		renderStrings.add("Textures to load:  "
-				+ UberManager.getTexturesToLoad());
-		renderStrings.add("Process Queue   :  " + queue.size());
+		// renderStrings.add("Process Queue   :  " + queue.size());
 		renderStrings.add("Render-FPS: "
 				+ Util.roundDigits(loop.currentFPS.fps, 1));
 		renderStrings.add("Tick-FPS  :  "
 				+ Util.roundDigits(loop.currentTick.fps, 1));
 		renderStrings.add("TpT       :  " + loop.timePerTick + "ms");
 		renderStrings.add("#Objects  :  " + Game.INSTANCE.world.getObjectNum());
-		renderStrings.add("#Chunks   :  " + VoxelWorldRenderer.VISIBLE_CHUNKS);
+		renderStrings.add("Textures to load:  "
+				+ UberManager.getTexturesToLoad());
+		// renderStrings.add("#Chunks   :  " +
+		// VoxelWorldRenderer.VISIBLE_CHUNKS);
 
 		int i = 1;
 		for (String s : renderStrings) {
-			gl.glRasterPos2f(width * (Settings.STEREO ? 2 : 1) - 200, 15 * i++);
+			gl.glRasterPos2f(width * (Settings.STEREO ? 2 : 1) - 200,
+					15 * i++ + 80);
 			glut.glutBitmapString(GLUT.BITMAP_8_BY_13, s);
 		}
 		renderStrings.clear();
+
+		fpsRenderer.render(gl, textures, width, loop.timePerRender,
+				loop.timePerTick);
 	}
 
 	private void renderDebug() {
@@ -484,6 +489,8 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		gl.glPointSize(10);
 		if (!Settings.LOW_GRAPHICS)
 			UberManager.initializeShaders();
+
+		fpsRenderer = new FPSRenderer(textures, gl);
 	}
 
 	public void setProjection(int width, int height) {
@@ -541,7 +548,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	public static void createCallList(final Runnable r,
 			final CallBack<Integer> c) {
 		executeInOpenGLContext(new Runnable() {
-
 			@Override
 			public void run() {
 				int num = gl.glGenLists(1);

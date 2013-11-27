@@ -5,10 +5,14 @@ import javax.media.opengl.GL2;
 public class RenderUtil {
 
 	public static void drawRec(float[] bbox, GL2 gl) {
+		gl.glTexCoord2f(0, 0);
 		gl.glVertex3f(bbox[0], bbox[1], 0);
-		gl.glVertex3f(bbox[2], bbox[1], 0);
-		gl.glVertex3f(bbox[2], bbox[3], 0);
+		gl.glTexCoord2f(0, 1);
 		gl.glVertex3f(bbox[0], bbox[3], 0);
+		gl.glTexCoord2f(1, 1);
+		gl.glVertex3f(bbox[2], bbox[3], 0);
+		gl.glTexCoord2f(1, 0);
+		gl.glVertex3f(bbox[2], bbox[1], 0);
 	}
 
 	public static void drawSphere(float x, float y, float radius,
