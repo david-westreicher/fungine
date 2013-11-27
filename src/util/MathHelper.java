@@ -275,4 +275,32 @@ public class MathHelper {
 			vel[i] *= f;
 	}
 
+	public static float[] interp(float[] pos, float[] oldPos, float interp,
+			boolean smoothstep) {
+		float res[] = new float[3];
+		if (smoothstep)
+			interp = ((interp) * (interp) * (3 - 2 * (interp)));
+		for (int i = 0; i < 3; i++)
+			res[i] = pos[i] * interp + (oldPos[i] * (1 - interp));
+		return res;
+	}
+
+	public static float toDegree(float f) {
+		return (float) (f * 180 / Math.PI);
+	}
+
+	public static float[] to4x4Matrix(Matrix3f m) {
+		float matrix[] = new float[16];
+		matrix[0] = m.m00;
+		matrix[4] = m.m01;
+		matrix[8] = m.m02;
+		matrix[1] = m.m10;
+		matrix[5] = m.m11;
+		matrix[9] = m.m12;
+		matrix[2] = m.m20;
+		matrix[6] = m.m21;
+		matrix[10] = m.m22;
+		matrix[15] = 1;
+		return matrix;
+	}
 }

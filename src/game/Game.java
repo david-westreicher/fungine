@@ -11,7 +11,6 @@ import physics.OdePhysics;
 import rendering.DeferredRenderer;
 import rendering.OpenGLRendering;
 import rendering.RenderUpdater;
-import rendering.SpriteRenderer;
 import rendering.TestSkinningRenderer;
 import script.JavaScript;
 import script.Script;
@@ -66,7 +65,6 @@ public class Game {
 		loop.exit();
 		JavaScript.reset();
 		Script.restart();
-		SpriteRenderer.createList();
 		Util.sleep(100);
 		start();
 	}
@@ -150,11 +148,11 @@ public class Game {
 	}
 
 	public int getWidth() {
-		return ((RenderUpdater) loop.renderer).width;
+		return loop.renderer.width;
 	}
 
 	public int getHeight() {
-		return ((RenderUpdater) loop.renderer).height;
+		return loop.renderer.height;
 	}
 
 	public static Game getInstance() {

@@ -7,7 +7,6 @@ import java.nio.ByteBuffer;
 
 import javax.media.opengl.GL2;
 
-import rendering.RenderUpdater;
 import settings.Settings;
 import util.Log;
 
@@ -69,9 +68,8 @@ public class AwesomiumWrapper extends Browser {
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 		}
-		String settingsString = gson
-				.toJson(((RenderUpdater) Game.INSTANCE.loop.renderer)
-						.getSettings());
+		String settingsString = gson.toJson(Game.INSTANCE.loop.renderer
+				.getSettings());
 		AwesomiumHelper.executeJavascript("window.sendReceiveSettings("
 				+ settingsString + ")");
 	}

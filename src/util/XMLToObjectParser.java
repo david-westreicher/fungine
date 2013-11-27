@@ -13,10 +13,8 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import physics.AbstractCollisionShape;
-import rendering.AnimationRenderer;
 import rendering.ChunkRenderer;
 import rendering.ModelRenderer;
-import rendering.SpriteRenderer;
 import rendering.TerrainRenderer;
 import rendering.VoxelWorldRenderer;
 import script.GameScript;
@@ -95,21 +93,15 @@ public class XMLToObjectParser extends DefaultHandler {
 					currentObject.renderer = new VoxelTerrainRenderer();
 				else if (s.equals("voxelTerrain"))
 					currentObject.renderer = new VoxelTerrainRenderer();
-				else if (s.split("/")[0].equals("img"))
-					currentObject.renderer = new SpriteRenderer(split[0]);
 				if (split.length > 1) {
-					if (split[1].equals("anim"))
-						currentObject.renderer = new AnimationRenderer(split[0]);
-					else if (split[1].equals("obj"))
+					if (split[1].equals("obj"))
 						currentObject.renderer = new ModelRenderer(split[0],
 								split.length == 3, split.length == 4);
 					else if (split[1].equals("vox")) {
 						ChunkRenderer cr = new ChunkRenderer(split[0]);
 						currentObject.renderer = cr;
-					} else if (split[1].equals("voxWorld")) {
+					} else if (split[1].equals("voxWorld"))
 						currentObject.renderer = new VoxelWorldRenderer();
-					} else if (split[1].equals("md5"))
-						currentObject.renderer = new Md5Renderer(split[0]);
 				}
 			} else if (currentTag.equals("val")) {
 				currentObject.set(currentAtt.get("name"), s);

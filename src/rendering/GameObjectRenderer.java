@@ -21,8 +21,6 @@ public abstract class GameObjectRenderer {
 
 	public abstract void init(GL2 gl);
 
-	public abstract void draw(GL2 gl);
-
 	public abstract void end(GL2 gl);
 
 	public void draw(GL2 gl, List<GameObject> objs, float interp) {

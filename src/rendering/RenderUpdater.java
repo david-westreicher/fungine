@@ -24,6 +24,7 @@ import manager.UberManager;
 import settings.Settings;
 import util.Log;
 import util.Material;
+import util.MathHelper;
 import util.Util;
 import vr.Rift;
 import world.Camera;
@@ -37,38 +38,36 @@ import com.jogamp.opengl.util.awt.Screenshot;
 import com.jogamp.opengl.util.gl2.GLUT;
 
 public class RenderUpdater implements Updatable, GLEventListener {
-	protected static final boolean USE_OBJECT_INTERP = false;
-	protected static final boolean SMOOTHSTEP_INTERP = false;
-	public static float ZFAR_DISTANCE = 100;// TODO changed from 5000
-	protected static final float ZNEAR = 0.01f;
-	protected static final float DEBUG_SIZE = 250f;
+	private static final boolean USE_OBJECT_INTERP = false;
+	private static final boolean SMOOTHSTEP_INTERP = false;
+	private static final float ZNEAR = 0.01f;
+	private static final float DEBUG_SIZE = 250f;
+	private static final Browser browser = new AwesomiumWrapper();
+	private static final List<Runnable> queue = new ArrayList<Runnable>();
+	private static final List<Runnable> contextExecutions = new ArrayList<Runnable>();
+	private List<float[][]> debugLines = new LinkedList<float[][]>();
+	private List<String> excludedGameObjects = new ArrayList<String>();
+	private boolean takeScreen = false;
+	private FPSRenderer fpsRenderer;
+	private float debugAngle;
+	private OpenGLRendering renderer;
+	protected static float INTERP;
+	protected Map<String, List<GameObject>> renderObjs;
+	protected Camera cam = Game.INSTANCE.cam;
+	protected TextureHelper textures = new TextureHelper();
+	public static GL2 gl;
+	public static GLUT glut = new GLUT();
 	public static float EYE_GAP = 0.23f;
 	public static float ZFar;
 	public static float ZNear;
 	public static double FOV_Y = 69;
-	private OpenGLRendering renderer;
-	public static GL2 gl;
-	public static GLUT glut = new GLUT();
+	public static float ZFAR_DISTANCE = 100;// TODO changed from 5000
 	public final static GLU glu = new GLU();
-	protected static float INTERP;
-	private static Vector3f tmpVector3f = new Vector3f();
-	private static Vector3f tmp2Vector3f = new Vector3f();
-	protected List<String> renderStrings = new ArrayList<String>();
-	public static GameObject cgo = null;
 	public int width;
 	public int height;
-	protected Map<String, List<GameObject>> renderObjs;
-	protected Camera cam = Game.INSTANCE.cam;
-	private List<String> excludedGameObjects = new ArrayList<String>();
-	private float debugAngle;
-	public static Browser browser = new AwesomiumWrapper();
-	private static List<Runnable> queue = new ArrayList<Runnable>();
-	private static List<Runnable> contextExecutions = new ArrayList<Runnable>();
 	public RenderState renderState = new RenderState();
-	private boolean takeScreen = false;
-	protected TextureHelper textures = new TextureHelper();
-	private List<float[][]> debugLines = new LinkedList<float[][]>();
-	private FPSRenderer fpsRenderer;
+	private static Vector3f tmpVector3f = new Vector3f();
+	private static Vector3f tmp2Vector3f = new Vector3f();
 
 	public RenderUpdater() {
 		renderer = new OpenGLRendering(this);
@@ -185,12 +184,14 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	}
 
 	protected void setupLook(GameObject go) {
-		float pos[] = interp(go.pos, go.oldPos, INTERP);
+		float pos[] = MathHelper.interp(go.pos, go.oldPos, INTERP,
+				SMOOTHSTEP_INTERP);
 		setupLook(pos, go.rotationMatrix);
 	}
 
 	protected void setupLook(GameObject go, Matrix3f rot) {
-		float pos[] = interp(go.pos, go.oldPos, INTERP);
+		float pos[] = MathHelper.interp(go.pos, go.oldPos, INTERP,
+				SMOOTHSTEP_INTERP);
 		setupLook(pos, rot);
 	}
 
@@ -202,15 +203,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		glu.gluLookAt(pos[0], pos[1], pos[2], pos[0] + tmpVector3f.x, pos[1]
 				+ tmpVector3f.y, pos[2] + tmpVector3f.z, tmp2Vector3f.x,
 				tmp2Vector3f.y, tmp2Vector3f.z);
-	}
-
-	private float[] interp(float[] pos, float[] oldPos, float interp) {
-		float res[] = new float[3];
-		if (SMOOTHSTEP_INTERP)
-			interp = ((interp) * (interp) * (3 - 2 * (interp)));
-		for (int i = 0; i < 3; i++)
-			res[i] = pos[i] * interp + (oldPos[i] * (1 - interp));
-		return res;
 	}
 
 	protected void endOrthoRender() {
@@ -248,28 +240,27 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		gl.glColor3f(1, 0, 0);
 		GameLoop loop = Game.INSTANCE.loop;
 		// text
-		// renderStrings.add("Process Queue   :  " + queue.size());
-		renderStrings.add("Render-FPS: "
-				+ Util.roundDigits(loop.currentFPS.fps, 1));
-		renderStrings.add("Tick-FPS  :  "
-				+ Util.roundDigits(loop.currentTick.fps, 1));
-		renderStrings.add("TpT       :  " + loop.timePerTick + "ms");
-		renderStrings.add("#Objects  :  " + Game.INSTANCE.world.getObjectNum());
-		renderStrings.add("Textures to load:  "
-				+ UberManager.getTexturesToLoad());
-		// renderStrings.add("#Chunks   :  " +
-		// VoxelWorldRenderer.VISIBLE_CHUNKS);
-
 		int i = 1;
-		for (String s : renderStrings) {
-			gl.glRasterPos2f(width * (Settings.STEREO ? 2 : 1) - 200,
-					15 * i++ + 80);
-			glut.glutBitmapString(GLUT.BITMAP_8_BY_13, s);
-		}
-		renderStrings.clear();
+		int x = width * (Settings.STEREO ? 2 : 1) - 200;
+		renderString("Render-FPS: " + Util.roundDigits(loop.currentFPS.fps, 1),
+				x, 15 * i++ + 80);
+		renderString(
+				"Tick-FPS  :  " + Util.roundDigits(loop.currentTick.fps, 1), x,
+				15 * i++ + 80);
+		renderString("TpT       :  " + loop.timePerTick + "ms", x,
+				15 * i++ + 80);
+		renderString("#Objects  :  " + Game.INSTANCE.world.getObjectNum(), x,
+				15 * i++ + 80);
+		renderString("Textures to load:  " + UberManager.getTexturesToLoad(),
+				x, 15 * i++ + 80);
 
 		fpsRenderer.render(gl, textures, width, loop.timePerRender,
 				loop.timePerTick);
+	}
+
+	private void renderString(String string, int posX, int posY) {
+		gl.glRasterPos2f(posX, posY);
+		glut.glutBitmapString(GLUT.BITMAP_8_BY_13, string);
 	}
 
 	private void renderDebug() {
@@ -369,7 +360,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 				renderer.draw(gl, objs, INTERP);
 			else
 				for (GameObject go : objs) {
-					cgo = go;
 					gl.glColor3f(go.color[0], go.color[1], go.color[2]);
 					gl.glPushMatrix();
 					transform(goType, go);
@@ -391,10 +381,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		}
 	}
 
-	private float toDegree(float f) {
-		return (float) (f * 180 / Math.PI);
-	}
-
 	private void transform(GameObjectType goType, GameObject go) {
 		if (USE_OBJECT_INTERP) {
 			// interp
@@ -408,29 +394,14 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		} else
 			gl.glTranslatef(go.pos[0], go.pos[1], go.pos[2]);
 		if (goType.shape == null) {
-			gl.glRotatef(toDegree(go.rotation[0]), -1, 0, 0);
-			gl.glRotatef(toDegree(go.rotation[1]), 0, -1, 0);
-			gl.glRotatef(toDegree(go.rotation[2]), 0, 0, -1);
+			gl.glRotatef(MathHelper.toDegree(go.rotation[0]), -1, 0, 0);
+			gl.glRotatef(MathHelper.toDegree(go.rotation[1]), 0, -1, 0);
+			gl.glRotatef(MathHelper.toDegree(go.rotation[2]), 0, 0, -1);
 		} else {
-			gl.glMultMatrixf(to4x4Matrix(go.rotationMatrix), 0);
+			gl.glMultMatrixf(MathHelper.to4x4Matrix(go.rotationMatrix), 0);
 		}
 		gl.glScalef(go.size[0], go.size[1], go.size[2]);
 
-	}
-
-	private float[] to4x4Matrix(Matrix3f m) {
-		float matrix[] = new float[16];
-		matrix[0] = m.m00;
-		matrix[4] = m.m01;
-		matrix[8] = m.m02;
-		matrix[1] = m.m10;
-		matrix[5] = m.m11;
-		matrix[9] = m.m12;
-		matrix[2] = m.m20;
-		matrix[6] = m.m21;
-		matrix[10] = m.m22;
-		matrix[15] = 1;
-		return matrix;
 	}
 
 	protected void renderObjects(boolean depthOnly) {
@@ -528,6 +499,8 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	@Override
 	public void dispose() {
 		Log.log(this, "dispose");
+		queue.clear();
+		contextExecutions.clear();
 		browser.dispose(gl);
 		glu.destroy();
 		renderer.dispose();
@@ -543,20 +516,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		synchronized (queue) {
 			queue.add(runnable);
 		}
-	}
-
-	public static void createCallList(final Runnable r,
-			final CallBack<Integer> c) {
-		executeInOpenGLContext(new Runnable() {
-			@Override
-			public void run() {
-				int num = gl.glGenLists(1);
-				gl.glNewList(num, GL2.GL_COMPILE);
-				r.run();
-				gl.glEndList();
-				c.returnVar(num);
-			}
-		});
 	}
 
 	public void excludeGameObjectFromRendering(String string) {

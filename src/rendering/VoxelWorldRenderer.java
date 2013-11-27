@@ -71,7 +71,7 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 		if (gos.size() > 1)
 			throw new RuntimeException("Just render 1 voxel object!");
 		if (world != null)
-			draw(gl);
+			drawSimple(gl);
 		world = (VoxelWorld) gos.get(0);
 	}
 
@@ -79,7 +79,7 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 	public void init(GL2 gl) {
 		this.voxelShader = UberManager.getShader(Shader.VOXEL);
 		voxelDepth = UberManager.getShader(Shader.VOXEL_DEPTH);
-		depthOnly = ((RenderUpdater) Game.INSTANCE.loop.renderer).renderState.depthOnly;
+		depthOnly = Game.INSTANCE.loop.renderer.renderState.depthOnly;
 
 		calculateVisibleChunks();
 		// render voxel content
@@ -102,8 +102,7 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 
 				}
 			}
-			((RenderUpdater) Game.INSTANCE.loop.renderer)
-					.renderObjects(gameObjects);
+			Game.INSTANCE.loop.renderer.renderObjects(gameObjects);
 		}
 
 		// deactivate old shader if necesary and activate voxel shader
@@ -118,7 +117,7 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 		else
 			gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
 		voxelShader.execute(gl);
-		((RenderUpdater) Game.INSTANCE.loop.renderer).initShaderUniforms();
+		Game.INSTANCE.loop.renderer.initShaderUniforms();
 		Texture stone = UberManager.getTexture("img/stone.jpg");
 		if (stone != null)
 			ShaderScript.setUniformTexture("triplanar", 0,
@@ -158,7 +157,20 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 	}
 
 	@Override
-	public void draw(GL2 gl) {
+	public void end(GL2 gl) {
+		if (depthOnly || voxelShader == null)
+			return;
+		gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
+		Game.INSTANCE.loop.renderer.endShaderUniforms();
+		voxelShader.end(gl);
+		if (oldShader != null) {
+			oldShader.execute(gl);
+			Game.INSTANCE.loop.renderer.initShaderUniforms();
+		}
+	}
+
+	@Override
+	public void drawSimple(GL2 gl) {
 		gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
 		if (!depthOnly) {
 			gl.glColor3fv(world.color, 0);
@@ -193,23 +205,6 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 		} else {
 			voxelDepth.end(gl);
 		}
-	}
-
-	@Override
-	public void end(GL2 gl) {
-		if (depthOnly || voxelShader == null)
-			return;
-		gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
-		((RenderUpdater) Game.INSTANCE.loop.renderer).endShaderUniforms();
-		voxelShader.end(gl);
-		if (oldShader != null) {
-			oldShader.execute(gl);
-			((RenderUpdater) Game.INSTANCE.loop.renderer).initShaderUniforms();
-		}
-	}
-
-	@Override
-	public void drawSimple(GL2 gl) {
 	}
 
 	public static final class ChunkInfo implements Comparable<ChunkInfo> {

@@ -195,7 +195,7 @@ public class ModelRenderer extends GameObjectRenderer {
 			return;
 		transformShader = UberManager.getShader(Shader.TRANSFORM_TEXTURE);
 		simpleTransform = UberManager.getShader(Shader.TRANSFORM_SIMPLE);
-		depthOnly = ((RenderUpdater) Game.INSTANCE.loop.renderer).renderState.depthOnly;
+		depthOnly = Game.INSTANCE.loop.renderer.renderState.depthOnly;
 		if (doubleSided)
 			gl.glDisable(GL2.GL_CULL_FACE);
 		// Optimize!!!!
@@ -328,7 +328,7 @@ public class ModelRenderer extends GameObjectRenderer {
 				for (int i = 0; i < indexCounts.length; i++) {
 					if (renderState != null
 							&& renderState.materials
-							&& ((RenderUpdater) Game.INSTANCE.loop.renderer).renderState.materials)
+							&& Game.INSTANCE.loop.renderer.renderState.materials)
 						activateMaterial(gl, i);
 					gl.glBindBuffer(GL2.GL_ELEMENT_ARRAY_BUFFER, vboIndices[i]);
 					gl.glDrawElementsInstanced(drawMode, indexCounts[i],
@@ -388,15 +388,6 @@ public class ModelRenderer extends GameObjectRenderer {
 			transformBuffers[i] = FloatBuffer.allocate(size);
 		// rotation matrix
 		transformBuffers[num] = FloatBuffer.allocate(NUM_RENDERED_INST * 9);
-	}
-
-	@Override
-	public void draw(GL2 gl) {
-		draw(gl, new ArrayList<GameObject>() {
-			{
-				add(RenderUpdater.cgo);
-			}
-		}, 0);
 	}
 
 	@Override
