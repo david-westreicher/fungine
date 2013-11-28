@@ -22,7 +22,8 @@ import world.GameObject;
 import world.GameObjectType;
 
 public class JavaScript {
-	private static Map<String, List<RuntimeScript>> allScripts = new HashMap<String, List<RuntimeScript>>();
+	private static Map<String, List<RuntimeScript>> gotScriptMap = new HashMap<String, List<RuntimeScript>>();
+	private static List<RuntimeScript> allScripts = new ArrayList<RuntimeScript>();
 
 	public interface RuntimeScript {
 		public void update(List<GameObject> go);
@@ -43,7 +44,6 @@ public class JavaScript {
 
 	private static void compile(final String name) {
 		String fileToCompile = Settings.RESSOURCE_FOLDER + "scripts/";
-		// TODO copy file into temp file for compiling with different name
 		String newFile = Settings.RESSOURCE_FOLDER.replaceAll(File.separator,
 				"") + name.replace(".java", "") + ".java";
 		IO.copyFile(new File(fileToCompile + name), new File(fileToCompile
@@ -70,18 +70,22 @@ public class JavaScript {
 					}
 				}
 
-				final List<RuntimeScript> oldScripts = allScripts
+				final List<RuntimeScript> oldScripts = gotScriptMap
 						.get("scripts/" + name);
 
 				Game.INSTANCE.loop.mechanics.addRunnable(new Runnable() {
 					@Override
 					public void run() {
 						if (oldScripts != null)
-							for (RuntimeScript rs : oldScripts)
+							for (RuntimeScript rs : oldScripts) {
 								rs.exit();
+								allScripts.remove(rs);
+							}
+						for (RuntimeScript rs : rts)
+							allScripts.add(rs);
 						for (int i = 0; i < gots.size(); i++)
 							rts.get(i).init(gots.get(i));
-						allScripts.put("scripts/" + name, rts);
+						gotScriptMap.put("scripts/" + name, rts);
 					}
 				});
 			} catch (MalformedURLException e) {
@@ -118,22 +122,19 @@ public class JavaScript {
 	}
 
 	public static void reset() {
-		for (List<RuntimeScript> listRS : allScripts.values())
+		for (List<RuntimeScript> listRS : gotScriptMap.values())
 			for (RuntimeScript rs : listRS)
 				rs.exit();
 		allScripts.clear();
+		gotScriptMap.clear();
 	}
 
 	public static Collection<RuntimeScript> getScripts() {
-		List<RuntimeScript> all = new ArrayList<RuntimeScript>();
-		for (List<RuntimeScript> list : allScripts.values()) {
-			all.addAll(list);
-		}
-		return all;
+		return allScripts;
 	}
 
 	public static void compileIfNew(String runtimeScript) {
-		if (allScripts.get("scripts/" + runtimeScript) == null)
+		if (gotScriptMap.get("scripts/" + runtimeScript) == null)
 			scriptChanged("scripts/" + runtimeScript);
 	}
 

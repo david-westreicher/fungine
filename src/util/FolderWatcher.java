@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 public class FolderWatcher extends RepeatedThread {
+	// TODO use java 7 WatchService API for less object allocations
 	private static final int MAX_COMPARE = 100;
 	private File folder;
 	private Map<String, Date> files;

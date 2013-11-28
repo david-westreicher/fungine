@@ -4,14 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import javax.script.ScriptException;
-
 import physics.AbstractPhysics;
 import script.JavaScript;
 import script.JavaScript.RuntimeScript;
-import script.Script;
-import settings.Settings;
-import util.Log;
 import world.GameObject;
 
 public class GameMechanics implements Updatable {
@@ -33,7 +28,7 @@ public class GameMechanics implements Updatable {
 	public void update(float interp) {
 
 		Map<String, List<GameObject>> objs = Game.INSTANCE.world
-				.getAllObjects();
+				.getAllObjectsTypes();
 		final int tick = Game.INSTANCE.loop.tick;
 		for (Runnable r : runnables)
 			r.run();
@@ -51,16 +46,12 @@ public class GameMechanics implements Updatable {
 			String typeName = rs.getGameObjectType();
 			rs.update(typeName == null ? null : objs.get(typeName));
 		}
-
-		try {
-			Script.executeFunction(Settings.MAIN_SCRIPT, "update",
-					Game.INSTANCE);
-		} catch (ScriptException e1) {
-			Log.err(e1.getFileName());
-			e1.printStackTrace();
-		} catch (NoSuchMethodException e1) {
-			e1.printStackTrace();
-		}
+		/*
+		 * try { Script.executeFunction(Settings.MAIN_SCRIPT, "update",
+		 * Game.INSTANCE); } catch (ScriptException e1) {
+		 * Log.err(e1.getFileName()); e1.printStackTrace(); } catch
+		 * (NoSuchMethodException e1) { e1.printStackTrace(); }
+		 */
 		if (physics != null) {
 			if (restartPhysics) {
 				physics.restart();

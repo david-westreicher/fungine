@@ -8,7 +8,9 @@ import java.util.List;
 import java.util.Map;
 
 public class World {
-	public List<GameObject> gameObjects = new ArrayList<GameObject>();
+	private List<GameObject> gameObjects = new ArrayList<GameObject>();
+	private Map<String, List<GameObject>> visibleObjs = new HashMap<String, List<GameObject>>();
+	private Map<String, List<GameObject>> allObjs = new HashMap<String, List<GameObject>>();
 
 	public World() {
 
@@ -16,10 +18,31 @@ public class World {
 
 	public void add(GameObject go) {
 		gameObjects.add(go);
+		// if (GameObjectType.getType(go.getType()).renderer != null &&
+		// go.render)
+		add(go, visibleObjs);
+		add(go, allObjs);
 	}
 
 	public void remove(GameObject go) {
 		gameObjects.remove(go);
+		remove(go, visibleObjs);
+		remove(go, allObjs);
+	}
+
+	private void add(GameObject go, Map<String, List<GameObject>> mapList) {
+		List<GameObject> list = mapList.get(go.getType());
+		if (list == null) {
+			list = new ArrayList<GameObject>();
+			mapList.put(go.getType(), list);
+		}
+		list.add(go);
+	}
+
+	private void remove(GameObject go, Map<String, List<GameObject>> mapList) {
+		List<GameObject> list = mapList.get(go.getType());
+		if (list != null)
+			list.remove(go);
 	}
 
 	public void clear() {
@@ -28,33 +51,12 @@ public class World {
 	}
 
 	public Map<String, List<GameObject>> getVisibleObjects() {
-		Map<String, List<GameObject>> visibleObjs = new HashMap<String, List<GameObject>>();
 		// TODO add only visibles
-		for (GameObject go : gameObjects) {
-			if (!go.render)
-				continue;
-			List<GameObject> list = visibleObjs.get(go.getType());
-			if (list == null) {
-				list = new ArrayList<GameObject>();
-				visibleObjs.put(go.getType(), list);
-			}
-			list.add(go);
-		}
 		return visibleObjs;
 	}
 
-	public Map<String, List<GameObject>> getAllObjects() {
-		Map<String, List<GameObject>> visibleObjs = new HashMap<String, List<GameObject>>();
-		// TODO add only visibles
-		for (GameObject go : gameObjects) {
-			List<GameObject> list = visibleObjs.get(go.getType());
-			if (list == null) {
-				list = new ArrayList<GameObject>();
-				visibleObjs.put(go.getType(), list);
-			}
-			list.add(go);
-		}
-		return visibleObjs;
+	public Map<String, List<GameObject>> getAllObjectsTypes() {
+		return allObjs;
 	}
 
 	public int getObjectNum() {
@@ -65,5 +67,9 @@ public class World {
 		for (int k = 0; k < gameObjects.size(); k++) {
 			gameObjects.get(k).marked = k == i;
 		}
+	}
+
+	public List<GameObject> getAllObjects() {
+		return gameObjects;
 	}
 }
