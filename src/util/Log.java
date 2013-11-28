@@ -16,7 +16,6 @@ public class Log {
 	private Log() {
 		Log.log(this, "new log");
 		realError = System.err;
-		// TODO quick fix disable real error output
 		/*
 		 * try { System.setErr(new PrintStream(new File("err.txt"))); } catch
 		 * (FileNotFoundException e) { e.printStackTrace(); }

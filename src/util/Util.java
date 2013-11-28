@@ -40,7 +40,6 @@ public class Util {
 	}
 
 	public static JFrame createFrame() {
-		// TODO fullscreen :D
 		frame = new JFrame("Engine Test");
 
 		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment()
