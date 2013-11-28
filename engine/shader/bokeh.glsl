@@ -28,7 +28,7 @@ uniform float focalDepth;  //external focal point value, but you may use autofoc
 int samples =3; //samples on the first ring
 int rings = 3; //ring count
 
-bool autofocus = true; //use autofocus in shader? disable if you use external focalDepth value
+bool autofocus = false; //use autofocus in shader? disable if you use external focalDepth value
 vec2 focus = vec2(0.5,0.5); // autofocus point on screen (0.0,0.0 - left lower corner, 1.0,1.0 - upper right)
 float range =5; //focal range
 float maxblur = 5; //clamp value of max blur
