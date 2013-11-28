@@ -112,7 +112,7 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 		if (oldShader != null) {
 			oldShader.end(gl);
 		}
-		if (Game.WIREFRAME)
+		if (RenderUpdater.WIREFRAME)
 			gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_LINE);
 		else
 			gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);

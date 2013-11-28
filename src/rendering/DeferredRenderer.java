@@ -5,6 +5,7 @@ import game.Game;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
@@ -93,14 +94,14 @@ public class DeferredRenderer extends RenderUpdater {
 						textures.getTextureInformation("1")[1]);
 				ShaderScript.setUniformTexture("shadowMap", 3,
 						textures.getTextureInformation("shadowmap")[0]);
-				boolean wireframesetting = Game.WIREFRAME;
-				Game.WIREFRAME = false;
+				boolean wireframesetting = RenderUpdater.WIREFRAME;
+				RenderUpdater.WIREFRAME = false;
 				super.init(gl);
 				setUniforms(l);
 				gl.glDrawElements(GL2.GL_TRIANGLES, indexCounts[0],
 						GL2.GL_UNSIGNED_INT, 0);
 				super.end(gl);
-				Game.WIREFRAME = wireframesetting;
+				RenderUpdater.WIREFRAME = wireframesetting;
 				// coneRenderer.init(gl);
 				// gl.glDrawElements(GL2.GL_TRIANGLES,
 				// coneRenderer.indexCounts[0], GL2.GL_UNSIGNED_INT, 0);
@@ -151,7 +152,7 @@ public class DeferredRenderer extends RenderUpdater {
 			gl.glMatrixMode(GL2.GL_PROJECTION);
 			gl.glPushMatrix();
 			gl.glLoadIdentity();
-			glu.gluPerspective(SHADOW_FOV, 1, ZNear, radius);
+			glu.gluPerspective(SHADOW_FOV, 1, zNear, radius);
 			gl.glMatrixMode(GL2.GL_MODELVIEW);
 			gl.glPushMatrix();
 			gl.glLoadIdentity();
@@ -237,26 +238,17 @@ public class DeferredRenderer extends RenderUpdater {
 			gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T,
 					GL2.GL_CLAMP);
 			int internalFormat = GL2.GL_RGBA16F;
-			int formatSize = Buffers.SIZEOF_FLOAT;
 			int type = GL2.GL_FLOAT;
+			int width = Settings.WIDTH;
+			int height = Settings.HEIGHT;
 			switch (index) {
 			case 0:
 				internalFormat = GL2.GL_RGBA8;
-				formatSize = Buffers.SIZEOF_BYTE;
-				type = GL2.GL_UNSIGNED_BYTE;
+				type = GL2.GL_BYTE;
 				break;
 			}
-			gl.glTexImage2D(
-					GL.GL_TEXTURE_2D,
-					0,
-					internalFormat,
-					Settings.WIDTH,
-					Settings.HEIGHT,
-					0,
-					GL.GL_RGBA,
-					type,
-					Buffers.newDirectByteBuffer(Settings.WIDTH
-							* Settings.HEIGHT * 4 * formatSize));
+			gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, internalFormat, width, height,
+					0, GL.GL_RGBA, type, null);
 			int colorAttach = GL2.GL_COLOR_ATTACHMENT0;
 			switch (index) {
 			case 1:
@@ -498,7 +490,7 @@ public class DeferredRenderer extends RenderUpdater {
 
 	private void renderDof() {
 		bokeh.execute(gl);
-		ShaderScript.setUniform("zFar", ZFar);
+		ShaderScript.setUniform("zFar", zFar);
 		ShaderScript.setUniform("bgl_RenderedTextureWidth",
 				(float) Settings.WIDTH);
 		ShaderScript.setUniform("bgl_RenderedTextureHeight",
@@ -527,8 +519,6 @@ public class DeferredRenderer extends RenderUpdater {
 				0);
 		gl.glDrawBuffers(3, gbufferDrawBuffer, 0);
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
-		// TODO render only vertices without normals, uv, materials into depth
-		// buffer
 		if (DEPTH_FIRST)
 			renderObjects(true);
 		deferredRenderer.execute(gl);
@@ -624,6 +614,19 @@ public class DeferredRenderer extends RenderUpdater {
 	public void endShaderUniforms() {
 		super.endShaderUniforms();
 		ShaderScript.releaseCube(gl, cubeMap);
+	}
+
+	@Override
+	public Map<String, Object> getSettings() {
+		Map<String, Object> settings = super.getSettings();
+		settings.put("isdDebug", DEBUG);
+		settings.put("isDepthFirst", DEPTH_FIRST);
+		settings.put("isDof", DOF);
+		settings.put("isSSAO", SSAO);
+		settings.put("blur", BLUR);
+		settings.put("ambient", AMBIENT);
+		settings.put("ssao", SSAO_STRENGTH);
+		return settings;
 	}
 
 }

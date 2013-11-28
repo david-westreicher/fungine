@@ -4,7 +4,6 @@ import game.Game;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.media.opengl.GL;
@@ -89,7 +88,6 @@ public class ModelRenderer extends GameObjectRenderer {
 		super(!Settings.LOW_GRAPHICS);
 		this.materials = materials;
 		init(vertices, normals, null, uvs, weights, boneIndices, indices);
-		// TODO Auto-generated constructor stub
 	}
 
 	protected void init(final FloatBuffer vertices, final FloatBuffer normals,
@@ -201,7 +199,7 @@ public class ModelRenderer extends GameObjectRenderer {
 		// Optimize!!!!
 		if (!depthOnly) {
 			gl.glColor4f(1, 1, 1, 1);
-			if (Game.WIREFRAME)
+			if (RenderUpdater.WIREFRAME)
 				gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_LINE);
 			else
 				gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);

@@ -45,6 +45,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	private static final Browser browser = new AwesomiumWrapper();
 	private static final List<Runnable> queue = new ArrayList<Runnable>();
 	private static final List<Runnable> contextExecutions = new ArrayList<Runnable>();
+	private static final float ZFAR_DISTANCE = 100;
 	private List<float[][]> debugLines = new LinkedList<float[][]>();
 	private List<String> excludedGameObjects = new ArrayList<String>();
 	private boolean takeScreen = false;
@@ -52,16 +53,16 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	private float debugAngle;
 	private OpenGLRendering renderer;
 	protected static float INTERP;
+	protected static float zFar;
+	protected static float zNear;
+	protected static double FOV_Y = 69;
 	protected Map<String, List<GameObject>> renderObjs;
 	protected Camera cam = Game.INSTANCE.cam;
 	protected TextureHelper textures = new TextureHelper();
 	public static GL2 gl;
 	public static GLUT glut = new GLUT();
 	public static float EYE_GAP = 0.23f;
-	public static float ZFar;
-	public static float ZNear;
-	public static double FOV_Y = 69;
-	public static float ZFAR_DISTANCE = 100;// TODO changed from 5000
+	public static boolean WIREFRAME = false;
 	public final static GLU glu = new GLU();
 	public int width;
 	public int height;
@@ -398,7 +399,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		gl.glScalef(go.size[0], go.size[1], go.size[2]);
 	}
 
-	public void renderObjects(Map<String, List<GameObject>> renderObjs) {
+	protected void renderObjects(Map<String, List<GameObject>> renderObjs) {
 		for (String type : renderObjs.keySet()) {
 			if (!excludedGameObjects.contains(type))
 				renderObjects(type, renderObjs);
@@ -455,20 +456,13 @@ public class RenderUpdater implements Updatable, GLEventListener {
 			float translation) {
 		this.width = width;
 		this.height = height;
-		// float z = ((float) height / 2)
-		// / (float) Math.tan(fov_y * Math.PI / 360);
-		// float zoom = Game.INSTANCE.cam.zoom * z;
-		// TODO maybe need gl.glViewport(0, 0, width, height);
 		gl.glMatrixMode(GL2.GL_PROJECTION);
 		gl.glLoadIdentity();
-		ZNear = ZNEAR;// Math.max(zoom - 500, 0);
-		ZFar = ZNEAR + ZFAR_DISTANCE;
-		// RenderUtil.gluPerspective(gl, fov_y, (float) width / height, ZNear,
-		// ZFar);
+		zNear = ZNEAR;
+		zFar = ZNEAR + ZFAR_DISTANCE;
 		if (translation != 0)
 			gl.glTranslatef(translation, 0, 0);
-		glu.gluPerspective(fov_y, (float) width / height, ZNear, ZFar);
-		// gl.glScalef(1, -1, 1);
+		glu.gluPerspective(fov_y, (float) width / height, zNear, zFar);
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 	}
 
@@ -509,23 +503,10 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		excludedGameObjects.remove(lightObjectTypeName);
 	}
 
-	public void renderExcludedObjects() {
-		for (String type : excludedGameObjects) {
-			this.renderObjects(type, renderObjs);
-		}
-	}
-
 	public Map<String, Object> getSettings() {
 		Map<String, Object> settings = new HashMap<String, Object>();
-		settings.put("isWireframe", Game.WIREFRAME);
-		settings.put("isdDebug", DeferredRenderer.DEBUG);
-		settings.put("isDepthFirst", DeferredRenderer.DEPTH_FIRST);
-		settings.put("isDof", DeferredRenderer.DOF);
-		settings.put("isSSAO", DeferredRenderer.SSAO);
-		settings.put("blur", DeferredRenderer.BLUR);
-		settings.put("ambient", DeferredRenderer.AMBIENT);
+		settings.put("isWireframe", WIREFRAME);
 		settings.put("tFPS", GameLoop.TICKS_PER_SECOND);
-		settings.put("ssao", DeferredRenderer.SSAO_STRENGTH);
 		settings.put("fov", FOV_Y);
 		settings.put("eyegap", EYE_GAP);
 		return settings;
