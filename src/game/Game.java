@@ -9,6 +9,7 @@ import manager.Manager;
 import manager.SoundManager;
 import physics.OdePhysics;
 import rendering.DeferredRenderer;
+import rendering.NiceRenderer;
 import rendering.OpenGLRendering;
 import rendering.RenderUpdater;
 import rendering.TestSkinningRenderer;
@@ -26,7 +27,6 @@ import world.Camera;
 import world.World;
 
 public class Game {
-	public static boolean WIREFRAME = false;
 	public static Game INSTANCE;
 	public GameLoop loop = new GameLoop();
 	public World world;
@@ -108,11 +108,14 @@ public class Game {
 
 	public void addComponent(String c) {
 		c = c.toLowerCase();
-		if (c.equals("deferredrenderer")) {
-			loop.renderer = Settings.LOW_GRAPHICS ? new RenderUpdater()
-					: new DeferredRenderer();
+		if (c.equals("renderer") || Settings.LOW_GRAPHICS) {
+			loop.renderer = new RenderUpdater();
+		} else if (c.equals("deferredrenderer")) {
+			loop.renderer = new DeferredRenderer();
 		} else if (c.equals("skinrenderer")) {
 			loop.renderer = new TestSkinningRenderer();
+		} else if (c.equals("nicerenderer")) {
+			loop.renderer = new NiceRenderer();
 		} else if (c.equals("gamemechanics")) {
 			loop.mechanics = new GameMechanics();
 		} else if (c.equals("sound")) {
