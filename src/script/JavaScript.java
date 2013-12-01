@@ -125,15 +125,19 @@ public class JavaScript {
 	}
 
 	public static void reset() {
-		for (List<RuntimeScript> listRS : gotScriptMap.values())
-			for (RuntimeScript rs : listRS)
-				rs.exit();
-		allScripts.clear();
-		gotScriptMap.clear();
+		synchronized (allScripts) {
+			for (List<RuntimeScript> listRS : gotScriptMap.values())
+				for (RuntimeScript rs : listRS)
+					rs.exit();
+			allScripts.clear();
+			gotScriptMap.clear();
+		}
 	}
 
 	public static Collection<RuntimeScript> getScripts() {
-		return allScripts;
+		synchronized (allScripts) {
+			return allScripts;
+		}
 	}
 
 	public static void compileIfNew(String runtimeScript) {
