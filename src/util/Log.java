@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import sun.org.mozilla.javascript.NativeArray;
+import sun.org.mozilla.javascript.internal.NativeArray;
 
 public class Log {
 	private static Log instance;

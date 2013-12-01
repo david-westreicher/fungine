@@ -60,7 +60,8 @@ public class GameWatcher implements FolderListener {
 			game.parseXML();
 			gl.endPause();
 		} else {
-			String folder = s.split(File.separator)[0];
+			String folder = s.split(File.separator.equals("\\") ? "\\\\"
+					: File.separator)[0];
 			s = s.replace("\\", "/");
 			Log.log(this, folder);
 			if (folder.equals("scripts")) {

@@ -43,20 +43,23 @@ public class JavaScript {
 	 */
 
 	private static void compile(final String name) {
-		String fileToCompile = Settings.RESSOURCE_FOLDER + "scripts/";
-		String newFile = Settings.RESSOURCE_FOLDER.replaceAll(File.separator,
-				"") + name.replace(".java", "") + ".java";
-		IO.copyFile(new File(fileToCompile + name), new File(fileToCompile
+		String compileFolder = Settings.RESSOURCE_FOLDER + "scripts"
+				+ File.separator;
+		String newFile = "tmp" + name;
+		IO.copyFile(new File(compileFolder + name), new File(compileFolder
 				+ newFile));
-		replaceClassName(fileToCompile + newFile, name.replace(".java", ""),
+		replaceClassName(compileFolder + newFile, name.replace(".java", ""),
 				newFile.replace(".java", ""));
 		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-		int compilationResult = compiler.run(null, null, null, fileToCompile
+		if (compiler == null)
+			throw new RuntimeException(
+					"No system compiler found, use JDK not JRE (for tools.jar)");
+		int compilationResult = compiler.run(null, null, null, compileFolder
 				+ newFile);
 		if (compilationResult == 0) {
 			Log.log(JavaScript.class, "Compilation is successful");
 			try {
-				URL u = new File(fileToCompile).toURI().toURL();
+				URL u = new File(compileFolder).toURI().toURL();
 				URLClassLoader classLoader = new URLClassLoader(
 						new URL[] { u }, RuntimeScript.class.getClassLoader());
 				Class<?> cls = classLoader.loadClass(newFile.replace(".java",
@@ -117,7 +120,7 @@ public class JavaScript {
 	}
 
 	public static void scriptChanged(String s) {
-		if (!s.contains("scripts/games"))
+		if (!s.contains("tmp"))
 			compile(s.substring("scripts/".length()));
 	}
 
