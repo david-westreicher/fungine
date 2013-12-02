@@ -303,4 +303,32 @@ public class MathHelper {
 		matrix[15] = 1;
 		return matrix;
 	}
+
+	public static void HSLtoRGB(float h, float s, float l, float[] color) {
+		if (s == 0) {
+			color[0] = l;
+			color[1] = l;
+			color[2] = l;
+		} else {
+			float q = l < 0.5 ? (l * (1 + s)) : (l + s - l * s);
+			float p = 2 * l - q;
+			color[0] = hue2rgb(p, q, h + 1f / 3f);
+			color[1] = hue2rgb(p, q, h);
+			color[2] = hue2rgb(p, q, h - 1f / 3f);
+		}
+	}
+
+	private static float hue2rgb(float p, float q, float t) {
+		if (t < 0)
+			t += 1;
+		if (t > 1)
+			t -= 1;
+		if (t < 1f / 6f)
+			return p + (q - p) * 6 * t;
+		if (t < 1f / 2f)
+			return q;
+		if (t < 2f / 3f)
+			return p + (q - p) * (2f / 3f - t) * 6;
+		return p;
+	}
 }

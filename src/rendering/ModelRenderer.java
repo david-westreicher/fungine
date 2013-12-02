@@ -264,6 +264,8 @@ public class ModelRenderer extends GameObjectRenderer {
 
 	@Override
 	public void draw(GL2 gl, List<GameObject> gos, float interp) {
+		if (gos.size() == 0)
+			return;
 		if (!ShaderScript.isShaderActivated() && transformShader != null) {
 			transformShader.execute(gl);
 		}
@@ -291,12 +293,11 @@ public class ModelRenderer extends GameObjectRenderer {
 		ShaderScript.setUniform("interp", RenderUpdater.INTERP);
 
 		GameObjectType got = GameObjectType.getType(gos.get(0).getType());
-		if (!depthOnly)
-			if (gos.size() > 0) {
-				renderState = got.renderState;
-				ShaderScript.setUniform("shininess", got.shininess);
-				ShaderScript.setUniform("reflective", got.reflective);
-			}
+		if (!depthOnly) {
+			renderState = got.renderState;
+			ShaderScript.setUniform("shininess", got.shininess);
+			ShaderScript.setUniform("reflective", got.reflective);
+		}
 		ShaderScript.setUniform("hasAirShader", got.airShader);
 		renderInstanced(gl, gos);
 
