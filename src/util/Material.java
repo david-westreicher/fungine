@@ -30,29 +30,29 @@ public class Material {
 		Texture specTexture = UberManager.getTexture(specMap);
 		Texture displacementTexture = UberManager.getTexture(displacementMap);
 		if (colorTexture != null) {
-			ShaderScript.setUniformTexture("tex", 0,
+			ShaderScript.setUniformTexture(gl, "tex", 0,
 					colorTexture.getTextureObject(gl));
-			ShaderScript.setUniform("hasTexture", true);
+			ShaderScript.setUniform(gl, "hasTexture", true);
 		} else
-			ShaderScript.setUniform("hasTexture", false);
+			ShaderScript.setUniform(gl, "hasTexture", false);
 		if (normalTexture != null) {
-			ShaderScript.setUniformTexture("normalMap", 1,
+			ShaderScript.setUniformTexture(gl, "normalMap", 1,
 					normalTexture.getTextureObject(gl));
-			ShaderScript.setUniform("hasNormalMap", true);
+			ShaderScript.setUniform(gl, "hasNormalMap", true);
 		} else
-			ShaderScript.setUniform("hasNormalMap", false);
+			ShaderScript.setUniform(gl, "hasNormalMap", false);
 		if (specTexture != null) {
-			ShaderScript.setUniformTexture("specMap", 2,
+			ShaderScript.setUniformTexture(gl, "specMap", 2,
 					specTexture.getTextureObject(gl));
-			ShaderScript.setUniform("hasSpecMap", true);
+			ShaderScript.setUniform(gl, "hasSpecMap", true);
 		} else
-			ShaderScript.setUniform("hasSpecMap", false);
+			ShaderScript.setUniform(gl, "hasSpecMap", false);
 		if (displacementTexture != null) {
-			ShaderScript.setUniformTexture("displacementMap", 3,
+			ShaderScript.setUniformTexture(gl, "displacementMap", 3,
 					displacementTexture.getTextureObject(gl));
-			ShaderScript.setUniform("hasDisplacement", true);
+			ShaderScript.setUniform(gl, "hasDisplacement", true);
 		} else
-			ShaderScript.setUniform("hasDisplacement", false);
+			ShaderScript.setUniform(gl, "hasDisplacement", false);
 		activateMaskMap(gl);
 	}
 
@@ -64,22 +64,22 @@ public class Material {
 
 	public static void deactivate(GL2 gl) {
 		if (ShaderScript.getActiveShader(gl) != null) {
-			ShaderScript.setUniform("hasTexture", false);
-			ShaderScript.setUniform("hasNormalMap", false);
-			ShaderScript.setUniform("hasSpecMap", false);
-			ShaderScript.setUniform("hasDisplacement", false);
-			ShaderScript.setUniform("hasMask", false);
+			ShaderScript.setUniform(gl, "hasTexture", false);
+			ShaderScript.setUniform(gl, "hasNormalMap", false);
+			ShaderScript.setUniform(gl, "hasSpecMap", false);
+			ShaderScript.setUniform(gl, "hasDisplacement", false);
+			ShaderScript.setUniform(gl, "hasMask", false);
 		}
 	}
 
 	public void activateMaskMap(GL2 gl) {
 		Texture maskTexture = UberManager.getTexture(maskMap);
 		if (maskTexture != null) {
-			ShaderScript.setUniformTexture("maskMap", 4,
+			ShaderScript.setUniformTexture(gl, "maskMap", 4,
 					maskTexture.getTextureObject(gl));
-			ShaderScript.setUniform("hasMask", true);
+			ShaderScript.setUniform(gl, "hasMask", true);
 		} else
-			ShaderScript.setUniform("hasMask", false);
+			ShaderScript.setUniform(gl, "hasMask", false);
 	}
 
 }

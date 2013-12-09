@@ -92,8 +92,8 @@ public class TestSkinningRenderer extends RenderUpdater {
 			return sb;
 		}
 
-		public void draw() {
-			ShaderScript.setUniform("boneIndex", index);
+		public void draw(GL2 gl) {
+			ShaderScript.setUniform(gl, "boneIndex", index);
 			gl.glBegin(GL2.GL_QUADS);
 			gl.glColor3f(1 - index, index, 0);
 			gl.glVertex3f(0.05f, 0, 0);
@@ -189,13 +189,13 @@ public class TestSkinningRenderer extends RenderUpdater {
 		transformSkinning.end(gl);
 		skinning = UberManager.getShader(Shader.SKINNING);
 		skinning.execute(gl);
-		ShaderScript.setUniformMatrix4("bones", bonesUniform, true);
+		ShaderScript.setUniformMatrix4(gl, "bones", bonesUniform, true);
 		gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_LINE);
 		gl.glDisable(GL2.GL_DEPTH_TEST);
 		gl.glDisable(GL2.GL_CULL_FACE);
 		gl.glPushMatrix();
 		for (Bone b : bones)
-			b.draw();
+			b.draw(gl);
 		gl.glPopMatrix();
 		gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
 		gl.glEnable(GL2.GL_DEPTH_TEST);

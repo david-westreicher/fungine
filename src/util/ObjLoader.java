@@ -230,7 +230,8 @@ public class ObjLoader {
 					Log.log(this, m);
 			for (Group g : groups) {
 				// Log.log(this, g.name, g.material);
-				materials.add(g.material);
+				if (g.material != null)
+					materials.add(g.material);
 			}
 			/*
 			 * normals = IntBuffer.allocate(normalList.size()); for (Integer i :

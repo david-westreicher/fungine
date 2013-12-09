@@ -123,10 +123,9 @@ public class ModelRenderer extends GameObjectRenderer {
 			Log.log(this, "Normals: " + normals.capacity() / 3);
 		if (hasUVs)
 			Log.log(this, "UVS: " + uvs.capacity() / 2);
-		RenderUpdater.executeInOpenGLContext(new Runnable() {
+		RenderUpdater.executeInOpenGLContext(new GLRunnable() {
 			@Override
-			public void run() {
-				GL2 gl = RenderUpdater.gl;
+			public void run(GL2 gl) {
 				if (vboVertices[0] == 0)
 					gl.glGenBuffers(1, vboVertices, 0);
 				gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, vboVertices[0]);
@@ -225,8 +224,8 @@ public class ModelRenderer extends GameObjectRenderer {
 		} else {
 			if (simpleTransform != null) {
 				simpleTransform.execute(gl);
-				ShaderScript
-						.setUniform("time", (float) Game.INSTANCE.loop.tick);
+				ShaderScript.setUniform(gl, "time",
+						(float) Game.INSTANCE.loop.tick);
 			}
 		}
 		if (hasUVs) {
@@ -241,10 +240,10 @@ public class ModelRenderer extends GameObjectRenderer {
 	public void end(GL2 gl) {
 		if (doubleSided)
 			gl.glEnable(GL2.GL_CULL_FACE);
-		if (!depthOnly)
+		if (!depthOnly && materials != null && materials.size() > 0)
 			Material.deactivate(gl);
 		else if (ShaderScript.getActiveShader(gl) != null)
-			ShaderScript.setUniform("hasMask", false);
+			ShaderScript.setUniform(gl, "hasMask", false);
 		if (hasIndices)
 			gl.glBindBuffer(GL2.GL_ELEMENT_ARRAY_BUFFER, 0);
 		gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
@@ -287,18 +286,18 @@ public class ModelRenderer extends GameObjectRenderer {
 				// Log.err("Shader :" + ShaderScript.getActiveShader(gl)
 				// + " has no attribute: weights,boneIndices");
 			}
-			ShaderScript.setUniformMatrix4("bones",
+			ShaderScript.setUniformMatrix4(gl, "bones",
 					TestSkinningRenderer.bonesUniform, true);
 		}
-		ShaderScript.setUniform("interp", RenderUpdater.INTERP);
+		ShaderScript.setUniform(gl, "interp", RenderUpdater.INTERP);
 
 		GameObjectType got = GameObjectType.getType(gos.get(0).getType());
 		if (!depthOnly) {
 			renderState = got.renderState;
-			ShaderScript.setUniform("shininess", got.shininess);
-			ShaderScript.setUniform("reflective", got.reflective);
+			ShaderScript.setUniform(gl, "shininess", got.shininess);
+			ShaderScript.setUniform(gl, "reflective", got.reflective);
 		}
-		ShaderScript.setUniform("hasAirShader", got.airShader);
+		ShaderScript.setUniform(gl, "hasAirShader", got.airShader);
 		renderInstanced(gl, gos);
 
 		if (ShaderScript.isShaderActivated(transformShader)
@@ -320,7 +319,7 @@ public class ModelRenderer extends GameObjectRenderer {
 						go.rotationMatrixArray);
 			}
 			rewindBuffers();
-			setUniforms(transformBuffers[0], transformBuffers[1],
+			setUniforms(gl, transformBuffers[0], transformBuffers[1],
 					transformBuffers[2], transformBuffers[3],
 					transformBuffers[4]);
 			if (hasIndices) {
@@ -340,7 +339,7 @@ public class ModelRenderer extends GameObjectRenderer {
 	}
 
 	protected void activateMaterial(GL2 gl, int i) {
-		if (materials == null) {
+		if (materials == null || materials.size() == 0) {
 			return;
 		}
 		Material material = materials.get(i);
@@ -356,15 +355,15 @@ public class ModelRenderer extends GameObjectRenderer {
 		}
 	}
 
-	protected void setUniforms(FloatBuffer scale, FloatBuffer translate,
-			FloatBuffer translateOld, FloatBuffer color,
+	protected void setUniforms(GL2 gl, FloatBuffer scale,
+			FloatBuffer translate, FloatBuffer translateOld, FloatBuffer color,
 			FloatBuffer rotationMatrix) {
-		ShaderScript.setUniform3fv("scaleArr", scale);
-		ShaderScript.setUniform3fv("translateArr", translate);
-		ShaderScript.setUniform3fv("translateOldArr", translateOld);
-		ShaderScript.setUniform3fv("colorArr", color);
-		ShaderScript
-				.setUniformMatrix3("rotationMatrices", rotationMatrix, true);
+		ShaderScript.setUniform3fv(gl, "scaleArr", scale);
+		ShaderScript.setUniform3fv(gl, "translateArr", translate);
+		ShaderScript.setUniform3fv(gl, "translateOldArr", translateOld);
+		ShaderScript.setUniform3fv(gl, "colorArr", color);
+		ShaderScript.setUniformMatrix3(gl, "rotationMatrices", rotationMatrix,
+				true);
 	}
 
 	protected int getIndexNumberToRender() {

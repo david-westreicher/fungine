@@ -35,7 +35,7 @@ public class ShaderUtil {
 		}
 	}
 
-	public static void compile(String file, ShaderCompiledListener r) {
+	public static void compile(GL2 gl, String file, ShaderCompiledListener r) {
 		Log.log(ShaderUtil.class, "starting to compile " + file);
 		String shader = IO.readToString(Settings.ENGINE_FOLDER, file,
 				new Import());
@@ -44,13 +44,12 @@ public class ShaderUtil {
 		if (shaders.length != 2)
 			throw new RuntimeException("could'nt parse shader " + file);
 		else
-			compileShader(shaders[0], shaders[1], file, r);
+			compileShader(gl, shaders[0], shaders[1], file, r);
 	}
 
-	public static void compileShader(final String vertexShader,
+	public static void compileShader(GL2 gl, final String vertexShader,
 			final String fragmentShader, final String file,
 			final ShaderCompiledListener r) {
-		GL2 gl = RenderUpdater.gl;
 		int v = gl.glCreateShader(GL2.GL_VERTEX_SHADER);
 		int f = gl.glCreateShader(GL2.GL_FRAGMENT_SHADER);
 		int shaderprogram = 0;

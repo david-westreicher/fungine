@@ -13,6 +13,7 @@ import java.util.Map;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLException;
 
+import rendering.GLRunnable;
 import rendering.RenderUpdater;
 import settings.Settings;
 import shader.Shader;
@@ -45,7 +46,8 @@ public class UberManager {
 
 	public static Texture getTexture(final String name,
 			final boolean engineFolder) {
-		if (name == null || loadingTextures.contains(name))
+		if (name == null || loadingTextures.contains(name)
+				|| RenderUpdater.getGLProfile() == null)
 			return null;
 		if (name.equals(Browser.TEXTURE_NAME))
 			return RenderUpdater.getBrowser().getTexture();
@@ -60,29 +62,29 @@ public class UberManager {
 					try {
 						Log.log(this, "loading: " + name);
 						final TextureData textData = TextureIO.newTextureData(
-								RenderUpdater.gl.getGLProfile(), new File(
+								RenderUpdater.getGLProfile(), new File(
 										(engineFolder ? Settings.ENGINE_FOLDER
 												: Settings.RESSOURCE_FOLDER)
 												+ name), false, null);
-						RenderUpdater.queue(new Runnable() {
+						RenderUpdater.queue(new GLRunnable() {
 
 							@Override
-							public void run() {
+							public void run(GL2 gl) {
 								Texture text;
 								try {
 									text = TextureIO.newTexture(textData);
 
-									text.bind(RenderUpdater.gl);
-									text.setTexParameteri(RenderUpdater.gl,
+									text.bind(gl);
+									text.setTexParameteri(gl,
 											GL2.GL_TEXTURE_WRAP_S,
 											GL2.GL_REPEAT);
-									text.setTexParameteri(RenderUpdater.gl,
+									text.setTexParameteri(gl,
 											GL2.GL_TEXTURE_WRAP_T,
 											GL2.GL_REPEAT);
-									text.setTexParameteri(RenderUpdater.gl,
+									text.setTexParameteri(gl,
 											GL2.GL_TEXTURE_MAG_FILTER,
 											GL2.GL_LINEAR);
-									text.setTexParameteri(RenderUpdater.gl,
+									text.setTexParameteri(gl,
 											GL2.GL_TEXTURE_MIN_FILTER,
 											GL2.GL_LINEAR);
 									Log.log(UberManager.class, name
@@ -111,11 +113,11 @@ public class UberManager {
 		final Texture t = textures.get(s);
 		if (t != null) {
 			textures.remove(s);
-			RenderUpdater.executeInOpenGLContext(new Runnable() {
+			RenderUpdater.executeInOpenGLContext(new GLRunnable() {
 				@Override
-				public void run() {
+				public void run(GL2 gl) {
 					Log.log(UberManager.class, "destroying " + s);
-					t.destroy(RenderUpdater.gl);
+					t.destroy(gl);
 				}
 			});
 		}
@@ -124,18 +126,18 @@ public class UberManager {
 
 	public static void clear() {
 
-		RenderUpdater.executeInOpenGLContext(new Runnable() {
+		RenderUpdater.executeInOpenGLContext(new GLRunnable() {
 			@Override
-			public void run() {
-				clearNow();
+			public void run(GL2 gl) {
+				clearNow(gl);
 			}
 		});
 	}
 
-	public static void clearNow() {
+	public static void clearNow(GL2 gl) {
 		for (String s : textures.keySet()) {
 			Log.log(UberManager.class, "destroying " + s);
-			textures.get(s).destroy(RenderUpdater.gl);
+			textures.get(s).destroy(gl);
 		}
 		textures.clear();
 	}
@@ -173,24 +175,25 @@ public class UberManager {
 			return s;
 		else {
 			loadingShaders.add(shader);
-			RenderUpdater.executeInOpenGLContext(new Runnable() {
+			RenderUpdater.executeInOpenGLContext(new GLRunnable() {
 				@Override
-				public void run() {
-					compileShader(shader);
-
+				public void run(GL2 gl) {
+					compileShader(gl, shader);
 				}
 			});
 			return null;
 		}
 	}
 
-	protected static void compileShader(final Shader shader) {
-		ShaderUtil.compile(shader.file,
+	protected static void compileShader(GL2 gl, final Shader shader) {
+		ShaderUtil.compile(gl, shader.file,
 				new ShaderUtil.ShaderCompiledListener() {
 					@Override
 					public void shaderCompiled(int shaderprogram) {
-						shaders.put(shader, new ShaderScript(shaderprogram,
-								shader.file));
+						ShaderScript ss = new ShaderScript(shaderprogram,
+								shader.file);
+						Log.log(UberManager.class, ss, " compiled", shader);
+						shaders.put(shader, ss);
 						loadingShaders.remove(shader);
 					}
 				});
@@ -208,10 +211,10 @@ public class UberManager {
 		if (changedShader != null) {
 			final ShaderScript ss = shaders.remove(changedShader);
 			if (ss != null)
-				RenderUpdater.executeInOpenGLContext(new Runnable() {
+				RenderUpdater.executeInOpenGLContext(new GLRunnable() {
 					@Override
-					public void run() {
-						ss.deleteShader(RenderUpdater.gl);
+					public void run(GL2 gl) {
+						ss.deleteShader(gl);
 					}
 				});
 			else
@@ -221,9 +224,9 @@ public class UberManager {
 		}
 	}
 
-	public static void initializeShaders() {
+	public static void initializeShaders(GL2 gl) {
 		for (Shader s : Shader.values())
-			compileShader(s);
+			compileShader(gl, s);
 	}
 
 	public static boolean areShaderInitialized(Shader[] values) {

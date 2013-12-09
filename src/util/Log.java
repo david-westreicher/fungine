@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import sun.org.mozilla.javascript.internal.NativeArray;
-
 public class Log {
 	private static Log instance;
 	private static List<String> excludedClasses = new ArrayList<String>();
@@ -24,10 +22,6 @@ public class Log {
 
 	public static void log(Object o) {
 		System.out.println(time() + "Logger: " + o);
-	}
-
-	public static void log(NativeArray o) {
-		System.out.println(time() + "Logger: " + print(o));
 	}
 
 	private static String print(Object o) {

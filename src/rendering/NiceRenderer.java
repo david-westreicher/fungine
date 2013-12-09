@@ -1,11 +1,13 @@
 package rendering;
 
+import javax.media.opengl.GL2;
+
 public class NiceRenderer extends RenderUpdater {
 
 	public NiceRenderer() {
-		super.executeInOpenGLContext(new Runnable() {
+		super.executeInOpenGLContext(new GLRunnable() {
 			@Override
-			public void run() {
+			public void run(GL2 gl) {
 				textures.createGBuffer(gl, "gBuffer");
 			}
 		});

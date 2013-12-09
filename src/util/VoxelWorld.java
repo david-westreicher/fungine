@@ -4,9 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import javax.media.opengl.GL2;
 import javax.vecmath.Vector3f;
 
 import physics.IntersectionTest;
+import rendering.GLRunnable;
 import rendering.RenderUpdater;
 import rendering.VoxelWorldRenderer;
 import world.GameObject;
@@ -162,22 +164,22 @@ public class VoxelWorld extends GameObject {
 				toUpdate.add(c);
 			}
 		}
-		RenderUpdater.executeInOpenGLContext(new Runnable() {
+		RenderUpdater.executeInOpenGLContext(new GLRunnable() {
 			@Override
-			public void run() {
+			public void run(GL2 gl) {
 				for (int i = 0; i < Math.min(toUpdate.size(), 6); i++) {
 					Chunk c = toUpdate.get(i);
-					voxelWorldRenderer.update(c.pos, c.voxels);
+					voxelWorldRenderer.update(gl, c.pos, c.voxels);
 					c.valid = true;
 				}
 			}
 		});
 		for (int i = Math.min(toUpdate.size(), 6); i < toUpdate.size(); i++) {
 			final Chunk c = toUpdate.get(i);
-			RenderUpdater.queue(new Runnable() {
+			RenderUpdater.queue(new GLRunnable() {
 				@Override
-				public void run() {
-					voxelWorldRenderer.update(c.pos, c.voxels);
+				public void run(GL2 gl) {
+					voxelWorldRenderer.update(gl, c.pos, c.voxels);
 				}
 			});
 			c.valid = true;

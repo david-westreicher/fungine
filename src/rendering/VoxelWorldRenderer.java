@@ -42,9 +42,9 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 	private static Vector3f tmp = new Vector3f(0, 0, 0);
 
 	public VoxelWorldRenderer() {
-		RenderUpdater.executeInOpenGLContext(new Runnable() {
+		RenderUpdater.executeInOpenGLContext(new GLRunnable() {
 			@Override
-			public void run() {
+			public void run(GL2 gl) {
 				UberManager.getTexture("img/stone.jpg");
 				// UberManager.getTexture("img/stone.jpg");
 			}
@@ -120,11 +120,11 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 		Game.INSTANCE.loop.renderer.initShaderUniforms();
 		Texture stone = UberManager.getTexture("img/stone.jpg");
 		if (stone != null)
-			ShaderScript.setUniformTexture("triplanar", 0,
+			ShaderScript.setUniformTexture(gl, "triplanar", 0,
 					stone.getTextureObject(gl));
 		Texture stonen = UberManager.getTexture("img/stone.jpg");
 		if (stonen != null)
-			ShaderScript.setUniformTexture("triplanarNorm", 0,
+			ShaderScript.setUniformTexture(gl, "triplanarNorm", 0,
 					stone.getTextureObject(gl));
 	}
 
@@ -176,19 +176,20 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 			gl.glColor3fv(world.color, 0);
 			gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
 			GameObjectType got = GameObjectType.getType(world.getType());
-			ShaderScript.setUniform("shininess", got.shininess);
-			ShaderScript.setUniform("reflective", got.reflective);
+			ShaderScript.setUniform(gl, "shininess", got.shininess);
+			ShaderScript.setUniform(gl, "reflective", got.reflective);
 		} else {
 			voxelDepth.execute(gl);
 		}
-		ShaderScript.setUniform("scale", 4.0f);
+		ShaderScript.setUniform(gl, "scale", 4.0f);
 		for (ChunkInfo ci : visibleChunks) {
 			int i = (int) ci.pos.x;
 			int j = (int) ci.pos.y;
 			int k = (int) ci.pos.z;
 			if (chunks[i][j][k].vertexCount == 0)
 				continue;
-			ShaderScript.setUniform("chunkPos", world.getChunk(i, j, k).pos);
+			ShaderScript
+					.setUniform(gl, "chunkPos", world.getChunk(i, j, k).pos);
 			gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, chunks[i][j][k].vboVertices[0]);
 			gl.glVertexPointer(3, GL2.GL_FLOAT, 0, 0);
 			if (!depthOnly) {
@@ -259,9 +260,9 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 
 	}
 
-	public void update(float[] pos, float[][][] voxels) {
+	public void update(GL2 gl, float[] pos, float[][][] voxels) {
 		chunks[(int) pos[0]][(int) pos[1]][(int) pos[2]].updateMesh(voxels,
-				pos, world, RenderUpdater.gl);
+				pos, world, gl);
 	}
 
 }

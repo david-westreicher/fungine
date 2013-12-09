@@ -70,7 +70,7 @@ public class DeferredRenderer extends RenderUpdater {
 			shadowLights.clear();
 			super.init(gl);
 			// ugly fix -> shadowMap uniform has to be set once
-			ShaderScript.setUniformTexture("shadowMap", 3,
+			ShaderScript.setUniformTexture(gl, "shadowMap", 3,
 					textures.getTextureInformation("shadowmap")[0]);
 			for (GameObject go : lights) {
 				PointLight l = (PointLight) go;
@@ -92,7 +92,7 @@ public class DeferredRenderer extends RenderUpdater {
 				gl.glDisable(GL2.GL_DEPTH_TEST);
 				gl.glBindFramebuffer(GL.GL_FRAMEBUFFER,
 						textures.getTextureInformation("1")[1]);
-				ShaderScript.setUniformTexture("shadowMap", 3,
+				ShaderScript.setUniformTexture(gl, "shadowMap", 3,
 						textures.getTextureInformation("shadowmap")[0]);
 				boolean wireframesetting = RenderUpdater.WIREFRAME;
 				RenderUpdater.WIREFRAME = false;
@@ -112,28 +112,28 @@ public class DeferredRenderer extends RenderUpdater {
 		}
 
 		private void setUniforms(PointLight l) {
-			ShaderScript.setUniform3fv("lightPos", interpolatePos(l));
-			ShaderScript.setUniform3fv("lightColor", l.color);
-			ShaderScript.setUniform("lightRadius", l.radius);
-			ShaderScript.setUniform("hasShadowMap", l.shadow);
-			ShaderScript.setUniform("hasFallof", l.fallof);
+			ShaderScript.setUniform3fv(gl, "lightPos", interpolatePos(l));
+			ShaderScript.setUniform3fv(gl, "lightColor", l.color);
+			ShaderScript.setUniform(gl, "lightRadius", l.radius);
+			ShaderScript.setUniform(gl, "hasShadowMap", l.shadow);
+			ShaderScript.setUniform(gl, "hasFallof", l.fallof);
 		}
 	}
 
 	public DeferredRenderer() {
-		super.executeInOpenGLContext(new Runnable() {
+		super.executeInOpenGLContext(new GLRunnable() {
 
 			@Override
-			public void run() {
+			public void run(GL2 gl) {
 				UberManager.getTexture("img/random.png", true);
 				createGBuffer();
-				textures.createTex("1");
-				textures.createTex("2");
-				textures.createTex("3");
-				textures.createShadowFob("shadowmap", SHADOW_MAP_SIZE,
+				textures.createTex(gl, "1");
+				textures.createTex(gl, "2");
+				textures.createTex(gl, "3");
+				textures.createShadowFob(gl, "shadowmap", SHADOW_MAP_SIZE,
 						SHADOW_MAP_SIZE);
 				if (RENDER_SKYBOX)
-					cubeMap = textures.createCubeMap(Settings.ENGINE_FOLDER
+					cubeMap = textures.createCubeMap(gl, Settings.ENGINE_FOLDER
 							+ "img/black-pixel.jpg");
 			}
 		});
@@ -291,14 +291,14 @@ public class DeferredRenderer extends RenderUpdater {
 			}
 
 			textureShader.execute(gl);
-			ShaderScript.setUniform("ambient", 1f);
-			ShaderScript.setUniformTexture("tex", 0,
+			ShaderScript.setUniform(gl, "ambient", 1f);
+			ShaderScript.setUniformTexture(gl, "tex", 0,
 					textures.getTextureInformation("gbuffer")[1]);
 			drawQuad(0, false, renderState.stereo ? width : 0);
-			ShaderScript.setUniformTexture("tex", 0,
+			ShaderScript.setUniformTexture(gl, "tex", 0,
 					textures.getTextureInformation("gbuffer")[2]);
 			drawQuad(1, false, renderState.stereo ? width : 0);
-			ShaderScript.setUniformTexture("tex", 0,
+			ShaderScript.setUniformTexture(gl, "tex", 0,
 					textures.getTextureInformation("gbuffer")[3]);
 			drawQuad(2, false, renderState.stereo ? width : 0);
 			textureShader.end(gl);
@@ -331,8 +331,8 @@ public class DeferredRenderer extends RenderUpdater {
 				renderDof();
 			} else {
 				textureShader.execute(gl);
-				ShaderScript.setUniform("ambient", 1f);
-				ShaderScript.setUniformTexture("tex", 0,
+				ShaderScript.setUniform(gl, "ambient", 1f);
+				ShaderScript.setUniformTexture(gl, "tex", 0,
 						textures.getTextureInformation("1")[0]);
 				drawQuad(3, true);
 				textureShader.end(gl);
@@ -343,9 +343,9 @@ public class DeferredRenderer extends RenderUpdater {
 				gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER,
 						textures.getTextureInformation("3")[1]);
 				vBlur.execute(gl);
-				ShaderScript.setUniformTexture("tex", 0,
+				ShaderScript.setUniformTexture(gl, "tex", 0,
 						textures.getTextureInformation("2")[0]);
-				ShaderScript.setUniform("width", (float) width
+				ShaderScript.setUniform(gl, "width", (float) width
 						/ (DeferredRenderer.BLUR * 2 + 1));
 				drawQuad(3, true);
 				vBlur.end(gl);
@@ -354,9 +354,9 @@ public class DeferredRenderer extends RenderUpdater {
 				gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER,
 						textures.getTextureInformation("1")[1]);
 				hBlur.execute(gl);
-				ShaderScript.setUniformTexture("tex", 0,
+				ShaderScript.setUniformTexture(gl, "tex", 0,
 						textures.getTextureInformation("3")[0]);
-				ShaderScript.setUniform("height", (float) height
+				ShaderScript.setUniform(gl, "height", (float) height
 						/ (DeferredRenderer.BLUR * 2 + 1));
 				drawQuad(3, true);
 				hBlur.end(gl);
@@ -388,21 +388,21 @@ public class DeferredRenderer extends RenderUpdater {
 		gl.glEnable(GL2.GL_BLEND);
 		if (HATCHED) {
 			hatchShader.execute(gl);
-			ShaderScript.setUniform("ambient", 1f);
-			ShaderScript.setUniformTexture("tex", 0,
+			// ShaderScript.setUniform("ambient", 1f);
+			ShaderScript.setUniformTexture(gl, "tex", 0,
 					textures.getTextureInformation("2")[0]);
 			drawQuad(3, !DEBUG, renderState.stereo ? width : 0);
-			ShaderScript.setUniformTexture("tex", 0,
+			ShaderScript.setUniformTexture(gl, "tex", 0,
 					textures.getTextureInformation("1")[0]);
 			drawQuad(3, !DEBUG, renderState.stereo ? width : 0);
 			hatchShader.end(gl);
 		} else {
 			textureShader.execute(gl);
-			ShaderScript.setUniform("ambient", 1f);
-			ShaderScript.setUniformTexture("tex", 0,
+			ShaderScript.setUniform(gl, "ambient", 1f);
+			ShaderScript.setUniformTexture(gl, "tex", 0,
 					textures.getTextureInformation("2")[0]);
 			drawQuad(3, !DEBUG, renderState.stereo ? width : 0);
-			ShaderScript.setUniformTexture("tex", 0,
+			ShaderScript.setUniformTexture(gl, "tex", 0,
 					textures.getTextureInformation("1")[0]);
 			drawQuad(3, !DEBUG, renderState.stereo ? width : 0);
 			textureShader.end(gl);
@@ -423,23 +423,24 @@ public class DeferredRenderer extends RenderUpdater {
 		if (!DEBUG)
 			endOrthoRender();
 		deferredLighting.execute(gl);
-		ShaderScript.setUniform("width", (float) Settings.WIDTH);
-		ShaderScript.setUniform("height", (float) Settings.HEIGHT);
-		ShaderScript.setUniformTexture("diff", 0,
+		ShaderScript.setUniform(gl, "width", (float) Settings.WIDTH);
+		ShaderScript.setUniform(gl, "height", (float) Settings.HEIGHT);
+		ShaderScript.setUniformTexture(gl, "diff", 0,
 				textures.getTextureInformation("gbuffer")[1]);
-		ShaderScript.setUniformTexture("normal", 1,
+		ShaderScript.setUniformTexture(gl, "normal", 1,
 				textures.getTextureInformation("gbuffer")[2]);
-		ShaderScript.setUniformTexture("position", 2,
+		ShaderScript.setUniformTexture(gl, "position", 2,
 				textures.getTextureInformation("gbuffer")[3]);
-		ShaderScript.setUniform3fv("camPos", interpolatePos(Game.INSTANCE.cam));
-		ShaderScript.setUniformMatrix3("camRotation",
-				Game.INSTANCE.cam.rotationMatrixArray, true);
-		ShaderScript.setUniform("isFullScreen", !DEBUG);
+		ShaderScript.setUniform3fv(gl, "camPos",
+				interpolatePos(Game.INSTANCE.cam));
+		// ShaderScript.setUniformMatrix3("camRotation",
+		// Game.INSTANCE.cam.rotationMatrixArray, true);
+		ShaderScript.setUniform(gl, "isFullScreen", !DEBUG);
 		if (DEBUG) {
 			for (GameObject go : lights) {
 				PointLight l = (PointLight) go;
 				lightRenderer.setUniforms(l);
-				ShaderScript.setUniform("hasShadowMap", false);
+				ShaderScript.setUniform(gl, "hasShadowMap", false);
 				drawQuad(0, width, height, 1f, 0);
 			}
 		} else {
@@ -461,25 +462,25 @@ public class DeferredRenderer extends RenderUpdater {
 		if (SSAO) {
 			textureShader.end(gl);
 			ssaoShader.execute(gl);
-			ShaderScript.setUniform("ssaoStrength", SSAO_STRENGTH);
-			ShaderScript.setUniformTexture("gdiffuse", 0,
+			ShaderScript.setUniform(gl, "ssaoStrength", SSAO_STRENGTH);
+			ShaderScript.setUniformTexture(gl, "gdiffuse", 0,
 					textures.getTextureInformation("gbuffer")[1]);
-			ShaderScript.setUniformTexture("gnormals", 1,
+			ShaderScript.setUniformTexture(gl, "gnormals", 1,
 					textures.getTextureInformation("gbuffer")[2]);
-			ShaderScript.setUniformTexture("gpos", 2,
+			ShaderScript.setUniformTexture(gl, "gpos", 2,
 					textures.getTextureInformation("gbuffer")[3]);
-			ShaderScript.setUniform("width", (float) Settings.WIDTH);
-			ShaderScript.setUniform("height", (float) Settings.HEIGHT);
+			ShaderScript.setUniform(gl, "width", (float) Settings.WIDTH);
+			ShaderScript.setUniform(gl, "height", (float) Settings.HEIGHT);
 			Texture rand = UberManager.getTexture("img/random.png");
 			if (rand != null)
-				ShaderScript.setUniformTexture("grandom", 3,
+				ShaderScript.setUniformTexture(gl, "grandom", 3,
 						rand.getTextureObject(gl));
-			ShaderScript.setUniform3fv("camPos", Game.INSTANCE.cam.pos);
+			ShaderScript.setUniform3fv(gl, "camPos", Game.INSTANCE.cam.pos);
 		} else {
-			ShaderScript.setUniformTexture("tex", 0,
+			ShaderScript.setUniformTexture(gl, "tex", 0,
 					textures.getTextureInformation("gbuffer")[1]);
 		}
-		ShaderScript.setUniform("ambient", AMBIENT);
+		ShaderScript.setUniform(gl, "ambient", AMBIENT);
 		drawQuad(3, true);
 		if (SSAO) {
 			ssaoShader.end(gl);
@@ -490,17 +491,17 @@ public class DeferredRenderer extends RenderUpdater {
 
 	private void renderDof() {
 		bokeh.execute(gl);
-		ShaderScript.setUniform("zFar", zFar);
-		ShaderScript.setUniform("bgl_RenderedTextureWidth",
+		ShaderScript.setUniform(gl, "zFar", zFar);
+		ShaderScript.setUniform(gl, "bgl_RenderedTextureWidth",
 				(float) Settings.WIDTH);
-		ShaderScript.setUniform("bgl_RenderedTextureHeight",
+		ShaderScript.setUniform(gl, "bgl_RenderedTextureHeight",
 				(float) Settings.HEIGHT);
-		ShaderScript.setUniformTexture("bgl_RenderedTexture", 0,
+		ShaderScript.setUniformTexture(gl, "bgl_RenderedTexture", 0,
 				textures.getTextureInformation("1")[0]);
-		ShaderScript.setUniformTexture("bgl_DepthTexture", 1,
+		ShaderScript.setUniformTexture(gl, "bgl_DepthTexture", 1,
 				textures.getTextureInformation("gbuffer")[3]);
-		ShaderScript.setUniform3fv("camPos", Game.INSTANCE.cam.pos);
-		ShaderScript.setUniform("focalDepth", Game.INSTANCE.cam.focus);
+		ShaderScript.setUniform3fv(gl, "camPos", Game.INSTANCE.cam.pos);
+		ShaderScript.setUniform(gl, "focalDepth", Game.INSTANCE.cam.focus);
 		drawQuad(3, true);
 		bokeh.end(gl);
 	}
@@ -543,7 +544,7 @@ public class DeferredRenderer extends RenderUpdater {
 		super.setupLook(nullVector, cam.rotationMatrix);
 		gl.glScalef(SKYBOX_SCALE, SKYBOX_SCALE, SKYBOX_SCALE);
 		skyboxShader.execute(gl);
-		ShaderScript.setUniformCubemap("cubemap", 10, cubeMap);
+		ShaderScript.setUniformCubemap(gl, "cubeMap", 10, cubeMap);
 		gl.glFrontFace(GL.GL_CW);
 		glut.glutSolidCube(1);
 		gl.glFrontFace(GL2.GL_CCW);
@@ -605,9 +606,10 @@ public class DeferredRenderer extends RenderUpdater {
 	@Override
 	public void initShaderUniforms() {
 		super.initShaderUniforms();
-		ShaderScript.setUniform("time", (float) Game.INSTANCE.loop.tick);
-		ShaderScript.setUniformCubemap("cubeMap", 10, cubeMap);
-		ShaderScript.setUniform3fv("camPos", interpolatePos(Game.INSTANCE.cam));
+		ShaderScript.setUniform(gl, "time", (float) Game.INSTANCE.loop.tick);
+		ShaderScript.setUniformCubemap(gl, "cubeMap", 10, cubeMap);
+		ShaderScript.setUniform3fv(gl, "camPos",
+				interpolatePos(Game.INSTANCE.cam));
 	}
 
 	@Override

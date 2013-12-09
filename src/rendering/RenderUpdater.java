@@ -16,6 +16,7 @@ import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLException;
+import javax.media.opengl.GLProfile;
 import javax.media.opengl.glu.GLU;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
@@ -43,8 +44,8 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	private static final float ZNEAR = 0.01f;
 	private static final float DEBUG_SIZE = 250f;
 	private static final Browser browser = new AwesomiumWrapper();
-	private static final List<Runnable> queue = new ArrayList<Runnable>();
-	private static final List<Runnable> contextExecutions = new ArrayList<Runnable>();
+	private static final List<GLRunnable> queue = new ArrayList<GLRunnable>();
+	private static final List<GLRunnable> contextExecutions = new ArrayList<GLRunnable>();
 	private static final float ZFAR_DISTANCE = 100;
 	private List<float[][]> debugLines = new LinkedList<float[][]>();
 	private List<String> excludedGameObjects = new ArrayList<String>();
@@ -59,7 +60,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	protected Map<String, List<GameObject>> renderObjs;
 	protected Camera cam = Game.INSTANCE.cam;
 	protected TextureHelper textures = new TextureHelper();
-	public static GL2 gl;
+	protected GL2 gl;
 	public static GLUT glut = new GLUT();
 	public static float EYE_GAP = 0.23f;
 	public static boolean WIREFRAME = false;
@@ -82,10 +83,10 @@ public class RenderUpdater implements Updatable, GLEventListener {
 
 	public void setFOV(double fov) {
 		FOV_Y = fov;
-		executeInOpenGLContext(new Runnable() {
+		executeInOpenGLContext(new GLRunnable() {
 
 			@Override
-			public void run() {
+			public void run(GL2 gl) {
 				RenderUpdater.this.setProjection(width, height);
 			}
 		});
@@ -96,12 +97,12 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		gl = arg0.getGL().getGL2();
 		synchronized (queue) {
 			if (queue.size() > 0) {
-				queue.remove(0).run();
+				queue.remove(0).run(gl);
 			}
 		}
 		synchronized (contextExecutions) {
-			for (Runnable r : contextExecutions) {
-				r.run();
+			for (GLRunnable r : contextExecutions) {
+				r.run(gl);
 			}
 			contextExecutions.clear();
 		}
@@ -171,6 +172,9 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		// renderCrosshair();
 		if (!Settings.SHOW_STATUS)
 			renderText();
+		GameLoop loop = Game.INSTANCE.loop;
+		fpsRenderer.render(gl, textures, width, loop.timePerRender,
+				loop.timePerTick);
 
 		if (Settings.STEREO)
 			gl.glViewport(0, 0, width, height);
@@ -255,8 +259,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		renderString("Textures to load:  " + UberManager.getTexturesToLoad(),
 				x, 15 * i++ + 80);
 
-		fpsRenderer.render(gl, textures, width, loop.timePerRender,
-				loop.timePerTick);
 	}
 
 	private void renderString(String string, int posX, int posY) {
@@ -413,7 +415,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	@Override
 	public void dispose(GLAutoDrawable arg0) {
 		gl = arg0.getGL().getGL2();
-		UberManager.clearNow();
+		UberManager.clearNow(gl);
 		textures.dispose(gl);
 		Log.log(this, "gl dispose");
 	}
@@ -443,7 +445,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		gl.glEnable(GL2.GL_VERTEX_PROGRAM_POINT_SIZE);
 		gl.glPointSize(10);
 		if (!Settings.LOW_GRAPHICS)
-			UberManager.initializeShaders();
+			UberManager.initializeShaders(gl);
 
 		fpsRenderer = new FPSRenderer(textures, gl);
 	}
@@ -483,13 +485,13 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		renderer.dispose();
 	}
 
-	public synchronized static void executeInOpenGLContext(Runnable runnable) {
+	public synchronized static void executeInOpenGLContext(GLRunnable runnable) {
 		synchronized (contextExecutions) {
 			contextExecutions.add(runnable);
 		}
 	}
 
-	public synchronized static void queue(Runnable runnable) {
+	public synchronized static void queue(GLRunnable runnable) {
 		synchronized (queue) {
 			queue.add(runnable);
 		}
@@ -537,5 +539,12 @@ public class RenderUpdater implements Updatable, GLEventListener {
 
 	public void clearDebugLines() {
 		debugLines.clear();
+	}
+
+	public static GLProfile getGLProfile() {
+		if (Game.INSTANCE.loop == null || Game.INSTANCE.loop.renderer == null
+				|| Game.INSTANCE.loop.renderer.gl == null)
+			return null;
+		return Game.INSTANCE.loop.renderer.gl.getGLProfile();
 	}
 }

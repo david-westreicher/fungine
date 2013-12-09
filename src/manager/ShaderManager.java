@@ -9,6 +9,7 @@ import java.nio.charset.Charset;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
+import rendering.GLRunnable;
 import rendering.RenderUpdater;
 import shader.ShaderScript;
 import util.Log;
@@ -34,10 +35,9 @@ public class ShaderManager extends Manager<ShaderScript> {
 
 	private void compileShader(final String vertexShader,
 			final String fragmentShader, final String file, final ShaderScript t) {
-		RenderUpdater.executeInOpenGLContext(new Runnable() {
+		RenderUpdater.executeInOpenGLContext(new GLRunnable() {
 			@Override
-			public void run() {
-				GL2 gl = RenderUpdater.gl;
+			public void run(GL2 gl) {
 				int v = gl.glCreateShader(GL2.GL_VERTEX_SHADER);
 				int f = gl.glCreateShader(GL2.GL_FRAGMENT_SHADER);
 				int shaderprogram = 0;

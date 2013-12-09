@@ -1,6 +1,10 @@
 package shader;
 
 import java.nio.FloatBuffer;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
@@ -13,6 +17,7 @@ import com.jogamp.opengl.util.texture.Texture;
 public class ShaderScript {
 
 	private static ShaderScript activatedShader = null;
+	private static Map<String, Integer> locationCache = new HashMap<String, Integer>();
 	public int shaderNum;
 	private String file;
 
@@ -42,130 +47,123 @@ public class ShaderScript {
 		gl.glUseProgram(0);
 	}
 
-	public static void setUniform(String str, float[] pos) {
-		int location = RenderUpdater.gl.glGetUniformLocation(getActiveShader(),
-				str);
+	public static void setUniform(GL2 gl, String str, float[] pos) {
+		int location = glGetUniformLocation(gl, getActiveShader(), str);
 		switch (pos.length) {
 		case 2:
-			RenderUpdater.gl.glUniform2fv(location, 1, pos, 0);
+			gl.glUniform2fv(location, 1, pos, 0);
 			break;
 		case 3:
-			RenderUpdater.gl.glUniform3fv(location, 1, pos, 0);
+			gl.glUniform3fv(location, 1, pos, 0);
 			break;
 		case 4:
-			RenderUpdater.gl.glUniform4fv(location, 1, pos, 0);
+			gl.glUniform4fv(location, 1, pos, 0);
 			break;
 		}
 	}
 
-	public static void setUniform(String str, float time) {
-		int location = RenderUpdater.gl.glGetUniformLocation(getActiveShader(),
-				str);
-		RenderUpdater.gl.glUniform1f(location, time);
+	public static void setUniform(GL2 gl, String str, float time) {
+		int location = glGetUniformLocation(gl, getActiveShader(), str);
+		gl.glUniform1f(location, time);
 	}
 
-	public static void setUniform(String str, int time) {
-		int location = RenderUpdater.gl.glGetUniformLocation(getActiveShader(),
-				str);
-		RenderUpdater.gl.glUniform1i(location, time);
+	public static void setUniform(GL2 gl, String str, int time) {
+		int location = glGetUniformLocation(gl, getActiveShader(), str);
+		gl.glUniform1i(location, time);
 	}
 
-	public static void setUniform3fv(String str, float[] scales) {
-		int location = RenderUpdater.gl.glGetUniformLocation(getActiveShader(),
-				str);
-		RenderUpdater.gl.glUniform3fv(location, scales.length / 3, scales, 0);
+	public static void setUniform3fv(GL2 gl, String str, float[] scales) {
+		int location = glGetUniformLocation(gl, getActiveShader(), str);
+		gl.glUniform3fv(location, scales.length / 3, scales, 0);
 	}
 
-	public static void setUniformMatrix3(String str, FloatBuffer matrix,
-			boolean transpose) {
-		int location = RenderUpdater.gl.glGetUniformLocation(getActiveShader(),
-				str);
-		RenderUpdater.gl.glUniformMatrix3fv(location, matrix.capacity() / 9,
-				transpose, matrix);
+	public static void setUniformMatrix3(GL2 gl, String str,
+			FloatBuffer matrix, boolean transpose) {
+		int location = glGetUniformLocation(gl, getActiveShader(), str);
+		gl.glUniformMatrix3fv(location, matrix.capacity() / 9, transpose,
+				matrix);
 	}
 
-	public static void setUniformMatrix4(String str, FloatBuffer matrix,
-			boolean transpose) {
-		int location = RenderUpdater.gl.glGetUniformLocation(getActiveShader(),
-				str);
-		RenderUpdater.gl.glUniformMatrix4fv(location, matrix.capacity() / 16,
-				transpose, matrix);
+	public static void setUniformMatrix4(GL2 gl, String str,
+			FloatBuffer matrix, boolean transpose) {
+		int location = glGetUniformLocation(gl, getActiveShader(), str);
+		gl.glUniformMatrix4fv(location, matrix.capacity() / 16, transpose,
+				matrix);
 	}
 
-	public static void setUniform3fv(String str, FloatBuffer scales) {
-		int location = RenderUpdater.gl.glGetUniformLocation(getActiveShader(),
-				str);
-		RenderUpdater.gl.glUniform3fv(location, scales.limit() / 3, scales);
+	public static void setUniform3fv(GL2 gl, String str, FloatBuffer scales) {
+		int location = glGetUniformLocation(gl, getActiveShader(), str);
+		gl.glUniform3fv(location, scales.limit() / 3, scales);
 	}
 
-	public static void setUniformTexture(String string, int num, int texId) {
-		int location = RenderUpdater.gl.glGetUniformLocation(getActiveShader(),
-				string);
-		RenderUpdater.gl.glUniform1i(location, num);
+	public static void setUniformTexture(GL2 gl, String string, int num,
+			int texId) {
+		int location = glGetUniformLocation(gl, getActiveShader(), string);
+		gl.glUniform1i(location, num);
 		switch (num) {
 		case 0:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE0);
+			gl.glActiveTexture(GL2.GL_TEXTURE0);
 			break;
 		case 1:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE1);
+			gl.glActiveTexture(GL2.GL_TEXTURE1);
 			break;
 		case 2:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE2);
+			gl.glActiveTexture(GL2.GL_TEXTURE2);
 			break;
 		case 3:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE3);
+			gl.glActiveTexture(GL2.GL_TEXTURE3);
 			break;
 		case 4:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE4);
+			gl.glActiveTexture(GL2.GL_TEXTURE4);
 			break;
 		}
-		RenderUpdater.gl.glBindTexture(GL2.GL_TEXTURE_2D, texId);
+		gl.glBindTexture(GL2.GL_TEXTURE_2D, texId);
 		if (num != 0)
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE0);
+			gl.glActiveTexture(GL2.GL_TEXTURE0);
 	}
 
-	public static void setUniformCubemap(String string, int num, Texture cubeMap) {
-		int location = RenderUpdater.gl.glGetUniformLocation(getActiveShader(),
-				string);
-		RenderUpdater.gl.glUniform1i(location, num);
+	public static void setUniformCubemap(GL2 gl, String string, int num,
+			Texture cubeMap) {
+		int location = glGetUniformLocation(gl, getActiveShader(), string);
+		gl.glUniform1i(location, num);
 		switch (num) {
 		case 0:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE0);
+			gl.glActiveTexture(GL2.GL_TEXTURE0);
 			break;
 		case 1:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE1);
+			gl.glActiveTexture(GL2.GL_TEXTURE1);
 			break;
 		case 2:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE2);
+			gl.glActiveTexture(GL2.GL_TEXTURE2);
 			break;
 		case 3:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE3);
+			gl.glActiveTexture(GL2.GL_TEXTURE3);
 			break;
 		case 4:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE4);
+			gl.glActiveTexture(GL2.GL_TEXTURE4);
 			break;
 		case 5:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE5);
+			gl.glActiveTexture(GL2.GL_TEXTURE5);
 			break;
 		case 6:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE6);
+			gl.glActiveTexture(GL2.GL_TEXTURE6);
 			break;
 		case 7:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE7);
+			gl.glActiveTexture(GL2.GL_TEXTURE7);
 			break;
 		case 8:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE8);
+			gl.glActiveTexture(GL2.GL_TEXTURE8);
 			break;
 		case 9:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE9);
+			gl.glActiveTexture(GL2.GL_TEXTURE9);
 			break;
 		case 10:
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE10);
+			gl.glActiveTexture(GL2.GL_TEXTURE10);
 			break;
 		}
-		bindCube(RenderUpdater.gl, cubeMap);
+		bindCube(gl, cubeMap);
 		if (num != 0)
-			RenderUpdater.gl.glActiveTexture(GL2.GL_TEXTURE0);
+			gl.glActiveTexture(GL2.GL_TEXTURE0);
 	}
 
 	public static void bindCube(GL2 gl, Texture cubeMap) {
@@ -198,6 +196,14 @@ public class ShaderScript {
 
 	public void deleteShader(GL2 gl) {
 		gl.glDeleteShader(shaderNum);
+		List<String> toDelete = new ArrayList<String>();
+		for (String shaderLocation : locationCache.keySet()) {
+			if (shaderLocation.startsWith(shaderNum + "")) {
+				toDelete.add(shaderLocation);
+			}
+		}
+		for (String delete : toDelete)
+			locationCache.remove(delete);
 	}
 
 	public static boolean isShaderActivated(ShaderScript transformShader) {
@@ -208,26 +214,39 @@ public class ShaderScript {
 		return activatedShader != null;
 	}
 
-	public static void setUniform(String str, boolean b) {
-		setUniform(str, b ? 1 : 0);
+	public static void setUniform(GL2 gl, String str, boolean b) {
+		setUniform(gl, str, b ? 1 : 0);
 	}
 
-	public static void setUniformMatrix3(String str,
+	public static void setUniformMatrix3(GL2 gl, String str,
 			float[] rotationMatrixArray, boolean transpose) {
-		int location = RenderUpdater.gl.glGetUniformLocation(getActiveShader(),
-				str);
+		int location = glGetUniformLocation(gl, getActiveShader(), str);
 		int capacity = rotationMatrixArray.length;
-		RenderUpdater.gl.glUniformMatrix3fv(location, capacity / 9, transpose,
+		gl.glUniformMatrix3fv(location, capacity / 9, transpose,
 				rotationMatrixArray, 0);
 	}
 
-	public static void setUniformMatrix4(String str,
+	public static void setUniformMatrix4(GL2 gl, String str,
 			float[] rotationMatrixArray, boolean transpose) {
-		int location = RenderUpdater.gl.glGetUniformLocation(getActiveShader(),
-				str);
+		int location = glGetUniformLocation(gl, getActiveShader(), str);
 		int capacity = rotationMatrixArray.length;
-		RenderUpdater.gl.glUniformMatrix4fv(location, capacity / 16, transpose,
+		gl.glUniformMatrix4fv(location, capacity / 16, transpose,
 				rotationMatrixArray, 0);
+	}
+
+	private static int glGetUniformLocation(GL2 gl, int shadernum, String str) {
+		Integer location = locationCache.get(shadernum + str);
+		if (location == null) {
+			location = gl.glGetUniformLocation(shadernum, str);
+			if (location == -1) {
+				Log.err(ShaderScript.class, "couldn't find location for "
+						+ ShaderScript.activatedShader + ": " + str
+						+ ", because location=" + location
+						+ ", activatedShader=" + shadernum);
+			}
+			locationCache.put(shadernum + str, location);
+		}
+		return location;
 	}
 
 	public static ShaderScript getActiveShader(GL2 gl) {

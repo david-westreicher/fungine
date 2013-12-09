@@ -2,9 +2,11 @@ package game;
 
 import java.io.File;
 
+import javax.media.opengl.GL2;
 import javax.script.ScriptException;
 
 import manager.UberManager;
+import rendering.GLRunnable;
 import rendering.ModelRenderer;
 import rendering.RenderUpdater;
 import script.JavaScript;
@@ -80,9 +82,9 @@ public class GameWatcher implements FolderListener {
 					if (go.renderer != null && go.renderer.getName().equals(s)) {
 						final ModelRenderer newModel = new ModelRenderer(s,
 								false);
-						RenderUpdater.executeInOpenGLContext(new Runnable() {
+						RenderUpdater.executeInOpenGLContext(new GLRunnable() {
 							@Override
-							public void run() {
+							public void run(GL2 gl) {
 								go.renderer = newModel;
 							}
 						});

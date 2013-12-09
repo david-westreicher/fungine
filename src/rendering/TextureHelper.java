@@ -19,9 +19,8 @@ import com.jogamp.opengl.util.texture.TextureIO;
 public class TextureHelper {
 	private Map<String, int[]> textures = new HashMap<String, int[]>();
 
-	protected void createTex(String name, int width, int height,
+	protected void createTex(GL2 gl, String name, int width, int height,
 			boolean linear, int texparam, boolean withFrameBuffer) {
-		GL2 gl = RenderUpdater.gl;
 		int[] fboId = new int[1];
 		int[] texId = new int[1];
 		if (withFrameBuffer)
@@ -56,13 +55,12 @@ public class TextureHelper {
 		}
 	}
 
-	public void createTex(String name) {
-		createTex(name, Settings.WIDTH, Settings.HEIGHT, true, GL2.GL_CLAMP,
-				true);
+	public void createTex(GL2 gl, String name) {
+		createTex(gl, name, Settings.WIDTH, Settings.HEIGHT, true,
+				GL2.GL_CLAMP, true);
 	}
 
-	public void createShadowFob(String name, int width, int height) {
-		GL2 gl = RenderUpdater.gl;
+	public void createShadowFob(GL2 gl,String name, int width, int height) {
 		int[] fboId = new int[1];
 		int[] texId = new int[1];
 		gl.glGenFramebuffers(1, fboId, 0);
@@ -106,8 +104,7 @@ public class TextureHelper {
 		}
 	}
 
-	protected Texture createCubeMap(String img) {
-		GL2 gl = RenderUpdater.gl;
+	protected Texture createCubeMap(GL2 gl,String img) {
 		gl.glEnable(GL2.GL_TEXTURE_CUBE_MAP_SEAMLESS);
 		Texture cubeMapTex = TextureIO.newTexture(GL.GL_TEXTURE_CUBE_MAP);
 		// String[] shortCuts = new String[] { "east.bmp", "west.bmp", "up.bmp",
@@ -183,5 +180,95 @@ public class TextureHelper {
 			}
 		}
 		textures.clear();
+	}
+
+	public void createGBuffer(GL2 gl, String name) {
+		int[] fboId = new int[1];
+		int[] texId = new int[3];
+		int[] depId = new int[1];
+		gl.glGenFramebuffers(1, fboId, 0);
+		gl.glGenTextures(texId.length, texId, 0);
+		gl.glGenRenderbuffers(1, depId, 0);
+
+		gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, depId[0]);
+		gl.glRenderbufferStorage(GL2.GL_RENDERBUFFER, GL2.GL_DEPTH_COMPONENT,
+				Settings.WIDTH, Settings.HEIGHT);
+		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, fboId[0]);
+		gl.glFramebufferRenderbuffer(GL2.GL_FRAMEBUFFER,
+				GL2.GL_DEPTH_ATTACHMENT, GL2.GL_RENDERBUFFER, depId[0]);
+		initTextures(gl, texId);
+		int[] fob = new int[] { fboId[0], texId[0], texId[1], texId[2] };
+		addTexture(name, fob);
+		int status = gl.glCheckFramebufferStatus(GL2.GL_FRAMEBUFFER);
+		if (status == GL2.GL_FRAMEBUFFER_COMPLETE) {
+			gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
+			Log.log(this, "Frame buffer object successfully created ("
+					+ Settings.WIDTH + "," + Settings.HEIGHT + ")");
+		} else if (status == GL2.GL_FRAMEBUFFER_INCOMPLETE_FORMATS) {
+			throw new IllegalStateException(
+					"Frame Buffer Oject not created.->GL_FRAMEBUFFER_INCOMPLETE_FORMATS");
+		} else if (status == GL2.GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT) {
+			throw new IllegalStateException(
+					"Frame Buffer Oject not created.->GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+		} else if (status == GL2.GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS) {
+			throw new IllegalStateException(
+					"Frame Buffer Oject not created.->GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS");
+		} else if (status == GL2.GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER) {
+			throw new IllegalStateException(
+					"Frame Buffer Oject not created.->GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
+		} else if (status == GL2.GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER) {
+			throw new IllegalStateException(
+					"Frame Buffer Oject not created.->GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
+		} else {
+			throw new IllegalStateException("Frame Buffer Oject not created.");
+		}
+	}
+
+	private void initTextures(GL2 gl, int[] texId) {
+		int index = 0;
+		for (Integer tex : texId) {
+			gl.glBindTexture(GL.GL_TEXTURE_2D, tex);
+			gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MIN_FILTER,
+					GL.GL_LINEAR);
+			gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_MAG_FILTER,
+					GL.GL_LINEAR);
+			gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S,
+					GL2.GL_CLAMP);
+			gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T,
+					GL2.GL_CLAMP);
+			int internalFormat = GL2.GL_RGBA16F;
+			int formatSize = Buffers.SIZEOF_FLOAT;
+			int type = GL2.GL_FLOAT;
+			switch (index) {
+			case 0:
+				internalFormat = GL2.GL_RGBA8;
+				formatSize = Buffers.SIZEOF_BYTE;
+				type = GL2.GL_UNSIGNED_BYTE;
+				break;
+			}
+			gl.glTexImage2D(
+					GL.GL_TEXTURE_2D,
+					0,
+					internalFormat,
+					Settings.WIDTH,
+					Settings.HEIGHT,
+					0,
+					GL.GL_RGBA,
+					type,
+					Buffers.newDirectByteBuffer(Settings.WIDTH
+							* Settings.HEIGHT * 4 * formatSize));
+			int colorAttach = GL2.GL_COLOR_ATTACHMENT0;
+			switch (index) {
+			case 1:
+				colorAttach = GL2.GL_COLOR_ATTACHMENT1;
+			case 2:
+				colorAttach = GL2.GL_COLOR_ATTACHMENT2;
+			case 3:
+				colorAttach = GL2.GL_COLOR_ATTACHMENT3;
+			}
+			gl.glFramebufferTexture2D(GL2.GL_FRAMEBUFFER, colorAttach,
+					GL.GL_TEXTURE_2D, tex, 0);
+			index++;
+		}
 	}
 }
