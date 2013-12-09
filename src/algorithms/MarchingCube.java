@@ -6,9 +6,9 @@ import java.util.List;
 
 import javax.vecmath.Vector3f;
 
+import rendering.voxel.Voxel;
+import rendering.voxel.VoxelWorld;
 import util.Log;
-import util.Voxel;
-import util.VoxelWorld;
 
 public class MarchingCube {
 	private static Vector3f tmp = new Vector3f();

@@ -1,4 +1,4 @@
-package util;
+package rendering.voxel;
 
 import game.Game;
 import io.IO;
@@ -12,6 +12,7 @@ import java.nio.IntBuffer;
 import javax.vecmath.Vector3f;
 
 import physics.IntersectionTest;
+import util.Log;
 import world.GameObject;
 
 public class Voxel {

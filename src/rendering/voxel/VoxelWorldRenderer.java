@@ -1,4 +1,4 @@
-package rendering;
+package rendering.voxel;
 
 import game.Game;
 
@@ -14,10 +14,13 @@ import javax.media.opengl.GL2;
 import javax.vecmath.Vector3f;
 
 import manager.UberManager;
+import rendering.GLRunnable;
+import rendering.GameObjectRenderer;
+import rendering.RenderUpdater;
+import rendering.model.ModelRenderer;
+import rendering.voxel.VoxelWorld.GameObjectVoxel;
 import shader.Shader;
 import shader.ShaderScript;
-import util.VoxelWorld;
-import util.VoxelWorld.GameObjectVoxel;
 import world.GameObject;
 import world.GameObjectType;
 import algorithms.MarchingCube;
@@ -219,7 +222,7 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 		}
 	}
 
-	public class ChunkR extends ModelRenderer {
+	private static class ChunkR extends ModelRenderer {
 
 		public ChunkR(float voxels[][][]) {
 			FloatBuffer[] vertNorms = getMesh(voxels, null, null);

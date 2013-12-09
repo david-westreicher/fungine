@@ -13,10 +13,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import physics.AbstractCollisionShape;
-import rendering.ChunkRenderer;
-import rendering.ModelRenderer;
-import rendering.TerrainRenderer;
-import rendering.VoxelWorldRenderer;
+import rendering.model.ChunkRenderer;
+import rendering.model.ModelRenderer;
+import rendering.model.TerrainRenderer;
+import rendering.model.VoxelTerrainRenderer;
+import rendering.voxel.VoxelWorldRenderer;
 import settings.Settings;
 import world.GameObjectType;
 
@@ -62,8 +63,6 @@ public class XMLToObjectParser extends DefaultHandler {
 			} else if (currentTag.equals("renderer")) {
 				if (s.equals("terrain"))
 					currentObject.renderer = new TerrainRenderer();
-				else if (s.equals("voxelTerrain"))
-					currentObject.renderer = new VoxelTerrainRenderer();
 				else if (s.equals("voxelTerrain"))
 					currentObject.renderer = new VoxelTerrainRenderer();
 				if (split.length > 1) {

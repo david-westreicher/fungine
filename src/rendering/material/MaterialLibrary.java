@@ -1,4 +1,4 @@
-package util;
+package rendering.material;
 
 import io.IO;
 
@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import util.Log;
 
 public class MaterialLibrary {
 	private Map<String, Material> materials = new HashMap<String, Material>();

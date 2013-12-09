@@ -1,4 +1,4 @@
-package rendering;
+package rendering.model;
 
 import game.Game;
 
@@ -10,11 +10,16 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
 import manager.UberManager;
+import rendering.GLRunnable;
+import rendering.GameObjectRenderer;
+import rendering.RenderState;
+import rendering.RenderUpdater;
+import rendering.TestSkinningRenderer;
+import rendering.material.Material;
 import settings.Settings;
 import shader.Shader;
 import shader.ShaderScript;
 import util.Log;
-import util.Material;
 import util.ObjLoader;
 import world.GameObject;
 import world.GameObjectType;
@@ -25,15 +30,15 @@ public class ModelRenderer extends GameObjectRenderer {
 	private static final int NUM_RENDERED_INST = 30;
 
 	public int drawMode = GL2.GL_TRIANGLES;
-	protected int[] vboVertices = new int[1];
+	public int[] vboVertices = new int[1];
 	private int[] vboIndices;
-	protected int[] vboNormals = new int[1];
+	public int[] vboNormals = new int[1];
 	private int[] vboColors = new int[1];
 	private int[] vboUvs = new int[1];
 	// vboBones[0] = float4(weights), vboBones[1] = int4(boneIndices);
 	private int[] vboBones = new int[2];
 
-	protected int vertexCount;
+	public int vertexCount;
 	protected int[] indexCounts;
 	private static ShaderScript transformShader;
 	private static ShaderScript simpleTransform;

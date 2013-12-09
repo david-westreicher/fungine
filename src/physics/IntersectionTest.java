@@ -5,7 +5,7 @@ import java.nio.IntBuffer;
 
 import javax.vecmath.Vector3f;
 
-import util.VoxelWorld;
+import rendering.voxel.VoxelWorld;
 
 public class IntersectionTest {
 	private static float[] c = new float[] { 10, 10 };

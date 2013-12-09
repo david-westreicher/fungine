@@ -1,4 +1,4 @@
-package rendering;
+package rendering.model;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -9,7 +9,7 @@ import java.util.Random;
 import javax.media.opengl.GL2;
 import javax.vecmath.Vector3f;
 
-import util.Material;
+import rendering.material.Material;
 import browser.Browser;
 
 public class TerrainRenderer extends ModelRenderer {

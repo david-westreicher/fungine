@@ -22,9 +22,9 @@ import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
 
 import manager.UberManager;
+import rendering.material.Material;
 import settings.Settings;
 import util.Log;
-import util.Material;
 import util.MathHelper;
 import util.Util;
 import vr.Rift;
@@ -53,14 +53,14 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	private FPSRenderer fpsRenderer;
 	private float debugAngle;
 	private OpenGLRendering renderer;
-	protected static float INTERP;
 	protected static float zFar;
 	protected static float zNear;
-	protected static double FOV_Y = 69;
 	protected Map<String, List<GameObject>> renderObjs;
 	protected Camera cam = Game.INSTANCE.cam;
 	protected TextureHelper textures = new TextureHelper();
 	protected GL2 gl;
+	public static double FOV_Y = 69;
+	public static float INTERP;
 	public static GLUT glut = new GLUT();
 	public static float EYE_GAP = 0.23f;
 	public static boolean WIREFRAME = false;
@@ -401,7 +401,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		gl.glScalef(go.size[0], go.size[1], go.size[2]);
 	}
 
-	protected void renderObjects(Map<String, List<GameObject>> renderObjs) {
+	public void renderObjects(Map<String, List<GameObject>> renderObjs) {
 		for (String type : renderObjs.keySet()) {
 			if (!excludedGameObjects.contains(type))
 				renderObjects(type, renderObjs);
@@ -464,7 +464,8 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		zFar = ZNEAR + ZFAR_DISTANCE;
 		if (translation != 0)
 			gl.glTranslatef(translation, 0, 0);
-		glu.gluPerspective(fov_y, (float) width / height, zNear, zFar);
+		RenderUtil.gluPerspective(gl, fov_y, (float) width / height, zNear,
+				zFar);
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 	}
 

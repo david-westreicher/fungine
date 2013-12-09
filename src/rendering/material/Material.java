@@ -1,4 +1,4 @@
-package util;
+package rendering.material;
 
 import javax.media.opengl.GL2;
 
@@ -9,7 +9,7 @@ import com.jogamp.opengl.util.texture.Texture;
 
 public class Material {
 
-	String name;
+	public String name;
 	public float ns;
 	public String texture;
 	public String normalMap;

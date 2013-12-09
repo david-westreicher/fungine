@@ -3,6 +3,7 @@ package util;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import rendering.voxel.VoxelWorld;
 import world.GameObject;
 import world.GameObjectType;
 import world.Joint;

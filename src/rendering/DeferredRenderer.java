@@ -12,6 +12,7 @@ import javax.media.opengl.GL2;
 import javax.media.opengl.fixedfunc.GLMatrixFunc;
 
 import manager.UberManager;
+import rendering.model.ModelRenderer;
 import settings.Settings;
 import shader.ShaderScript;
 import util.Log;

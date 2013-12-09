@@ -1,10 +1,10 @@
-package rendering;
+package rendering.model;
 
 import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL2;
 
-import util.Voxel;
+import rendering.voxel.Voxel;
 
 import com.jogamp.common.nio.Buffers;
 

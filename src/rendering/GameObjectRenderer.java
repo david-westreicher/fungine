@@ -4,7 +4,7 @@ import java.util.List;
 
 import javax.media.opengl.GL2;
 
-import util.Material;
+import rendering.material.Material;
 import world.GameObject;
 
 public abstract class GameObjectRenderer {

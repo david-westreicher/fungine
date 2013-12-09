@@ -1,4 +1,4 @@
-package util;
+package rendering.voxel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,7 +10,8 @@ import javax.vecmath.Vector3f;
 import physics.IntersectionTest;
 import rendering.GLRunnable;
 import rendering.RenderUpdater;
-import rendering.VoxelWorldRenderer;
+import util.Log;
+import util.ObjLoader;
 import world.GameObject;
 import world.GameObjectType;
 import algorithms.SimplexNoise;

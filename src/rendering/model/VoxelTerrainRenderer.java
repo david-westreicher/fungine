@@ -1,10 +1,11 @@
-package util;
+package rendering.model;
 
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import rendering.ModelRenderer;
+import util.Log;
+import util.Noise;
 
 public class VoxelTerrainRenderer extends ModelRenderer {
 

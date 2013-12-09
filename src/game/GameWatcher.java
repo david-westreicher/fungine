@@ -7,8 +7,8 @@ import javax.script.ScriptException;
 
 import manager.UberManager;
 import rendering.GLRunnable;
-import rendering.ModelRenderer;
 import rendering.RenderUpdater;
+import rendering.model.ModelRenderer;
 import script.JavaScript;
 import script.Script;
 import settings.Settings;
