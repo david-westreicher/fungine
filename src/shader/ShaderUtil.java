@@ -10,7 +10,6 @@ import java.nio.charset.Charset;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
-import rendering.RenderUpdater;
 import settings.Settings;
 import util.Log;
 

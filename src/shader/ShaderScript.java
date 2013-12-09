@@ -9,7 +9,6 @@ import java.util.Map;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
-import rendering.RenderUpdater;
 import util.Log;
 
 import com.jogamp.opengl.util.texture.Texture;

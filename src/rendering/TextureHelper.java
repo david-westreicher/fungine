@@ -60,7 +60,7 @@ public class TextureHelper {
 				GL2.GL_CLAMP, true);
 	}
 
-	public void createShadowFob(GL2 gl,String name, int width, int height) {
+	public void createShadowFob(GL2 gl, String name, int width, int height) {
 		int[] fboId = new int[1];
 		int[] texId = new int[1];
 		gl.glGenFramebuffers(1, fboId, 0);
@@ -104,7 +104,7 @@ public class TextureHelper {
 		}
 	}
 
-	protected Texture createCubeMap(GL2 gl,String img) {
+	protected Texture createCubeMap(GL2 gl, String img) {
 		gl.glEnable(GL2.GL_TEXTURE_CUBE_MAP_SEAMLESS);
 		Texture cubeMapTex = TextureIO.newTexture(GL.GL_TEXTURE_CUBE_MAP);
 		// String[] shortCuts = new String[] { "east.bmp", "west.bmp", "up.bmp",
