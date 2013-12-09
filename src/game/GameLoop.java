@@ -1,5 +1,6 @@
 package game;
 
+import manager.SoundManager;
 import rendering.OpenGLRendering;
 import rendering.RenderUpdater;
 import util.Log;
@@ -14,7 +15,7 @@ public class GameLoop extends RepeatedRunnable {
 	private int renderloops = 0;
 	public RenderUpdater renderer;
 	public GameMechanics mechanics;
-	public Updatable sound;
+	public SoundManager sound;
 	private long nextTick;
 	private int loops;
 	private float interpolation;

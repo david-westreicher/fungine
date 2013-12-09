@@ -17,7 +17,6 @@ import rendering.ChunkRenderer;
 import rendering.ModelRenderer;
 import rendering.TerrainRenderer;
 import rendering.VoxelWorldRenderer;
-import script.GameScript;
 import settings.Settings;
 import world.GameObjectType;
 
@@ -52,8 +51,6 @@ public class XMLToObjectParser extends DefaultHandler {
 		if (s.length() > 0) {
 			if (currentTag.equals("name")) {
 				currentObject.name = s;
-			} else if (currentTag.equals("script")) {
-				currentObject.script = new GameScript(s);
 			} else if (currentTag.equals("physics")) {
 				if (s.equals("box")) {
 					currentObject.shape = new AbstractCollisionShape.BoxShape();
@@ -62,30 +59,6 @@ public class XMLToObjectParser extends DefaultHandler {
 				} else if (s.equals("capsule")) {
 					currentObject.shape = new AbstractCollisionShape.CapsuleShape();
 				}
-				/*
-				 * float size = Float.parseFloat(split[1])
-				 * BulletPhysics.PHYSICS_SCALE / 2; float size2 = 100; if
-				 * (split.length >= 3) { size2 = Float.parseFloat(split[2])
-				 * BulletPhysics.PHYSICS_SCALE; } if (split[0].equals("box"))
-				 * currentObject.shape = new BoxShape(new Vector3f(size, size,
-				 * size)); else if (split[0].equals("sphere"))
-				 * currentObject.shape = new SphereShape(size); else if
-				 * (split[0].equals("wall")) currentObject.shape = new
-				 * BoxShape(new Vector3f(1, size, size)); else if
-				 * (split[0].equals("capsule")) currentObject.shape = new
-				 * CapsuleShape(size, size2); else
-				 * 
-				 * if (split[0].equals("terrain")) { float terrainSize =
-				 * Float.parseFloat(split[1]) BulletPhysics.PHYSICS_SCALE;
-				 * HeightfieldTerrainShape height = new HeightfieldTerrainShape(
-				 * TerrainRenderer.WIDTH + 1, TerrainRenderer.HEIGHT + 1,
-				 * TerrainRenderer.getHeightField(), terrainSize, -0.5f, 0.5f,
-				 * HeightfieldTerrainShape.YAXIS, false); float gridSpacing =
-				 * terrainSize / TerrainRenderer.WIDTH; Log.log(this,
-				 * gridSpacing, size); height.setLocalScaling(new
-				 * Vector3f(gridSpacing, 1, gridSpacing)); currentObject.shape =
-				 * height; }
-				 */
 			} else if (currentTag.equals("renderer")) {
 				if (s.equals("terrain"))
 					currentObject.renderer = new TerrainRenderer();

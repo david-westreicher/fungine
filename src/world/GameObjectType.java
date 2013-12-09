@@ -7,14 +7,12 @@ import java.util.Map;
 import physics.AbstractCollisionShape;
 import rendering.GameObjectRenderer;
 import rendering.RenderState;
-import script.GameScript;
 import script.JavaScript;
 
 public class GameObjectType extends VariableHolder {
 	private static Map<String, GameObjectType> allTypes = new HashMap<String, GameObjectType>();
 
 	public GameObjectRenderer renderer = null;
-	public GameScript script = null;
 	private String runtimeScript = null;
 	public AbstractCollisionShape shape = null;
 	public String name;
@@ -34,9 +32,8 @@ public class GameObjectType extends VariableHolder {
 
 	@Override
 	public String toString() {
-		return "GameObjectType [renderer=" + renderer + ", script=" + script
-				+ ", shape=" + shape + ", name=" + name + ", shininess="
-				+ shininess + "]";
+		return "GameObjectType [renderer=" + renderer + ", shape=" + shape
+				+ ", name=" + name + ", shininess=" + shininess + "]";
 	}
 
 	public static Collection<GameObjectType> getTypes() {

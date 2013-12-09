@@ -4,8 +4,6 @@ import input.Input;
 
 import javax.script.ScriptException;
 
-import manager.Manageable;
-import manager.Manager;
 import manager.SoundManager;
 import physics.OdePhysics;
 import rendering.DeferredRenderer;
@@ -59,7 +57,6 @@ public class Game {
 	public void restart() {
 		Log.log(this, "Restarting!");
 		// TODO restart the whole shit
-		Manager.restartManager();
 		Util.sleep(10);
 		loop.startPause();
 		loop.exit();
@@ -138,10 +135,6 @@ public class Game {
 		// loop.startPause();
 		loop.exit();
 		Stoppable.stopAll();
-	}
-
-	public Manageable getManager(String name) {
-		return Manager.getManager(name);
 	}
 
 	public void hideMouse(boolean b) {
