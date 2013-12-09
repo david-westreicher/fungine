@@ -108,22 +108,28 @@ public class Game {
 
 	public void addComponent(String c) {
 		c = c.toLowerCase();
-		if (c.equals("renderer") || Settings.LOW_GRAPHICS) {
-			loop.renderer = new RenderUpdater();
-		} else if (c.equals("deferredrenderer")) {
-			loop.renderer = new DeferredRenderer();
-		} else if (c.equals("skinrenderer")) {
-			loop.renderer = new TestSkinningRenderer();
-		} else if (c.equals("nicerenderer")) {
-			loop.renderer = new NiceRenderer();
-		} else if (c.equals("gamemechanics")) {
-			loop.mechanics = new GameMechanics();
-		} else if (c.equals("sound")) {
-			loop.sound = new SoundManager();
-		} else if (c.equals("physics")) {
-			loop.mechanics.physics = new OdePhysics();
+		if (c.contains("renderer")) {
+			if (c.equals("renderer") || Settings.LOW_GRAPHICS) {
+				loop.renderer = new RenderUpdater();
+			} else if (c.equals("deferredrenderer")) {
+				loop.renderer = new DeferredRenderer();
+			} else if (c.equals("skinrenderer")) {
+				loop.renderer = new TestSkinningRenderer();
+			} else if (c.equals("nicerenderer")) {
+				loop.renderer = new NiceRenderer();
+			} else {
+				System.err.println("Can't add component: " + c);
+			}
 		} else {
-			System.err.println("Can't add component: " + c);
+			if (c.equals("gamemechanics")) {
+				loop.mechanics = new GameMechanics();
+			} else if (c.equals("sound")) {
+				loop.sound = new SoundManager();
+			} else if (c.equals("physics")) {
+				loop.mechanics.physics = new OdePhysics();
+			} else {
+				System.err.println("Can't add component: " + c);
+			}
 		}
 	}
 
