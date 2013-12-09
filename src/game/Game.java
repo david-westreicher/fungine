@@ -10,6 +10,7 @@ import rendering.DeferredRenderer;
 import rendering.NiceRenderer;
 import rendering.OpenGLRendering;
 import rendering.RenderUpdater;
+import rendering.SimpleRenderer;
 import rendering.TestSkinningRenderer;
 import script.JavaScript;
 import script.Script;
@@ -107,7 +108,7 @@ public class Game {
 		c = c.toLowerCase();
 		if (c.contains("renderer")) {
 			if (c.equals("renderer") || Settings.LOW_GRAPHICS) {
-				loop.renderer = new RenderUpdater();
+				loop.renderer = new SimpleRenderer();
 			} else if (c.equals("deferredrenderer")) {
 				loop.renderer = new DeferredRenderer();
 			} else if (c.equals("skinrenderer")) {

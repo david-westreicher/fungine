@@ -12,7 +12,7 @@ import shader.Shader;
 import shader.ShaderScript;
 import util.Log;
 
-public class TestSkinningRenderer extends RenderUpdater {
+public class TestSkinningRenderer extends SimpleRenderer {
 	public static class MatrixStack {
 		private List<Matrix4f> matrices;
 

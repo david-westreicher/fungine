@@ -22,7 +22,7 @@ import world.PointLight;
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.util.texture.Texture;
 
-public class DeferredRenderer extends RenderUpdater {
+public class DeferredRenderer extends SimpleRenderer {
 	private static final float SKYBOX_SCALE = 10;
 	private static final boolean RENDER_SKYBOX = true;
 	protected static final int SHADOW_MAP_SIZE = 512;

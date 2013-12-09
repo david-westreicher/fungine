@@ -38,9 +38,7 @@ import browser.Browser;
 import com.jogamp.opengl.util.awt.Screenshot;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-public class RenderUpdater implements Updatable, GLEventListener {
-	private static final boolean USE_OBJECT_INTERP = false;
-	private static final boolean SMOOTHSTEP_INTERP = false;
+public abstract class RenderUpdater implements Updatable, GLEventListener {
 	private static final float ZNEAR = 0.01f;
 	private static final float DEBUG_SIZE = 250f;
 	private static final Browser browser = new AwesomiumWrapper();
@@ -48,11 +46,11 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	private static final List<GLRunnable> contextExecutions = new ArrayList<GLRunnable>();
 	private static final float ZFAR_DISTANCE = 100;
 	private List<float[][]> debugLines = new LinkedList<float[][]>();
-	private List<String> excludedGameObjects = new ArrayList<String>();
 	private boolean takeScreen = false;
 	private FPSRenderer fpsRenderer;
 	private float debugAngle;
 	private OpenGLRendering renderer;
+	protected static final boolean SMOOTHSTEP_INTERP = false;
 	protected static float zFar;
 	protected static float zNear;
 	protected Map<String, List<GameObject>> renderObjs;
@@ -348,69 +346,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		gl.glEnd();
 	}
 
-	protected void renderObjects(String type,
-			Map<String, List<GameObject>> renderObjs) {
-		GameObjectType goType = GameObjectType.getType(type);
-		if (goType == null)
-			return;
-		GameObjectRenderer renderer = goType.renderer;
-		if (renderer == null)
-			return;
-		List<GameObject> objs = renderObjs.get(type);
-		if (objs != null) {
-			renderer.init(gl);
-			if (renderer.isSimple())
-				renderer.draw(gl, objs, INTERP);
-			else
-				for (GameObject go : objs) {
-					gl.glColor3f(go.color[0], go.color[1], go.color[2]);
-					gl.glPushMatrix();
-					transform(goType, go);
-
-					gl.glMatrixMode(GL.GL_TEXTURE);
-					gl.glActiveTexture(GL.GL_TEXTURE7);
-					gl.glPushMatrix();
-					transform(goType, go);
-					gl.glActiveTexture(GL.GL_TEXTURE0);
-
-					renderer.drawSimple(gl);
-
-					gl.glPopMatrix();
-					gl.glMatrixMode(GL2.GL_MODELVIEW);
-					gl.glPopMatrix();
-
-				}
-			renderer.end(gl);
-		}
-	}
-
-	private void transform(GameObjectType goType, GameObject go) {
-		if (USE_OBJECT_INTERP) {
-			float interp[] = MathHelper.interp(go.pos, go.oldPos, INTERP,
-					SMOOTHSTEP_INTERP);
-			gl.glTranslatef(interp[0], interp[1], interp[2]);
-		} else
-			gl.glTranslatef(go.pos[0], go.pos[1], go.pos[2]);
-		if (goType.shape == null) {
-			gl.glRotatef(MathHelper.toDegree(go.rotation[0]), -1, 0, 0);
-			gl.glRotatef(MathHelper.toDegree(go.rotation[1]), 0, -1, 0);
-			gl.glRotatef(MathHelper.toDegree(go.rotation[2]), 0, 0, -1);
-		} else {
-			gl.glMultMatrixf(MathHelper.to4x4Matrix(go.rotationMatrix), 0);
-		}
-		gl.glScalef(go.size[0], go.size[1], go.size[2]);
-	}
-
-	public void renderObjects(Map<String, List<GameObject>> renderObjs) {
-		for (String type : renderObjs.keySet()) {
-			if (!excludedGameObjects.contains(type))
-				renderObjects(type, renderObjs);
-		}
-	}
-
-	protected void renderObjects() {
-		renderObjects(renderObjs);
-	}
+	protected abstract void renderObjects();
 
 	@Override
 	public void dispose(GLAutoDrawable arg0) {
@@ -498,13 +434,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		}
 	}
 
-	public void excludeGameObjectFromRendering(String string) {
-		excludedGameObjects.add(string);
-	}
-
-	public void includeGameObjectFromRendering(String lightObjectTypeName) {
-		excludedGameObjects.remove(lightObjectTypeName);
-	}
 
 	public Map<String, Object> getSettings() {
 		Map<String, Object> settings = new HashMap<String, Object>();
@@ -515,11 +444,9 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		return settings;
 	}
 
-	public void initShaderUniforms() {
-	}
+	public abstract void initShaderUniforms();
 
-	public void endShaderUniforms() {
-	}
+	public abstract void endShaderUniforms();
 
 	public static Browser getBrowser() {
 		return browser;

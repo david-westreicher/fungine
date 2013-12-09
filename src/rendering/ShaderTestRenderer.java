@@ -10,7 +10,7 @@ import shader.ShaderScript;
 
 import com.jogamp.opengl.util.texture.Texture;
 
-public class ShaderTestRenderer extends RenderUpdater {
+public class ShaderTestRenderer extends SimpleRenderer {
 
 	private Texture testImage;
 	private ShaderScript renderTexture;

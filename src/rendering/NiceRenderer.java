@@ -14,6 +14,15 @@ public class NiceRenderer extends RenderUpdater {
 	}
 
 	public void renderObjects() {
-		// super.renderObjs.get(arg0);
+	}
+
+	@Override
+	public void initShaderUniforms() {
+		
+	}
+
+	@Override
+	public void endShaderUniforms() {
+		
 	}
 }
