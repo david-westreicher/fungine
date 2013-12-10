@@ -1,7 +1,5 @@
 package physics;
 
-import game.Game;
-
 import java.util.Map;
 
 import javax.vecmath.Vector3f;
@@ -10,7 +8,6 @@ import org.ode4j.ode.DBody;
 import org.ode4j.ode.DHingeJoint;
 import org.ode4j.ode.DJoint;
 
-import util.Log;
 import world.GameObject;
 import world.Joint;
 import world.Joint.Type;
@@ -58,9 +55,10 @@ public class OdeLocomotion {
 			float currentTarget) {
 		float v = loc.getV();
 		float d = loc.getD();
-		//if (Game.INSTANCE.loop.tick % (Game.INSTANCE.loop.TICKS_PER_SECOND / 2) == 0)
-		//	Log.log(OdeLocomotion.class, loc.currentState, d, v, calcAnlge,
-		//			maxTorque);
+		// if (Game.INSTANCE.loop.tick % (Game.INSTANCE.loop.TICKS_PER_SECOND /
+		// 2) == 0)
+		// Log.log(OdeLocomotion.class, loc.currentState, d, v, calcAnlge,
+		// maxTorque);
 		if (loc.currentState % 2 == 0)
 			return currentTarget + CD * d * Math.signum(CV) + CV * v;
 		else

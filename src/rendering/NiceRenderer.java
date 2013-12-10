@@ -18,11 +18,11 @@ public class NiceRenderer extends RenderUpdater {
 
 	@Override
 	public void initShaderUniforms() {
-		
+
 	}
 
 	@Override
 	public void endShaderUniforms() {
-		
+
 	}
 }

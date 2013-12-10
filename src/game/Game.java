@@ -9,7 +9,6 @@ import physics.OdePhysics;
 import rendering.DeferredRenderer;
 import rendering.NiceRenderer;
 import rendering.OpenGLRendering;
-import rendering.RenderUpdater;
 import rendering.SimpleRenderer;
 import rendering.TestSkinningRenderer;
 import script.JavaScript;

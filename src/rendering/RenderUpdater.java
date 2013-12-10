@@ -11,7 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
@@ -179,7 +178,7 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		endOrthoRender();
 
 		// if (Settings.IS_WINDOWS)
-		gl.glFlush();
+		// gl.glFlush();
 		// else
 		// use glFinish() for faulty linux driver
 		// https://github.com/ValveSoftware/Source-1-Games/issues/765
@@ -378,8 +377,8 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		gl.glCullFace(GL2.GL_BACK);
 		// point cloud rendering
 		// gl.glEnable(GL2.GL_POINT_SMOOTH);
-		gl.glEnable(GL2.GL_VERTEX_PROGRAM_POINT_SIZE);
-		gl.glPointSize(10);
+		// gl.glEnable(GL2.GL_VERTEX_PROGRAM_POINT_SIZE);
+		// gl.glPointSize(10);
 		if (!Settings.LOW_GRAPHICS)
 			UberManager.initializeShaders(gl);
 
@@ -433,7 +432,6 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 			queue.add(runnable);
 		}
 	}
-
 
 	public Map<String, Object> getSettings() {
 		Map<String, Object> settings = new HashMap<String, Object>();

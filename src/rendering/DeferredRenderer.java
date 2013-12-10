@@ -472,7 +472,7 @@ public class DeferredRenderer extends SimpleRenderer {
 					textures.getTextureInformation("gbuffer")[3]);
 			ShaderScript.setUniform(gl, "width", (float) Settings.WIDTH);
 			ShaderScript.setUniform(gl, "height", (float) Settings.HEIGHT);
-			Texture rand = UberManager.getTexture("img/random.png");
+			Texture rand = UberManager.getTexture("img/random.png", true);
 			if (rand != null)
 				ShaderScript.setUniformTexture(gl, "grandom", 3,
 						rand.getTextureObject(gl));

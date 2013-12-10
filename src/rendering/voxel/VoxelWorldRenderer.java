@@ -105,7 +105,7 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 
 				}
 			}
-			//Game.INSTANCE.loop.renderer.renderObjects(gameObjects);
+			// Game.INSTANCE.loop.renderer.renderObjects(gameObjects);
 		}
 
 		// deactivate old shader if necesary and activate voxel shader
