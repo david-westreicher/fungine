@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.media.opengl.GL2;
+import javax.media.opengl.GL3;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLException;
@@ -56,6 +57,7 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 	protected Camera cam = Game.INSTANCE.cam;
 	protected TextureHelper textures = new TextureHelper();
 	protected GL2 gl;
+	protected GL3 gl3;
 	public static double FOV_Y = 69;
 	public static float INTERP;
 	public static GLUT glut = new GLUT();
@@ -92,6 +94,8 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 	@Override
 	public void display(GLAutoDrawable arg0) {
 		gl = arg0.getGL().getGL2();
+		if (arg0.getGL().isGL3())
+			gl3 = arg0.getGL().getGL3();
 		synchronized (queue) {
 			if (queue.size() > 0) {
 				queue.remove(0).run(gl);
@@ -219,16 +223,6 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		gl.glPushMatrix();
 		gl.glLoadIdentity();
 		glu.gluOrtho2D(0, width * (stereo ? 2 : 1), height, 0);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		gl.glPushMatrix();
-		gl.glLoadIdentity();
-	}
-
-	protected void startOrthoRenderOffset() {
-		gl.glMatrixMode(GL2.GL_PROJECTION);
-		gl.glPushMatrix();
-		gl.glLoadIdentity();
-		glu.gluOrtho2D(width, width * 2, height, 0);
 		gl.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glPushMatrix();
 		gl.glLoadIdentity();
@@ -365,9 +359,9 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 								: "missing"));
 
 		gl.glClearColor(0, 0, 0, 0);
-		gl.glEnable(GL2.GL_LINE_SMOOTH);
-		gl.glHint(GL2.GL_LINE_SMOOTH_HINT, GL2.GL_NICEST);
-		gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_NICEST);
+		gl.glDisable(GL2.GL_LINE_SMOOTH);
+		gl.glHint(GL2.GL_LINE_SMOOTH_HINT, GL2.GL_FASTEST);
+		gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_FASTEST);
 		gl.glEnable(GL2.GL_DEPTH_TEST);
 		gl.glDepthFunc(GL2.GL_LEQUAL);
 		// culling

@@ -285,7 +285,7 @@ public class DeferredRenderer extends SimpleRenderer {
 			gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
 			if (renderState.stereo) {
 				gl.glViewport(width, 0, width, height);
-				startOrthoRenderOffset();
+				startOrthoRender(true);
 			} else {
 				gl.glViewport(0, 0, width, height);
 				startOrthoRender();
@@ -378,7 +378,7 @@ public class DeferredRenderer extends SimpleRenderer {
 
 		if (renderState.stereo) {
 			gl.glViewport(width, 0, width, height);
-			startOrthoRenderOffset();
+			startOrthoRender(true);
 		} else {
 			gl.glViewport(0, 0, width, height);
 			startOrthoRender();
