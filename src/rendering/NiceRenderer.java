@@ -2,20 +2,40 @@ package rendering;
 
 import javax.media.opengl.GL2;
 import javax.media.opengl.GL3;
+import javax.vecmath.Vector3f;
 
+import node.NodeVar.VarConnection;
+import rendering.nodes.RenderGraph;
+import rendering.nodes.ShaderConstVec;
+import rendering.nodes.ShaderNode.Uniform;
+import rendering.nodes.TextureNode;
+import rendering.nodes.UniformVec;
 import world.Camera;
 import world.GameObject;
 
 public class NiceRenderer extends RenderUpdater {
+
 	private static final int[] gbufferDrawBuffer = new int[] {
 			GL3.GL_COLOR_ATTACHMENT0, GL3.GL_COLOR_ATTACHMENT1,
 			GL3.GL_COLOR_ATTACHMENT2 };
+	private RenderGraph g;
 
 	public NiceRenderer() {
 		super.executeInOpenGLContext(new GLRunnable() {
+
 			@Override
 			public void run(GL2 gl) {
 				textures.createGBuffer(gl, "gBuffer");
+				g = new RenderGraph();
+				TextureNode t = new TextureNode();
+				UniformVec v = new UniformVec("uniformColor", 1, 1, 0);
+				ShaderConstVec sv = new ShaderConstVec("constColor", 1, 1, 0);
+				g.addNode(sv);
+				g.addNode(v);
+				g.addNode(t);
+				g.addConnection(new VarConnection<Uniform<Vector3f>>(
+						sv.outConstVec, t.color));
+				g.init();
 			}
 		});
 	}
@@ -48,7 +68,12 @@ public class NiceRenderer extends RenderUpdater {
 		// * * DOF
 		// * * WARP
 		// * * TONEMAP
-		renderIntoGBuffer();
+		// draw();
+		g.draw(gl);
+	}
+
+	private void draw() {
+		// renderIntoGBuffer();
 		for (String type : renderObjs.keySet()) {
 			if (type.equals(Camera.CAM_OBJECT_TYPE_NAME))
 				continue;

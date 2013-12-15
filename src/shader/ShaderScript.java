@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
+import javax.vecmath.Vector3f;
 
 import util.Log;
 
@@ -17,6 +18,7 @@ public class ShaderScript {
 
 	private static ShaderScript activatedShader = null;
 	private static Map<String, Integer> locationCache = new HashMap<String, Integer>();
+	private static final float[] tmpFloatArr = new float[4];
 	public int shaderNum;
 	private String file;
 
@@ -59,6 +61,18 @@ public class ShaderScript {
 			gl.glUniform4fv(location, 1, pos, 0);
 			break;
 		}
+	}
+
+	public static void setUniform(GL2 gl, String str, Vector3f value) {
+		int location = glGetUniformLocation(gl, getActiveShader(), str);
+		gl.glUniform3fv(location, 1, tmpVecToFloatArr(value), 0);
+	}
+
+	private static float[] tmpVecToFloatArr(Vector3f vec) {
+		tmpFloatArr[0] = vec.x;
+		tmpFloatArr[1] = vec.y;
+		tmpFloatArr[2] = vec.z;
+		return tmpFloatArr;
 	}
 
 	public static void setUniform(GL2 gl, String str, float time) {
