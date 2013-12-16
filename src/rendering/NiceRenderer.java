@@ -1,17 +1,27 @@
 package rendering;
 
+import game.Game;
+
 import javax.media.opengl.GL2;
 import javax.media.opengl.GL3;
 import javax.vecmath.Vector3f;
 
+import com.google.gson.Gson;
+
+import browser.AwesomiumHelper;
+import browser.AwesomiumWrapper;
+
 import node.NodeVar.VarConnection;
+import rendering.nodes.DrawQuad;
 import rendering.nodes.RenderGraph;
 import rendering.nodes.ShaderConstVec;
 import rendering.nodes.ShaderNode.Uniform;
 import rendering.nodes.TextureNode;
 import rendering.nodes.UniformVec;
+import util.Log;
 import world.Camera;
 import world.GameObject;
+import rendering.nodes.Number;
 
 public class NiceRenderer extends RenderUpdater {
 
@@ -21,6 +31,23 @@ public class NiceRenderer extends RenderUpdater {
 	private RenderGraph g;
 
 	public NiceRenderer() {
+		AwesomiumWrapper.ENGINE_GUI_FILE = "gui/graph/graph.html";
+		AwesomiumWrapper.onLoadGUI = new Runnable() {
+
+			@Override
+			public void run() {
+				Log.log(this, "sending Objects to JS");
+				Gson gson = new Gson();
+				try {
+					String objectString = gson.toJson(g);
+					Log.log(this, "\n", objectString);
+					AwesomiumHelper.executeJavascript("window.initGraph("
+							+ objectString + ")");
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				}
+			}
+		};
 		super.executeInOpenGLContext(new GLRunnable() {
 
 			@Override
@@ -28,13 +55,23 @@ public class NiceRenderer extends RenderUpdater {
 				textures.createGBuffer(gl, "gBuffer");
 				g = new RenderGraph();
 				TextureNode t = new TextureNode();
-				UniformVec v = new UniformVec("uniformColor", 1, 1, 0);
+				DrawQuad d = new DrawQuad();
+				Number width = new Number(5.0f);
+				Number height = new Number(10.0f);
+				// UniformVec v = new UniformVec("uniformColor", 1, 1, 0);
 				ShaderConstVec sv = new ShaderConstVec("constColor", 1, 1, 0);
+				g.addNode(width);
+				g.addNode(height);
 				g.addNode(sv);
-				g.addNode(v);
+				// g.addNode(v);
 				g.addNode(t);
+				g.addNode(d);
 				g.addConnection(new VarConnection<Uniform<Vector3f>>(
 						sv.outConstVec, t.color));
+				g.addConnection(new VarConnection<Float>(width.outNum,
+						d.inWidth));
+				g.addConnection(new VarConnection<Float>(height.outNum,
+						d.inHeight));
 				g.init();
 			}
 		});

@@ -1,0 +1,18 @@
+<html>
+<head>
+	<script src="jquery-1.10.2.min.js"></script>
+	<script src="arbor.js"></script>  
+	<script src="graph.js"></script>
+</head>
+<body>
+	<div>
+            <canvas id="viewport"></canvas>
+    </div>
+	<script>
+	var canvas = document.getElementById('viewport'),
+	context = canvas.getContext('2d');
+	canvas.width = window.innerWidth-20;
+	canvas.height = window.innerHeight-20;
+	</script>
+</body>
+</html>

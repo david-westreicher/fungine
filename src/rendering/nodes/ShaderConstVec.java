@@ -7,11 +7,11 @@ import node.NodeVar;
 public class ShaderConstVec extends ShaderNode {
 
 	private Vector3f vec;
-	private String name;
+	private String constName;
 	public NodeVar<Uniform<Vector3f>> outConstVec;
 
 	public ShaderConstVec(String name, float x, float y, float z) {
-		this.name = name;
+		this.constName = name;
 		this.vec = new Vector3f(x, y, z);
 		outConstVec = addOutput(new NodeVar<Uniform<Vector3f>>("variable name",
 				this));
@@ -19,12 +19,12 @@ public class ShaderConstVec extends ShaderNode {
 
 	@Override
 	void addVertexUniforms(StringBuilder sb) {
-		sb.append("const vec3 " + name + " = vec3(" + vec.x + "," + vec.y + ","
+		sb.append("const vec3 " + constName + " = vec3(" + vec.x + "," + vec.y + ","
 				+ vec.z + ");\n");
 	}
 
 	public void compute() {
-		outConstVec.value = new Uniform<Vector3f>(name);
+		outConstVec.value = new Uniform<Vector3f>(constName);
 	}
 
 	@Override
@@ -33,7 +33,7 @@ public class ShaderConstVec extends ShaderNode {
 
 	@Override
 	void addFragmentUniforms(StringBuilder sb) {
-		sb.append("const vec3 " + name + " = vec3(" + vec.x + "," + vec.y + ","
+		sb.append("const vec3 " + constName + " = vec3(" + vec.x + "," + vec.y + ","
 				+ vec.z + ");\n");
 	}
 

@@ -16,10 +16,18 @@ import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.opengl.util.texture.Texture;
 
 public class AwesomiumWrapper extends Browser {
-	private static final boolean ENGINE_GUI = true;
+	private static final boolean ENGINE_GUI = false;
+	public static String ENGINE_GUI_FILE = "gui/gui.html";
+	public static Runnable onLoadGUI;
 
 	public AwesomiumWrapper() {
 		AwesomiumHelper.init(!ENGINE_GUI);
+		onLoadGUI = new Runnable() {
+			@Override
+			public void run() {
+				sendObjectsToJS();
+			}
+		};
 	}
 
 	@Override
@@ -44,15 +52,10 @@ public class AwesomiumWrapper extends Browser {
 	@Override
 	public void debugSite() {
 		if (ENGINE_GUI)
-			AwesomiumHelper.loadFile(new File("gui/gui.html").getPath(),
-					new Runnable() {
-						@Override
-						public void run() {
-							sendObjectsToJS();
-						}
-					});
+			AwesomiumHelper.loadFile(new File(ENGINE_GUI_FILE).getPath(),
+					onLoadGUI);
 		else {
-			AwesomiumHelper.loadUrl("http://www.youtube.com");
+			AwesomiumHelper.loadUrl("http://www.google.at");
 		}
 	}
 

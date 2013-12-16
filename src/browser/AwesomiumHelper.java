@@ -196,13 +196,13 @@ public class AwesomiumHelper {
 		INSTANCE.awe_webcore_set_base_directory(createString(baseDirectory));
 		webview = INSTANCE.awe_webcore_create_webview(Settings.WIDTH,
 				Settings.HEIGHT, false);
-		INSTANCE.awe_webview_create_object(webview,
+		/*INSTANCE.awe_webview_create_object(webview,
 				createString("fungineCallback"));
 		INSTANCE.awe_webview_set_object_callback(webview,
 				createString("fungineCallback"), createString("execute"));
 		INSTANCE.awe_webview_set_callback_js_console_message(webview, console);
 		INSTANCE.awe_webview_set_callback_js_callback(webview, fungineCallback);
-		INSTANCE.awe_webview_set_transparent(webview, true);
+		INSTANCE.awe_webview_set_transparent(webview, true);*/
 	}
 
 	public static void dispose() {

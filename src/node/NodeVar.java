@@ -5,9 +5,9 @@ import java.util.List;
 
 public class NodeVar<T> {
 	protected String name;
-	private ComputeNode node;
+	private transient ComputeNode node;
 	public T value;
-	public List<NodeVar<T>> dependencies = new ArrayList<NodeVar<T>>();
+	public transient List<NodeVar<T>> dependencies = new ArrayList<NodeVar<T>>();
 
 	public NodeVar(String string, ComputeNode n) {
 		this.name = string;

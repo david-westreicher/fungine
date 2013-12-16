@@ -98,6 +98,10 @@ public class RenderGraph {
 		shaderNodes.add(n);
 	}
 
+	public void addNode(ComputeNode n) {
+		nodes.add(n);
+	}
+
 	public void addNode(InitableNode n) {
 		initableNodes.add(n);
 		nodes.add(n);
@@ -111,4 +115,5 @@ public class RenderGraph {
 	public void init() {
 		// calculate topological order
 	}
+
 }
