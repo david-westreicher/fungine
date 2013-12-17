@@ -3,7 +3,6 @@ package rendering.nodes;
 import javax.media.opengl.GL2;
 
 import node.NodeVar;
-
 import rendering.nodes.ShaderNode.RenderNode;
 
 public class DrawQuad extends RenderNode {

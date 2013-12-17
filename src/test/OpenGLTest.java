@@ -7,11 +7,9 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 
-import reflection.Reflection;
 import settings.Settings;
 import util.Log;
 import util.Util;
-import browser.AwesomiumHelper;
 
 public class OpenGLTest {
 	static {
@@ -38,8 +36,8 @@ public class OpenGLTest {
 				e.printStackTrace();
 			}
 
-		//Log.getInstance().excludeFromLogging(Reflection.class);
-		//Log.getInstance().excludeFromLogging(AwesomiumHelper.class);
+		// Log.getInstance().excludeFromLogging(Reflection.class);
+		// Log.getInstance().excludeFromLogging(AwesomiumHelper.class);
 		Game g = new Game();
 		Util.sleep(500);
 		g.start();

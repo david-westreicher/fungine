@@ -19,8 +19,8 @@ public class ShaderConstVec extends ShaderNode {
 
 	@Override
 	void addVertexUniforms(StringBuilder sb) {
-		sb.append("const vec3 " + constName + " = vec3(" + vec.x + "," + vec.y + ","
-				+ vec.z + ");\n");
+		sb.append("const vec3 " + constName + " = vec3(" + vec.x + "," + vec.y
+				+ "," + vec.z + ");\n");
 	}
 
 	public void compute() {
@@ -33,8 +33,8 @@ public class ShaderConstVec extends ShaderNode {
 
 	@Override
 	void addFragmentUniforms(StringBuilder sb) {
-		sb.append("const vec3 " + constName + " = vec3(" + vec.x + "," + vec.y + ","
-				+ vec.z + ");\n");
+		sb.append("const vec3 " + constName + " = vec3(" + vec.x + "," + vec.y
+				+ "," + vec.z + ");\n");
 	}
 
 	@Override

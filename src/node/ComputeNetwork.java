@@ -27,8 +27,7 @@ public class ComputeNetwork {
 		return null;
 	}
 
-	public <T> void addConnection(VarConnection<T> var) {
-		var.out.addDependency(var.in);
+	public <T> void addConnection(VarConnection var) {
 		network.addConnection(new Edge(createProxyNode(var.out.getNode()),
 				createProxyNode(var.in.getNode())));
 	}

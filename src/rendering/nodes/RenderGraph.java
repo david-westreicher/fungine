@@ -19,6 +19,7 @@ public class RenderGraph {
 	List<RenderNode> renderNodes = new ArrayList<RenderNode>();
 	private List<ComputeNode> nodes = new ArrayList<ComputeNode>();
 	List<RenderNode> finishedInits = new ArrayList<RenderNode>();
+	List<VarConnection> connections = new ArrayList<VarConnection>();
 	private ShaderScript shader;
 	private String name;
 
@@ -108,12 +109,20 @@ public class RenderGraph {
 		shaderNodes.add(n);
 	}
 
-	public void addConnection(VarConnection<?> var) {
+	public void addConnection(VarConnection var) {
 		// var.out.addDependency(var.in);
+		connections.add(var);
 	}
 
 	public void init() {
 		// calculate topological order
+	}
+
+	public void changed(String nodeID, String internalName, float val) {
+		for (ComputeNode n : nodes) {
+			if (n.id.equals(nodeID))
+				n.changed(internalName, val);
+		}
 	}
 
 }

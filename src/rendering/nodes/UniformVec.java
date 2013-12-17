@@ -10,15 +10,15 @@ import shader.ShaderScript;
 public class UniformVec extends InitableNode {
 
 	private Vector3f vec;
-	private String name;
+	private String varName;
 	public NodeVar<Uniform<Vector3f>> outConstVec;
 
-	public UniformVec(String name, float x, float y, float z) {
-		this.name = name;
+	public UniformVec(String varName, float x, float y, float z) {
+		this.varName = varName;
 		this.vec = new Vector3f(x, y, z);
 		outConstVec = addOutput(new NodeVar<Uniform<Vector3f>>("variable name",
 				this));
-		outConstVec.value = new Uniform<Vector3f>(name);
+		outConstVec.value = new Uniform<Vector3f>(varName);
 	}
 
 	public void compute() {
@@ -26,7 +26,7 @@ public class UniformVec extends InitableNode {
 
 	@Override
 	void addVertexUniforms(StringBuilder sb) {
-		sb.append("uniform vec3 " + name + ";\n");
+		sb.append("uniform vec3 " + varName + ";\n");
 	}
 
 	@Override
@@ -35,7 +35,7 @@ public class UniformVec extends InitableNode {
 
 	@Override
 	void addFragmentUniforms(StringBuilder sb) {
-		sb.append("uniform vec3 " + name + ";\n");
+		sb.append("uniform vec3 " + varName + ";\n");
 	}
 
 	@Override
@@ -44,7 +44,7 @@ public class UniformVec extends InitableNode {
 
 	@Override
 	void shaderInit(GL2 gl) {
-		ShaderScript.setUniform(gl, name, vec);
+		ShaderScript.setUniform(gl, varName, vec);
 	}
 
 }

@@ -16,7 +16,7 @@ import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.opengl.util.texture.Texture;
 
 public class AwesomiumWrapper extends Browser {
-	private static final boolean ENGINE_GUI = false;
+	private static final boolean ENGINE_GUI = true;
 	public static String ENGINE_GUI_FILE = "gui/gui.html";
 	public static Runnable onLoadGUI;
 

@@ -9,5 +9,6 @@ public class Number extends ComputeNode {
 	public Number(Float number) {
 		outNum = addOutput(new NodeVar<Float>("number", this));
 		outNum.value = number;
+		addInternal(outNum, Float.class);
 	}
 }

@@ -1,27 +1,22 @@
 package rendering;
 
-import game.Game;
-
 import javax.media.opengl.GL2;
 import javax.media.opengl.GL3;
-import javax.vecmath.Vector3f;
-
-import com.google.gson.Gson;
-
-import browser.AwesomiumHelper;
-import browser.AwesomiumWrapper;
 
 import node.NodeVar.VarConnection;
 import rendering.nodes.DrawQuad;
+import rendering.nodes.Number;
 import rendering.nodes.RenderGraph;
 import rendering.nodes.ShaderConstVec;
-import rendering.nodes.ShaderNode.Uniform;
 import rendering.nodes.TextureNode;
 import rendering.nodes.UniformVec;
 import util.Log;
 import world.Camera;
 import world.GameObject;
-import rendering.nodes.Number;
+import browser.AwesomiumHelper;
+import browser.AwesomiumWrapper;
+
+import com.google.gson.Gson;
 
 public class NiceRenderer extends RenderUpdater {
 
@@ -58,20 +53,19 @@ public class NiceRenderer extends RenderUpdater {
 				DrawQuad d = new DrawQuad();
 				Number width = new Number(5.0f);
 				Number height = new Number(10.0f);
-				// UniformVec v = new UniformVec("uniformColor", 1, 1, 0);
+				UniformVec v = new UniformVec("uniformColor", 1, 1, 0);
 				ShaderConstVec sv = new ShaderConstVec("constColor", 1, 1, 0);
 				g.addNode(width);
 				g.addNode(height);
 				g.addNode(sv);
-				// g.addNode(v);
+				g.addNode(v);
 				g.addNode(t);
 				g.addNode(d);
-				g.addConnection(new VarConnection<Uniform<Vector3f>>(
-						sv.outConstVec, t.color));
-				g.addConnection(new VarConnection<Float>(width.outNum,
-						d.inWidth));
-				g.addConnection(new VarConnection<Float>(height.outNum,
-						d.inHeight));
+				g.addConnection(new VarConnection(sv.outConstVec, t.color));
+				g.addConnection(new VarConnection(width.outNum, d.inWidth,
+						Float.class));
+				g.addConnection(new VarConnection(height.outNum, d.inHeight,
+						Float.class));
 				g.init();
 			}
 		});
@@ -107,6 +101,7 @@ public class NiceRenderer extends RenderUpdater {
 		// * * TONEMAP
 		// draw();
 		g.draw(gl);
+		// g.changed("Number2", "number", Game.INSTANCE.loop.tick / 100.0f);
 	}
 
 	private void draw() {
