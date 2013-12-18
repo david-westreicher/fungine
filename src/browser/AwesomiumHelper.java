@@ -12,6 +12,7 @@ import reflection.Reflection;
 import settings.Settings;
 import util.Log;
 import util.Worker;
+import browser.AwesomiumHelper.awe_webkeyboardevent.ByValue;
 
 import com.jogamp.newt.event.KeyEvent;
 import com.sun.jna.Callback;
@@ -312,11 +313,40 @@ public class AwesomiumHelper {
 			@Override
 			public void run() {
 				awe_webkeyboardevent.ByValue event = new awe_webkeyboardevent.ByValue();
-				event.set(e);
-				INSTANCE.awe_webview_inject_keyboard_event(webview, event);
+				switch (e.getKeyCode()) {
+				case 8:
+				case 127:
+					injectKeyCode(event, e, 0x08);
+					break;
+				case 37:
+					injectKeyCode(event, e, 0x25);
+					break;
+				case 39:
+					injectKeyCode(event, e, 0x27);
+					break;
+				case 38:
+					injectKeyCode(event, e, 0x26);
+					break;
+				case 40:
+					injectKeyCode(event, e, 0x28);
+					break;
+				default:
+					event.set(e);
+					INSTANCE.awe_webview_inject_keyboard_event(webview, event);
+					break;
+
+				}
 			}
 		});
 
+	}
+
+	protected static void injectKeyCode(ByValue event, KeyEvent e, int keyCode) {
+		event.set(e, keyCode);
+		event.type = 0;
+		INSTANCE.awe_webview_inject_keyboard_event(webview, event);
+		event.type = 1;
+		INSTANCE.awe_webview_inject_keyboard_event(webview, event);
 	}
 
 	public static class awe_renderbuffer extends PointerType {
@@ -342,6 +372,7 @@ public class AwesomiumHelper {
 	public static class awe_webkeyboardevent extends Structure {
 		public static class ByValue extends awe_webkeyboardevent implements
 				Structure.ByValue {
+
 		}
 
 		public int type;
@@ -368,6 +399,14 @@ public class AwesomiumHelper {
 			unmodified_text = new char[] { e.getKeyChar(), 0, 0, 0, 0 };
 			is_system_key = false;
 			return this;
+		}
+
+		public void set(KeyEvent e, int keyCode) {
+			virtual_key_code = keyCode;
+			modifiers = 0;
+			native_key_code = 0;
+			text = new char[] { e.getKeyChar(), 0, 0, 0, 0 };
+			unmodified_text = new char[] { e.getKeyChar(), 0, 0, 0, 0 };
 		}
 
 	}

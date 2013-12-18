@@ -373,8 +373,8 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		// gl.glEnable(GL2.GL_POINT_SMOOTH);
 		// gl.glEnable(GL2.GL_VERTEX_PROGRAM_POINT_SIZE);
 		// gl.glPointSize(10);
-		if (!Settings.LOW_GRAPHICS)
-			UberManager.initializeShaders(gl);
+		// if (!Settings.LOW_GRAPHICS)
+		// UberManager.initializeShaders(gl);
 
 		fpsRenderer = new FPSRenderer(textures, gl);
 	}
