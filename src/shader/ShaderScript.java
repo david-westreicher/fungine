@@ -256,8 +256,8 @@ public class ShaderScript {
 						+ ShaderScript.activatedShader + ": " + str
 						+ ", because location=" + location
 						+ ", activatedShader=" + shadernum);
+				locationCache.put(shadernum + str, location);
 			}
-			locationCache.put(shadernum + str, location);
 		}
 		return location;
 	}

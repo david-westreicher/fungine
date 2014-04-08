@@ -7,6 +7,7 @@ import javax.script.ScriptException;
 import manager.SoundManager;
 import physics.OdePhysics;
 import rendering.DeferredRenderer;
+import rendering.GiRenderer;
 import rendering.NiceRenderer;
 import rendering.OpenGLRendering;
 import rendering.SimpleRenderer;
@@ -33,7 +34,6 @@ public class Game {
 	public static boolean DEBUG = false;
 	public Camera cam = new Camera();
 	public boolean exitFlag = false;
-	public boolean fullscreenFlag = false;
 	public static VRFactory.VR vr;
 
 	public Game() {
@@ -114,6 +114,8 @@ public class Game {
 				loop.renderer = new TestSkinningRenderer();
 			} else if (c.equals("nicerenderer")) {
 				loop.renderer = new NiceRenderer();
+			} else if (c.equals("girenderer")) {
+				loop.renderer = new GiRenderer();
 			} else {
 				System.err.println("Can't add component: " + c);
 			}

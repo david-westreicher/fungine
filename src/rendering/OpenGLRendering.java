@@ -62,7 +62,7 @@ public class OpenGLRendering {
 		window.setSize(Settings.STEREO ? Settings.WIDTH * 2 : Settings.WIDTH,
 				Settings.HEIGHT);
 		window.addGLEventListener(r);
-		setFullscreen(Game.INSTANCE.fullscreenFlag);
+		setFullscreen(Settings.USE_FULL_SCREEN);
 		// window.setAlwaysOnTop(true);
 		window.setAutoSwapBufferMode(true);
 		window.setVisible(true);

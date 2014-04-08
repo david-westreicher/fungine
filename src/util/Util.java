@@ -39,59 +39,6 @@ public class Util {
 		}
 	}
 
-	public static JFrame createFrame() {
-		frame = new JFrame("Engine Test");
-
-		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment()
-				.getDefaultScreenDevice();
-		if (Settings.USE_FULL_SCREEN && gd.isFullScreenSupported()) {
-			Log.log(Util.class, "fullscreen supported");
-			frame.setUndecorated(true);
-			gd.setFullScreenWindow(frame);
-		} else {
-			// frame.setSize((Settings.STEREO ? Settings.WIDTH * 2
-			// : Settings.WIDTH) + 20, Settings.HEIGHT + 40);
-			frame.setLocationRelativeTo(null);
-			frame.setResizable(true);
-		}
-
-		frame.addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				super.windowClosing(e);
-				Game.INSTANCE.exit();
-				frame.dispose();
-				// System.exit(0);
-				// frame.setVisible(false);
-				// frame.dispose();
-				// frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				if (System.getProperty("os.name").toLowerCase()
-						.contains("windows"))
-					new Thread(new Runnable() {
-						@Override
-						public void run() {
-							sleep(2000);
-							Log.log(this, "System exit");
-							try {
-								Runtime.getRuntime().exec(
-										"taskkill -IM javaw.exe -F");
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-						}
-					}).start();
-				else
-					new Thread(new Runnable() {
-						@Override
-						public void run() {
-							Util.sleep(2000);
-							System.exit(0);
-						}
-					}).start();
-			}
-		});
-		return frame;
-	}
-
 	public static float roundDigits(float i, int j) {
 		double ten = Math.pow(10, j);
 		return (float) (Math.round(i * ten) / ten);
