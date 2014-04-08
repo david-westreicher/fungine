@@ -2,48 +2,55 @@ package rendering;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
+
+import manager.UberManager;
+import shader.Shader;
+import shader.ShaderScript;
+import util.GLUtil;
+import util.Log;
+
+import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.util.glsl.ShaderUtil;
 
 public class FPSRenderer {
 	public static final int WIDTH = 200;
 	public static final int HEIGHT = 80;
 	public int currentIndex = 0;
 	private ByteBuffer buf;
+	private ShaderScript fpsShader;
 
 	public FPSRenderer(TextureHelper textures, GL2 gl) {
 		textures.createTex(gl, "debugTexture", WIDTH, HEIGHT, false,
 				GL2.GL_REPEAT, false);
 		buf = ByteBuffer.allocate(HEIGHT * 4);
+
+		RenderUtil.init(gl);
 	}
 
-	public void render(GL2 gl, TextureHelper textures, int width,
-			long timePerRender, long timePerTick) {
-		gl.glBindTexture(GL2.GL_TEXTURE_2D,
-				textures.getTextureInformation("debugTexture")[0]);
-		gl.glTexSubImage2D(GL2.GL_TEXTURE_2D, 0, currentIndex, 0, 1, HEIGHT,
-				GL.GL_BGRA, GL.GL_UNSIGNED_BYTE,
-				getByteBuffer(timePerRender, timePerTick));
-		float translateTexX = ((float) currentIndex) / WIDTH;
-		gl.glEnable(GL2.GL_BLEND);
-		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
-		gl.glEnable(GL2.GL_TEXTURE_2D);
-		gl.glColor4f(1f, 1f, 1f, 1f);
-		gl.glBegin(GL2.GL_QUADS);
-		gl.glTexCoord2f(translateTexX, 0);
-		gl.glVertex3f(width - WIDTH, 0, 0);
-		gl.glTexCoord2f(translateTexX, 1);
-		gl.glVertex3f(width - WIDTH, HEIGHT, 0);
-		gl.glTexCoord2f(translateTexX + 1, 1);
-		gl.glVertex3f(width, HEIGHT, 0);
-		gl.glTexCoord2f(translateTexX + 1, 0);
-		gl.glVertex3f(width, 0, 0);
-		gl.glEnd();
+	public void render(GL2 gl, GLUtil glutil, TextureHelper textures,
+			int width, long timePerRender, long timePerTick) {
+		// update texture
+		{
+			gl.glBindTexture(GL2.GL_TEXTURE_2D,
+					textures.getTextureInformation("debugTexture")[0]);
+			gl.glTexSubImage2D(GL2.GL_TEXTURE_2D, 0, currentIndex, 0, 1,
+					HEIGHT, GL.GL_BGRA, GL.GL_UNSIGNED_BYTE,
+					getByteBuffer(timePerRender, timePerTick));
+			gl.glBindTexture(GL2.GL_TEXTURE_2D, 0);
+		}
+		// draw texture
+		RenderUtil.drawTexture(gl, glutil, width - WIDTH / 2 - 2,
+				HEIGHT / 2 + 2, 0, WIDTH, HEIGHT,
+				textures.getTextureInformation("debugTexture")[0],
+				((float) currentIndex + 1) / WIDTH);
 		gl.glBindTexture(GL2.GL_TEXTURE_2D, 0);
-		gl.glDisable(GL2.GL_TEXTURE_2D);
-		gl.glDisable(GL2.GL_BLEND);
 		currentIndex = (currentIndex + 1) % WIDTH;
+		return;
 	}
 
 	private Buffer getByteBuffer(long timePerRender, long timePerTick) {

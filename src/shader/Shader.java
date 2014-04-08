@@ -9,7 +9,9 @@ public enum Shader {
 			"shader/renderDepth.glsl"), SKINNING("shader/skinning.glsl"), TRANSFORM_SKINNING(
 			"shader/transformTextureSkinning.glsl"), SKYBOX(
 			"shader/skybox.glsl"), HATCH("shader/hatch.glsl"), VOXEL(
-			"shader/voxel.glsl"), VOXEL_DEPTH("shader/voxelDepth.glsl");
+			"shader/voxel.glsl"), VOXEL_DEPTH("shader/voxelDepth.glsl"), TEXTURE3(
+			"shader/texture3.glsl"), TRIANGLE("shader/triangle.glsl"), FPS(
+			"shader/fps.glsl");
 	public String file;
 
 	Shader(String file) {

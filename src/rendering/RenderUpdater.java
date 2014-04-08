@@ -24,6 +24,7 @@ import javax.vecmath.Vector3f;
 import manager.UberManager;
 import rendering.material.Material;
 import settings.Settings;
+import util.GLUtil;
 import util.Log;
 import util.MathHelper;
 import util.Util;
@@ -58,12 +59,13 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 	protected TextureHelper textures = new TextureHelper();
 	protected GL2 gl;
 	protected GL3 gl3;
-	public static double FOV_Y = 69;
+	public static float FOV_Y = 69;
 	public static float INTERP;
 	public static GLUT glut = new GLUT();
 	public static float EYE_GAP = 0.23f;
 	public static boolean WIREFRAME = false;
 	public final static GLU glu = new GLU();
+	public final static GLUtil glutil = new GLUtil();
 	public int width;
 	public int height;
 	public RenderState renderState = new RenderState();
@@ -80,7 +82,7 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		renderer.display();
 	}
 
-	public void setFOV(double fov) {
+	public void setFOV(float fov) {
 		FOV_Y = fov;
 		executeInOpenGLContext(new GLRunnable() {
 
@@ -113,8 +115,8 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 		// if(Game.INSTANCE.loop.tick%60==0)
 		// Log.log(this, System.nanoTime() - startTime);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		gl.glLoadIdentity();
+		glutil.glMatrixMode(GL2.GL_MODELVIEW);
+		glutil.glLoadIdentity();
 
 		// renderOBJECTS
 
@@ -159,8 +161,8 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 			}
 
 			gl.glDisable(GL2.GL_DEPTH_TEST);
-			if (Game.DEBUG || !Settings.SHOW_STATUS)
-				renderDebug();
+			// if (Game.DEBUG || !Settings.SHOW_STATUS)
+			// renderDebug();
 
 		}
 
@@ -174,12 +176,14 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		if (!Settings.SHOW_STATUS)
 			renderText();
 		GameLoop loop = Game.INSTANCE.loop;
-		fpsRenderer.render(gl, textures, width, loop.timePerRender,
+		fpsRenderer.render(gl, glutil, textures, width, loop.timePerRender,
 				loop.timePerTick);
 
 		if (Settings.STEREO)
 			gl.glViewport(0, 0, width, height);
 		endOrthoRender();
+
+		glutil.checkSanity();
 
 		// if (Settings.IS_WINDOWS)
 		// gl.glFlush();
@@ -206,26 +210,26 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		tmp2Vector3f.set(0, 1, 0);
 		rotationMatrix.transform(tmpVector3f);
 		rotationMatrix.transform(tmp2Vector3f);
-		glu.gluLookAt(pos[0], pos[1], pos[2], pos[0] + tmpVector3f.x, pos[1]
+		glutil.gluLookAt(pos[0], pos[1], pos[2], pos[0] + tmpVector3f.x, pos[1]
 				+ tmpVector3f.y, pos[2] + tmpVector3f.z, tmp2Vector3f.x,
 				tmp2Vector3f.y, tmp2Vector3f.z);
 	}
 
 	protected void endOrthoRender() {
-		gl.glPopMatrix();
-		gl.glMatrixMode(GL2.GL_PROJECTION);
-		gl.glPopMatrix();
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
+		glutil.glPopMatrix();
+		glutil.glMatrixMode(GL2.GL_PROJECTION);
+		glutil.glPopMatrix();
+		glutil.glMatrixMode(GL2.GL_MODELVIEW);
 	}
 
 	protected void startOrthoRender(boolean stereo) {
-		gl.glMatrixMode(GL2.GL_PROJECTION);
-		gl.glPushMatrix();
-		gl.glLoadIdentity();
-		glu.gluOrtho2D(0, width * (stereo ? 2 : 1), height, 0);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
-		gl.glPushMatrix();
-		gl.glLoadIdentity();
+		glutil.glMatrixMode(GL2.GL_PROJECTION);
+		glutil.glPushMatrix();
+		glutil.glLoadIdentity();
+		glutil.gluOrtho2D(0, width * (stereo ? 2 : 1), height, 0);
+		glutil.glMatrixMode(GL2.GL_MODELVIEW);
+		glutil.glPushMatrix();
+		glutil.glLoadIdentity();
 	}
 
 	protected void startOrthoRender() {
@@ -352,6 +356,7 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 	@Override
 	public void init(GLAutoDrawable arg0) {
 		gl = arg0.getGL().getGL2();
+		Log.log(this, "gl version: " + gl);
 		Log.log(this, "dimensions: " + width, height);
 		Log.log(this,
 				"GL_ARB_gpu_shader5: "
@@ -361,14 +366,14 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		gl.glClearColor(0, 0, 0, 0);
 		gl.glDisable(GL2.GL_LINE_SMOOTH);
 		gl.glHint(GL2.GL_LINE_SMOOTH_HINT, GL2.GL_FASTEST);
-		gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_FASTEST);
+		// gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_FASTEST);
 		gl.glEnable(GL2.GL_DEPTH_TEST);
 		gl.glDepthFunc(GL2.GL_LEQUAL);
 		// culling
-		// gl.glDisable(GL2.GL_CULL_FACE);
-		gl.glFrontFace(GL2.GL_CCW);
-		gl.glEnable(GL2.GL_CULL_FACE);
-		gl.glCullFace(GL2.GL_BACK);
+		gl.glDisable(GL2.GL_CULL_FACE);
+		// gl.glFrontFace(GL2.GL_CCW);
+		// gl.glEnable(GL2.GL_CULL_FACE);
+		// gl.glCullFace(GL2.GL_BACK);
 		// point cloud rendering
 		// gl.glEnable(GL2.GL_POINT_SMOOTH);
 		// gl.glEnable(GL2.GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -383,19 +388,19 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		setProjection(width, height, FOV_Y, 0);
 	}
 
-	public void setProjection(int width, int height, double fov_y,
+	public void setProjection(int width, int height, float fov_y,
 			float translation) {
 		this.width = width;
 		this.height = height;
-		gl.glMatrixMode(GL2.GL_PROJECTION);
-		gl.glLoadIdentity();
+		glutil.glMatrixMode(GL2.GL_PROJECTION);
+		glutil.glLoadIdentity();
 		zNear = ZNEAR;
 		zFar = ZNEAR + ZFAR_DISTANCE;
 		if (translation != 0)
-			gl.glTranslatef(translation, 0, 0);
-		RenderUtil.gluPerspective(gl, fov_y, (float) width / height, zNear,
+			glutil.glTranslatef(translation, 0, 0);
+		RenderUtil.gluPerspective(glutil, fov_y, (float) width / height, zNear,
 				zFar);
-		gl.glMatrixMode(GL2.GL_MODELVIEW);
+		glutil.glMatrixMode(GL2.GL_MODELVIEW);
 	}
 
 	@Override
