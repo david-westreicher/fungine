@@ -96,7 +96,7 @@ public class GLUtil {
 		glOrtho(left, right, bottom, top, -1, 1);
 	}
 
-	private void glOrtho(float left, float right, float bottom, float top,
+	public void glOrtho(float left, float right, float bottom, float top,
 			float near, float far) {
 		// http://pyopengl.sourceforge.net/documentation/manual-3.0/glOrtho.html
 		Matrix4f orthoMatrix = tmpM;

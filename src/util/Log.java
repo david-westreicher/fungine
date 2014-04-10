@@ -63,6 +63,19 @@ public class Log {
 		}
 	}
 
+	public static void log(Object inst, double[] o) {
+		String className = inst.getClass().getName();
+		if (!excludedClasses.contains(className)) {
+			System.out.print(time() + className + ": ");
+			if (o == null)
+				System.out.print("null");
+			else
+				for (int i = 0; i < o.length; i++)
+					System.out.print(o[i] + ((i < o.length - 1) ? ", " : ""));
+			System.out.print("\n");
+		}
+	}
+
 	public static void log(Object inst, int[] o) {
 		String className = inst.getClass().getName();
 		if (!excludedClasses.contains(className)) {

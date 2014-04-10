@@ -13,10 +13,11 @@ void main(){
 out vec4 color;
 in vec2 uv;
 uniform sampler2D fpsTex;
-uniform float translateX;
+uniform float translateX =0;
  
 void main(){
 	vec2 trans = vec2(uv);
 	trans.x+=translateX;
-    color = texture(fpsTex,trans);
+    color = texture(fpsTex,trans);//50;
+   // color.a = 1;
 }

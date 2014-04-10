@@ -20,7 +20,8 @@ public class TextureHelper {
 	private Map<String, int[]> textures = new HashMap<String, int[]>();
 
 	protected void createTex(GL2 gl, String name, int width, int height,
-			boolean linear, int texparam, boolean withFrameBuffer) {
+			boolean linear, int texparam, boolean withFrameBuffer,
+			boolean floatTexture) {
 		int[] fboId = new int[1];
 		int[] texId = new int[1];
 		if (withFrameBuffer)
@@ -34,13 +35,18 @@ public class TextureHelper {
 				linear ? GL.GL_LINEAR : GL.GL_NEAREST);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_S, texparam);
 		gl.glTexParameteri(GL.GL_TEXTURE_2D, GL.GL_TEXTURE_WRAP_T, texparam);
-		gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA8, width, height, 0,
-				GL.GL_BGRA, GL.GL_UNSIGNED_BYTE, null);
+		if (floatTexture)
+			gl.glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGBA16F, width,
+					height, 0, GL2.GL_RGBA, GL.GL_FLOAT, null);
+		else
+			gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL.GL_RGBA8, width, height, 0,
+					GL.GL_BGRA, GL.GL_UNSIGNED_BYTE, null);
 
-		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, fboId[0]);
-		if (withFrameBuffer)
+		if (withFrameBuffer) {
+			gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, fboId[0]);
 			gl.glFramebufferTexture2D(GL2.GL_FRAMEBUFFER,
 					GL2.GL_COLOR_ATTACHMENT0, GL.GL_TEXTURE_2D, texId[0], 0);
+		}
 
 		addTexture(name, new int[] { texId[0], withFrameBuffer ? fboId[0] : 0 });
 		if (withFrameBuffer) {
@@ -57,7 +63,7 @@ public class TextureHelper {
 
 	public void createTex(GL2 gl, String name) {
 		createTex(gl, name, Settings.WIDTH, Settings.HEIGHT, true,
-				GL2.GL_CLAMP, true);
+				GL2.GL_CLAMP, true, false);
 	}
 
 	public void createShadowFob(GL2 gl, String name, int width, int height) {

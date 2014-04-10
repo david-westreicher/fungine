@@ -3,7 +3,9 @@ package util;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
+import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
+import javax.vecmath.Vector4d;
 
 import world.GameObject;
 import Jama.EigenvalueDecomposition;
@@ -13,6 +15,22 @@ public class MathHelper {
 	public static class Tansformation {
 		public Quat4f rotation = new Quat4f();
 		public Vector3f translation = new Vector3f();
+
+		public void transform(Vector3f pos) {
+			// pos.negate();
+			Matrix3f m = new Matrix3f();
+			m.set(rotation);
+			// Log.log(this, m);
+			// m.transpose();
+			m.transform(pos);
+			pos.add(translation);
+		}
+
+		@Override
+		public String toString() {
+			return "Tansformation [rotation=" + rotation + ", translation="
+					+ translation + "]";
+		}
 	}
 
 	private static Tansformation tempTransform = new Tansformation();
@@ -43,7 +61,12 @@ public class MathHelper {
 		float quat[] = findLargestEigenVector(m);
 		tempTransform.rotation.set(quat[1], quat[2], quat[3], quat[0]);
 		tempTransform.rotation.normalize();
-		tempTransform.translation.set(qCentroid);
+		Matrix3f tmpMatrix = new Matrix3f();
+		tmpMatrix.set(tempTransform.rotation);
+		tempTransform.translation.set(pCentroid);
+		tmpMatrix.transform(tempTransform.translation);
+		tempTransform.translation.negate();
+		tempTransform.translation.add(new Vector3f(qCentroid));
 		return tempTransform;
 	}
 
@@ -56,11 +79,24 @@ public class MathHelper {
 	}
 
 	private static float[] findLargestEigenVector(Matrix4f m) {
-		Matrix eigenVal = new EigenvalueDecomposition(new Matrix(toArray(m)))
-				.getV();
-		return new float[] { (float) eigenVal.get(0, 0),
-				(float) eigenVal.get(1, 0), (float) eigenVal.get(2, 0),
-				(float) eigenVal.get(3, 0) };
+		EigenvalueDecomposition eigen = new EigenvalueDecomposition(new Matrix(
+				toArray(m)));
+		double[] eigenVals = eigen.getRealEigenvalues();
+		Matrix eigenVal = eigen.getV();
+		double largestEigenValue = Double.MIN_VALUE;
+		int largestEigenValueIndex = 0;
+		for (int i = 0; i < 4; i++) {
+			if (eigenVals[i] > largestEigenValue) {
+				largestEigenValue = eigenVals[i];
+				largestEigenValueIndex = i;
+			}
+		}
+		// Log.log(MathHelper.class, eigenVals);
+		// Log.log(MathHelper.class, largestEigenValueIndex);
+		return new float[] { (float) eigenVal.get(0, largestEigenValueIndex),
+				(float) eigenVal.get(1, largestEigenValueIndex),
+				(float) eigenVal.get(2, largestEigenValueIndex),
+				(float) eigenVal.get(3, largestEigenValueIndex) };
 	}
 
 	private static double[][] toArray(Matrix4f m) {
@@ -330,5 +366,62 @@ public class MathHelper {
 		if (t < 2f / 3f)
 			return p + (q - p) * (2f / 3f - t) * 6;
 		return p;
+	}
+
+	public static Vector2f[] getProjectedTriangle(Vector3f triangle[]) {
+		Vector3f v1 = triangle[0];
+		Vector3f v2 = triangle[1];
+		Vector3f v3 = triangle[2];
+		Vector2f[] uvs = new Vector2f[] { new Vector2f(), new Vector2f(),
+				new Vector2f() };
+		Vector3f tmp = new Vector3f();
+		tmp.sub(v1, v2);
+		float d1 = tmp.length();
+		tmp.sub(v2, v3);
+		float d2 = tmp.length();
+		tmp.sub(v3, v1);
+		float d3 = tmp.length();
+		uvs[0].set(0, 0);
+		uvs[1].set(d1, 0);
+		float x = (d2 * d2 - d3 * d3 - d1 * d1) / (-2 * d1);
+		float y = (float) Math.sqrt(d3 * d3 - x * x);
+		uvs[2].set(x, y);
+		return uvs;
+	}
+
+	public static Vector3f findNormal(Vector3f[] triangle) {
+		Vector3f v0 = triangle[0];
+		Vector3f v1 = triangle[1];
+		Vector3f v2 = triangle[2];
+		Vector3f normal = new Vector3f();
+		Vector3f tmp1 = new Vector3f();
+		Vector3f tmp2 = new Vector3f();
+		tmp1.sub(v0, v2);
+		tmp2.sub(v1, v2);
+		normal.cross(tmp1, tmp2);
+		normal.normalize();
+		return normal;
+	}
+
+	public static Vector3f findMid(Vector3f[] triangle) {
+		Vector3f tmp = new Vector3f();
+		for (Vector3f vec : triangle)
+			tmp.add(vec);
+		tmp.x /= triangle.length;
+		tmp.y /= triangle.length;
+		tmp.z /= triangle.length;
+		return tmp;
+	}
+
+	public static Vector3f findMid(Vector2f[] triangle) {
+		Vector3f tmp = new Vector3f();
+		for (Vector2f vec : triangle) {
+			tmp.x += vec.x;
+			tmp.y += vec.y;
+		}
+		tmp.x /= triangle.length;
+		tmp.y /= triangle.length;
+		tmp.z = 0;
+		return tmp;
 	}
 }

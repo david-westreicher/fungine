@@ -26,7 +26,7 @@ public class FPSRenderer {
 
 	public FPSRenderer(TextureHelper textures, GL2 gl) {
 		textures.createTex(gl, "debugTexture", WIDTH, HEIGHT, false,
-				GL2.GL_REPEAT, false);
+				GL2.GL_REPEAT, false, false);
 		buf = ByteBuffer.allocate(HEIGHT * 4);
 
 		RenderUtil.init(gl);

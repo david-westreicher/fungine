@@ -113,7 +113,7 @@ public class RenderUtil {
 	}
 
 	public static void drawTexture(GL2 gl, GLUtil glutil, float x, float y,
-			float z, float width, float height, int texID, float  translateX) {
+			float z, float width, float height, int texID, float translateX) {
 		ShaderScript fpsShader = UberManager.getShader(Shader.FPS);
 		if (fpsShader == null)
 			return;
@@ -126,7 +126,7 @@ public class RenderUtil {
 			glutil.scale(width, height, 1);
 			fpsShader.execute(gl);
 			{
-				ShaderScript.setUniformTexture(gl, "fpsTex", 0 ,texID);
+				ShaderScript.setUniformTexture(gl, "fpsTex", 0, texID);
 				ShaderScript.setUniformMatrix4(gl, "modelviewprojection",
 						glutil.getModelViewProjection(), true);
 				ShaderScript.setUniform(gl, "translateX", translateX);
@@ -141,5 +141,145 @@ public class RenderUtil {
 		glutil.glPopMatrix();
 
 		gl.glDisable(GL2.GL_BLEND);
+	}
+
+	public static float[] merge(float[]... boxs) {
+		int length = 0;
+		for (float[] box : boxs)
+			length += box.length;
+		float verts[] = new float[length];
+		int count = 0;
+		for (float[] box : boxs) {
+			for (int i = 0; i < box.length; i++)
+				verts[count++] = box[i];
+		}
+		return verts;
+	}
+
+	public static float[] box(float x, float y, float z, float width,
+			float height, float depth) {
+		float[] verts = new float[6 * 2 * 3 * 3];
+		int count = 0;
+		// back t1
+		verts[count++] = x;
+		verts[count++] = y;
+		verts[count++] = z;
+		verts[count++] = x + width;
+		verts[count++] = y + height;
+		verts[count++] = z;
+		verts[count++] = x + width;
+		verts[count++] = y;
+		verts[count++] = z;
+		// back t2
+		verts[count++] = x;
+		verts[count++] = y;
+		verts[count++] = z;
+		verts[count++] = x;
+		verts[count++] = y + height;
+		verts[count++] = z;
+		verts[count++] = x + width;
+		verts[count++] = y + height;
+		verts[count++] = z;
+		// front t1
+		verts[count++] = x;
+		verts[count++] = y;
+		verts[count++] = z + depth;
+		verts[count++] = x + width;
+		verts[count++] = y;
+		verts[count++] = z + depth;
+		verts[count++] = x + width;
+		verts[count++] = y + height;
+		verts[count++] = z + depth;
+		// front t2
+		verts[count++] = x;
+		verts[count++] = y;
+		verts[count++] = z + depth;
+		verts[count++] = x + width;
+		verts[count++] = y + height;
+		verts[count++] = z + depth;
+		verts[count++] = x;
+		verts[count++] = y + height;
+		verts[count++] = z + depth;
+		// bottom t1
+		verts[count++] = x;
+		verts[count++] = y;
+		verts[count++] = z;
+		verts[count++] = x + width;
+		verts[count++] = y;
+		verts[count++] = z + depth;
+		verts[count++] = x + width;
+		verts[count++] = y;
+		verts[count++] = z;
+		// bottom t2
+		verts[count++] = x;
+		verts[count++] = y;
+		verts[count++] = z;
+		verts[count++] = x;
+		verts[count++] = y;
+		verts[count++] = z + depth;
+		verts[count++] = x + width;
+		verts[count++] = y;
+		verts[count++] = z + depth;
+		// top t1
+		verts[count++] = x;
+		verts[count++] = y + height;
+		verts[count++] = z;
+		verts[count++] = x + width;
+		verts[count++] = y + height;
+		verts[count++] = z;
+		verts[count++] = x + width;
+		verts[count++] = y + height;
+		verts[count++] = z + depth;
+		// top t2
+		verts[count++] = x;
+		verts[count++] = y + height;
+		verts[count++] = z;
+		verts[count++] = x + width;
+		verts[count++] = y + height;
+		verts[count++] = z + depth;
+		verts[count++] = x;
+		verts[count++] = y + height;
+		verts[count++] = z + depth;
+		// left t1
+		verts[count++] = x;
+		verts[count++] = y;
+		verts[count++] = z;
+		verts[count++] = x;
+		verts[count++] = y + height;
+		verts[count++] = z + depth;
+		verts[count++] = x;
+		verts[count++] = y + height;
+		verts[count++] = z;
+		// left t2
+		verts[count++] = x;
+		verts[count++] = y;
+		verts[count++] = z;
+		verts[count++] = x;
+		verts[count++] = y;
+		verts[count++] = z + depth;
+		verts[count++] = x;
+		verts[count++] = y + height;
+		verts[count++] = z + depth;
+		// right t1
+		verts[count++] = x + width;
+		verts[count++] = y;
+		verts[count++] = z;
+		verts[count++] = x + width;
+		verts[count++] = y + height;
+		verts[count++] = z;
+		verts[count++] = x + width;
+		verts[count++] = y + height;
+		verts[count++] = z + depth;
+		// right t2
+		verts[count++] = x + width;
+		verts[count++] = y;
+		verts[count++] = z;
+		verts[count++] = x + width;
+		verts[count++] = y + height;
+		verts[count++] = z + depth;
+		verts[count++] = x + width;
+		verts[count++] = y;
+		verts[count++] = z + depth;
+		return verts;
 	}
 }
