@@ -45,7 +45,7 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 	private static final Browser browser = new AwesomiumWrapper();
 	private static final List<GLRunnable> queue = new ArrayList<GLRunnable>();
 	private static final List<GLRunnable> contextExecutions = new ArrayList<GLRunnable>();
-	private static final float ZFAR_DISTANCE = 100;
+	private static final float ZFAR_DISTANCE = 1000;
 	private List<float[][]> debugLines = new LinkedList<float[][]>();
 	private boolean takeScreen = false;
 	private FPSRenderer fpsRenderer;
@@ -363,7 +363,7 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 						+ (gl.isExtensionAvailable("GL_ARB_gpu_shader5") ? "available"
 								: "missing"));
 
-		gl.glClearColor(0, 0, 0, 0);
+		gl.glClearColor(1, 1, 1, 1);
 		gl.glDisable(GL2.GL_LINE_SMOOTH);
 		gl.glHint(GL2.GL_LINE_SMOOTH_HINT, GL2.GL_FASTEST);
 		// gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_FASTEST);
@@ -398,8 +398,7 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		zFar = ZNEAR + ZFAR_DISTANCE;
 		if (translation != 0)
 			glutil.glTranslatef(translation, 0, 0);
-		RenderUtil.gluPerspective(glutil, fov_y, (float) width / height, zNear,
-				zFar);
+		glutil.gluPerspective(fov_y, (float) width / height, zNear, zFar);
 		glutil.glMatrixMode(GL2.GL_MODELVIEW);
 	}
 

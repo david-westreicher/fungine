@@ -24,6 +24,6 @@ in vec3 normalOut;
  
 void main(){
     //color = vec4((normalOut+1.0)/2.0,1);
-    color = vec4(posOut/50.0,1);
+    color = vec4(posOut/10.0,1);
    //	color = vec4(0,0,0,1);
 }

@@ -188,6 +188,13 @@ public class GLUtil {
 		tmpArr[15] = m.m33;
 	}
 
+	public void gluPerspective(float fovY, float aspect, float zNear, float zFar) {
+		float fH = (float) (Math.tan(fovY / 360 * Math.PI) * zNear);
+		float fW = fH * aspect;
+		// glu.gluPerspective(fov_y, (float) width / height, ZNear, ZFar);
+		this.glFrustum(fW, fH, zNear, zFar);
+	}
+
 	public void scale(float x, float y, float z) {
 		Matrix4f scaleMatrix = tmpM;
 		scaleMatrix.setIdentity();

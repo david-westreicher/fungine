@@ -2,31 +2,27 @@ package rendering;
 
 import game.Game;
 
-import java.nio.Buffer;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
-import javax.media.opengl.GL3;
-import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 
 import manager.UberManager;
-
-import com.jogamp.common.nio.Buffers;
-
 import shader.Shader;
 import shader.ShaderScript;
 import util.Log;
 import util.MathHelper;
 import util.MathHelper.Tansformation;
-import util.Util;
+
+import com.jogamp.common.nio.Buffers;
 
 public class GiRenderer extends RenderUpdater {
 
 	private static final int TEXTURE_SIZE = 100;
+	private static final int CUBEMAP_SIZE = 100;
 	private float[] vertices;
 	private float[] uvs;
 	private float[] normals;
@@ -37,15 +33,23 @@ public class GiRenderer extends RenderUpdater {
 	private int[] renderedTexture;
 	private int cubeSize;
 	private FloatBuffer textureBuffer;
+	private ByteBuffer imageBuffer = ByteBuffer.allocate(CUBEMAP_SIZE
+			* CUBEMAP_SIZE * 6);
+	private int currentLookupIndex = 0;
+	private Vector3f normal = new Vector3f();
+	private Vector3f pos = new Vector3f();
+	private boolean newframe;
+	private Vector2f uvpos = new Vector2f();
 
 	public GiRenderer() {
 		cubeSize = 10;
-		vertices = RenderUtil.merge(
-				RenderUtil.box(0, 0, 0, cubeSize, 1, cubeSize),
-				RenderUtil.box(0, 1, -1, cubeSize, cubeSize, 1),
+		vertices = RenderUtil.merge(RenderUtil.box(0, 0, 0, cubeSize, 1,
+				cubeSize), RenderUtil.box(0, 1, -1, cubeSize, cubeSize, 1),
 				RenderUtil.box(0, 1, cubeSize, cubeSize, cubeSize, 1),
-				RenderUtil.box(-1, 1, 0, 1, cubeSize, cubeSize),
-				RenderUtil.box(cubeSize, 1, 0, 1, cubeSize, cubeSize));
+				RenderUtil.box(-1, 1, 0, 1, cubeSize, cubeSize), RenderUtil
+						.box(cubeSize, 1, 0, 1, cubeSize, cubeSize), RenderUtil
+						.box(0, cubeSize + 1, cubeSize * 1.0f / 4.0f, cubeSize,
+								1, cubeSize));
 		uvs = new float[(vertices.length / 3) * 2];
 		normals = new float[vertices.length];
 		lookup = new float[TEXTURE_SIZE][TEXTURE_SIZE][6];
@@ -110,9 +114,12 @@ public class GiRenderer extends RenderUpdater {
 		textureBuffer = FloatBuffer.allocate(TEXTURE_SIZE * TEXTURE_SIZE * 4);
 		for (int i = 0; i < TEXTURE_SIZE; i++) {
 			for (int j = 0; j < TEXTURE_SIZE; j++) {
-				textureBuffer.put(lookup[j][i][0]);
-				textureBuffer.put(lookup[j][i][1]);
-				textureBuffer.put(lookup[j][i][2]);
+				textureBuffer.put(0);
+				textureBuffer.put(0);
+				textureBuffer.put(0);
+				// textureBuffer.put(lookup[j][i][0]);
+				// textureBuffer.put(lookup[j][i][1]);
+				// textureBuffer.put(lookup[j][i][2]);
 				textureBuffer.put(1);
 			}
 		}
@@ -127,8 +134,10 @@ public class GiRenderer extends RenderUpdater {
 	protected void generateFBO() {
 		frameBuffer = new int[1];
 		renderedTexture = new int[1];
+		int[] depthrenderbuffer = new int[1];
 		gl.glGenFramebuffers(1, frameBuffer, 0);
 		gl.glGenTextures(1, renderedTexture, 0);
+		gl.glGenRenderbuffers(1, depthrenderbuffer, 0);
 		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, frameBuffer[0]);
 
 		// "Bind" the newly created texture : all future texture functions will
@@ -136,12 +145,19 @@ public class GiRenderer extends RenderUpdater {
 		gl.glBindTexture(GL2.GL_TEXTURE_2D, renderedTexture[0]);
 
 		// Give an empty image to OpenGL ( the last "0" )
-		gl.glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGB, TEXTURE_SIZE,
-				TEXTURE_SIZE, 0, GL2.GL_RGB, GL2.GL_FLOAT, null);
+		gl.glTexImage2D(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGB, CUBEMAP_SIZE,
+				CUBEMAP_SIZE, 0, GL2.GL_RGB, GL2.GL_UNSIGNED_BYTE, null);
 		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MAG_FILTER,
 				GL2.GL_NEAREST);
 		gl.glTexParameteri(GL2.GL_TEXTURE_2D, GL2.GL_TEXTURE_MIN_FILTER,
 				GL2.GL_NEAREST);
+		gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, depthrenderbuffer[0]);
+		gl.glRenderbufferStorage(GL2.GL_RENDERBUFFER, GL2.GL_DEPTH_COMPONENT,
+				1024, 768);
+		gl.glFramebufferRenderbuffer(GL2.GL_FRAMEBUFFER,
+				GL2.GL_DEPTH_ATTACHMENT, GL2.GL_RENDERBUFFER,
+				depthrenderbuffer[0]);
+
 		// Set "renderedTexture" as our colour attachement #0
 		gl.glFramebufferTextureARB(GL2.GL_FRAMEBUFFER,
 				GL2.GL_COLOR_ATTACHMENT0, renderedTexture[0], 0);
@@ -229,8 +245,8 @@ public class GiRenderer extends RenderUpdater {
 		for (int x2 = x; x2 <= maxx; x2++) {
 			for (int y2 = y; y2 <= maxy; y2++) {
 				bitmap[x2][y2] = true;
-				pos.x = x2;
-				pos.y = y2;
+				pos.x = x2 + 0.5f;
+				pos.y = y2 + 0.5f;
 				pos.z = 0;
 				t.transform(pos);
 				lookup[x2][y2][0] = pos.x;
@@ -269,8 +285,101 @@ public class GiRenderer extends RenderUpdater {
 		 */
 		// gl.glBindTexture(GL2.GL_TEXTURE_2D, 0);
 		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, frameBuffer[0]);
-		gl.glViewport(0, 0, TEXTURE_SIZE, TEXTURE_SIZE);
-		gl.glClear(GL2.GL_COLOR_BUFFER_BIT);
+		gl.glViewport(0, 0, CUBEMAP_SIZE, CUBEMAP_SIZE);
+		gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
+		// renderUVMAPintoFBO();
+		renderFromLookup();
+		copyTextureToCPU(renderedTexture[0]);
+
+		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
+		gl.glViewport(0, 0, width, height);
+		// drawUVMap(true);
+		glutil.glPushMatrix();
+		glutil.glTranslatef(0, -cubeSize - 3, 0);
+		// RenderUtil.drawTexture(gl, glutil, pos.x, pos.y, pos.z, 0.25f, 0.25f,
+		// textures.getTextureInformation("debugTexture")[0], 0, 1);
+		drawGI();
+		glutil.glPopMatrix();
+		RenderUtil.drawTexture(gl, glutil, 10, 10, -1, 20, 20,
+				renderedTexture[0], 0, 1);
+		RenderUtil.drawTexture(gl, glutil, -10, 10, -1, 20, 20,
+				textures.getTextureInformation("gitexture")[0], 0, 1);
+	}
+
+	private void renderFromLookup() {
+		if (Game.INSTANCE.loop.tick % 2 < 2) {
+			// if (!newframe) {
+			newframe = true;
+			// currentLookupIndex = ((int) (Math.random() * TEXTURE_SIZE *
+			// TEXTURE_SIZE))
+			// % (TEXTURE_SIZE * TEXTURE_SIZE);
+			currentLookupIndex = (currentLookupIndex + 1)
+					% (TEXTURE_SIZE * TEXTURE_SIZE);
+			int x = currentLookupIndex / TEXTURE_SIZE;
+			int y = currentLookupIndex % TEXTURE_SIZE;
+			while (!bitmap[x][y]) {
+				// currentLookupIndex = ((int) (Math.random() * TEXTURE_SIZE *
+				// TEXTURE_SIZE))
+				// % (TEXTURE_SIZE * TEXTURE_SIZE);
+				currentLookupIndex = (currentLookupIndex + 1)
+						% (TEXTURE_SIZE * TEXTURE_SIZE);
+				x = currentLookupIndex / TEXTURE_SIZE;
+				y = currentLookupIndex % TEXTURE_SIZE;
+			}
+			float[] posNormals = lookup[x][y];
+			uvpos.set(x, y);
+			pos.set(posNormals[0], posNormals[1], posNormals[2]);
+			normal.set(posNormals[3], posNormals[4], posNormals[5]);
+			// pos.set(0, 0, 0);
+			// normal.set(0, 1, 0);
+			// Log.log(this, x, y);
+			// 7Log.log(this, pos);
+			// 7Log.log(this, normal);
+			// }
+		} else {
+			newframe = false;
+		}
+		glutil.glMatrixMode(GL2.GL_PROJECTION);
+		glutil.glPushMatrix();
+		glutil.glLoadIdentity();
+		glutil.gluPerspective(90, 1, 0.01f, 100);
+		glutil.glMatrixMode(GL2.GL_MODELVIEW);
+		glutil.glPushMatrix();
+		glutil.glLoadIdentity();
+		glutil.gluLookAt(pos.x, pos.y, pos.z, pos.x + normal.x, pos.y
+				+ normal.y, pos.z + normal.z, normal.y, -normal.z, normal.x);
+		drawGI();
+		glutil.glMatrixMode(GL2.GL_PROJECTION);
+		glutil.glPopMatrix();
+		glutil.glMatrixMode(GL2.GL_MODELVIEW);
+		glutil.glPopMatrix();
+	}
+
+	private void copyTextureToCPU(int tex) {
+		gl.glBindTexture(GL2.GL_TEXTURE_2D, tex);
+		gl.glGetTexImage(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGB,
+				GL2.GL_UNSIGNED_BYTE, imageBuffer);
+		gl.glBindTexture(GL2.GL_TEXTURE_2D, 0);
+		double color[] = new double[3];
+		double size = CUBEMAP_SIZE * CUBEMAP_SIZE;
+		while (imageBuffer.hasRemaining()) {
+			color[0] += (imageBuffer.get() & 0xFF) / size;
+			color[1] += (imageBuffer.get() & 0xFF) / size;
+			color[2] += (imageBuffer.get() & 0xFF) / size;
+		}
+		imageBuffer.rewind();
+		float[] colorf = new float[] { (float) color[0] * 0.5f / 255f,
+				(float) color[1] * 0.5f / 255f, (float) color[2] * 0.5f / 255f,
+				1 };
+		FloatBuffer newColorBuffer = FloatBuffer.wrap(colorf);
+		gl.glBindTexture(GL2.GL_TEXTURE_2D,
+				textures.getTextureInformation("gitexture")[0]);
+		gl.glTexSubImage2D(GL2.GL_TEXTURE_2D, 0, (int) uvpos.x, (int) uvpos.y,
+				1, 1, GL.GL_RGBA, GL.GL_FLOAT, newColorBuffer);
+		gl.glBindTexture(GL2.GL_TEXTURE_2D, 0);
+	}
+
+	private void renderUVMAPintoFBO() {
 		glutil.glMatrixMode(GL2.GL_PROJECTION);
 		glutil.glPushMatrix();
 		glutil.glLoadIdentity();
@@ -283,19 +392,10 @@ public class GiRenderer extends RenderUpdater {
 		glutil.glPopMatrix();
 		glutil.glMatrixMode(GL2.GL_MODELVIEW);
 		glutil.glPopMatrix();
-
-		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
-		gl.glViewport(0, 0, width, height);
-		drawUVMap(true);
 		glutil.glPushMatrix();
 		glutil.glTranslatef(0, -cubeSize - 3, 0);
 		drawGI();
 		glutil.glPopMatrix();
-		RenderUtil.drawTexture(gl, glutil, TEXTURE_SIZE / 2, TEXTURE_SIZE / 2,
-				-5, TEXTURE_SIZE, TEXTURE_SIZE, renderedTexture[0], 0);
-		RenderUtil.drawTexture(gl, glutil, TEXTURE_SIZE / 2, TEXTURE_SIZE / 2,
-				-2, TEXTURE_SIZE, TEXTURE_SIZE,
-				textures.getTextureInformation("gitexture")[0], 0);
 	}
 
 	private void drawGI() {

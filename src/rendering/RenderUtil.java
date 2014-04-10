@@ -92,13 +92,6 @@ public class RenderUtil {
 		gl.glFrustum(-fW, fW, -fH, fH, zNear, zFar);
 	}
 
-	public static void gluPerspective(GLUtil gl, float fovY, float aspect,
-			float zNear, float zFar) {
-		float fH = (float) (Math.tan(fovY / 360 * Math.PI) * zNear);
-		float fW = fH * aspect;
-		// glu.gluPerspective(fov_y, (float) width / height, ZNear, ZFar);
-		gl.glFrustum(fW, fH, zNear, zFar);
-	}
 
 	public static void init(GL2 gl) {
 		FloatBuffer verticeUVs = FloatBuffer.wrap(rectangle);
@@ -113,7 +106,8 @@ public class RenderUtil {
 	}
 
 	public static void drawTexture(GL2 gl, GLUtil glutil, float x, float y,
-			float z, float width, float height, int texID, float translateX) {
+			float z, float width, float height, int texID, float translateX,
+			float colorScale) {
 		ShaderScript fpsShader = UberManager.getShader(Shader.FPS);
 		if (fpsShader == null)
 			return;
@@ -130,6 +124,7 @@ public class RenderUtil {
 				ShaderScript.setUniformMatrix4(gl, "modelviewprojection",
 						glutil.getModelViewProjection(), true);
 				ShaderScript.setUniform(gl, "translateX", translateX);
+				ShaderScript.setUniform(gl, "colorScale", colorScale);
 
 				gl.glEnableVertexAttribArray(0);
 				gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, textureBuffer[0]);

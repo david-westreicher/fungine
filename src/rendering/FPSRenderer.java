@@ -47,7 +47,7 @@ public class FPSRenderer {
 		RenderUtil.drawTexture(gl, glutil, width - WIDTH / 2 - 2,
 				HEIGHT / 2 + 2, 0, WIDTH, HEIGHT,
 				textures.getTextureInformation("debugTexture")[0],
-				((float) currentIndex + 1) / WIDTH);
+				((float) currentIndex + 1) / WIDTH, 1);
 		gl.glBindTexture(GL2.GL_TEXTURE_2D, 0);
 		currentIndex = (currentIndex + 1) % WIDTH;
 		return;

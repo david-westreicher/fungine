@@ -24,5 +24,5 @@ uniform float textureSize;
 void main(){
     //color = vec4((normalOut+1.0)/2.0,1);
     //color = vec4(texture(),1);
-    color = texture(giMap,uvOut)/textureSize*2;
+    color = texture(giMap,uvOut);
 }
