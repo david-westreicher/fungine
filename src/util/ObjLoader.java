@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import rendering.RenderUtil;
 import rendering.material.Material;
 import rendering.material.MaterialLibrary;
 import rendering.voxel.Voxel;
@@ -71,7 +72,7 @@ public class ObjLoader {
 	private String name;
 
 	public ObjLoader(String s, boolean flippedCullface, boolean engineFolder) {
-		this(s, flippedCullface, false, false);
+		this(s, flippedCullface, false, engineFolder);
 	}
 
 	public ObjLoader(String s, boolean flippedCullface, boolean voxelize,
@@ -297,6 +298,24 @@ public class ObjLoader {
 			vertices.put(f);
 		vertices.rewind();
 		return vertices;
+	}
+
+	public float[] flattenToTriangle() {
+		float tris[] = new float[0];
+		for (int i = 0; i < indices.length / 4; i++) {
+			IntBuffer indice = indices[i];
+			float tris2[] = new float[indice.capacity() * 3];
+			int count = 0;
+			while (indice.hasRemaining()) {
+				int index = indice.get();
+				tris2[count++] = vertices.get(index * 3 + 0);
+				tris2[count++] = vertices.get(index * 3 + 1);
+				tris2[count++] = vertices.get(index * 3 + 2);
+			}
+			tris = RenderUtil.merge(tris, tris2);
+			indice.rewind();
+		}
+		return tris;
 	}
 
 	private void put(String val) {

@@ -20,5 +20,5 @@ void main(){
 	vec2 trans = vec2(uv);
 	trans.x+=translateX;
     color = texture(fpsTex,trans)*colorScale;//50;
-    color.a = 1;
+    //color.a = 1;
 }

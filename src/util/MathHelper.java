@@ -425,4 +425,19 @@ public class MathHelper {
 		tmp.z = 0;
 		return tmp;
 	}
+
+	public static void translate(float[] fish, int x, int y, int z) {
+		for (int i = 0; i < fish.length; i += 3) {
+			fish[i + 0] += x;
+			fish[i + 1] += y;
+			fish[i + 2] += z;
+		}
+	}
+
+	public static float[] toFloat(double[] color) {
+		float ret[] = new float[color.length];
+		for (int i = 0; i < color.length; i++)
+			ret[i] = (float) color[i];
+		return ret;
+	}
 }
