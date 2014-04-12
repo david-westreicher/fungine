@@ -1,5 +1,8 @@
 package rendering;
 
+import game.Game;
+import game.GameLoop;
+
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
@@ -21,7 +24,7 @@ import com.jogamp.common.nio.Buffers;
 
 public class GiRenderer extends RenderUpdater {
 
-	private static final int TEXTURE_SIZE = 150;
+	private static final int TEXTURE_SIZE = 300;
 	private static final int CUBEMAP_SIZE = 50;
 	private int[] uvBuffer;
 	private int[] frameBuffer;
@@ -35,7 +38,7 @@ public class GiRenderer extends RenderUpdater {
 	private GIUtil giUtil;
 
 	public GiRenderer() {
-		cubeSize = 10;
+		cubeSize = 30;
 		// ObjLoader objloader = new ObjLoader("obj/daemon/daemon.obj", false,
 		// false);
 		// float[] fish = objloader.flattenToTriangle();
@@ -47,9 +50,12 @@ public class GiRenderer extends RenderUpdater {
 				cubeSize, 1), RenderUtil.box(0, 0, cubeSize, cubeSize * 2,
 				cubeSize, 1), RenderUtil.box(0, 0, 0, 1, cubeSize, cubeSize),
 				RenderUtil.box(cubeSize * 2 - 1, 0, 0, 1, cubeSize, cubeSize),
-				RenderUtil.box(cubeSize, cubeSize / 2, -cubeSize / 2, 1,
+				RenderUtil.box(cubeSize, cubeSize / 2, 0 * -cubeSize / 2, 1,
 						cubeSize, cubeSize), RenderUtil.box(0, cubeSize,
 						cubeSize * 0.0f / 4f, cubeSize, 1, cubeSize));
+		// float[] vertices = RenderUtil.merge(
+		// RenderUtil.box(0, 0, 0, cubeSize, 1, cubeSize),
+		// RenderUtil.box(0, 0, 0, 1, cubeSize, cubeSize));
 		this.giUtil = new GIUtil(TEXTURE_SIZE, vertices);
 
 		// Log.log(this, normals);
@@ -132,20 +138,32 @@ public class GiRenderer extends RenderUpdater {
 	protected void renderObjects() {
 		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, frameBuffer[0]);
 		gl.glViewport(0, 0, CUBEMAP_SIZE, CUBEMAP_SIZE);
+		glutil.glMatrixMode(GL2.GL_PROJECTION);
+		glutil.glPushMatrix();
+		glutil.glLoadIdentity();
+		glutil.gluPerspective(90, 1, 0.01f, 100);
+		glutil.glMatrixMode(GL2.GL_MODELVIEW);
+		gl.glClearColor(1, 1, 1, 1);
 		for (int i = 0; i < 30; i++) {
+			// if (Game.INSTANCE.loop.tick % 2 == 0)
+			giUtil.getNext();
 			gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 			renderFromLookup();
 			// long start = System.currentTimeMillis();
 			copyTextureToCPU(renderedTexture[0]);
 			// Log.log(this, System.currentTimeMillis() - start);
 		}
+		gl.glClearColor(1, 1, 1, 1);
+		glutil.glMatrixMode(GL2.GL_PROJECTION);
+		glutil.glPopMatrix();
+		glutil.glMatrixMode(GL2.GL_MODELVIEW);
 
 		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
 		gl.glViewport(0, 0, width, height);
 		glutil.glPushMatrix();
 		glutil.glTranslatef(0, -cubeSize - 3, 0);
-		// RenderUtil.drawTexture(gl, glutil, pos.x, pos.y, pos.z, 0.25f, 0.25f,
-		// textures.getTextureInformation("debugTexture")[0], 0, 1);
+		RenderUtil.drawTexture(gl, glutil, pos.x, pos.y, pos.z, 0.25f, 0.25f,
+				textures.getTextureInformation("debugTexture")[0], 0, 1);
 		drawGI();
 		glutil.glPopMatrix();
 		RenderUtil.drawTexture(gl, glutil, 10, 10, -1, 20, 20,
@@ -155,26 +173,18 @@ public class GiRenderer extends RenderUpdater {
 	}
 
 	private void renderFromLookup() {
-		giUtil.getNewPosNormal(pos, normal, uvpos);
+		giUtil.getPosNormal(pos, normal, uvpos);
 		// pos.set(0, 0, 0);
 		// normal.set(0, 1, 0);
 		// Log.log(this, x, y);
 		// 7Log.log(this, pos);
 		// 7Log.log(this, normal);
 		// }
-		glutil.glMatrixMode(GL2.GL_PROJECTION);
-		glutil.glPushMatrix();
-		glutil.glLoadIdentity();
-		glutil.gluPerspective(90, 1, 0.01f, 100);
-		glutil.glMatrixMode(GL2.GL_MODELVIEW);
 		glutil.glPushMatrix();
 		glutil.glLoadIdentity();
 		glutil.gluLookAt(pos.x, pos.y, pos.z, pos.x + normal.x, pos.y
 				+ normal.y, pos.z + normal.z, normal.y, -normal.z, normal.x);
 		drawGI();
-		glutil.glMatrixMode(GL2.GL_PROJECTION);
-		glutil.glPopMatrix();
-		glutil.glMatrixMode(GL2.GL_MODELVIEW);
 		glutil.glPopMatrix();
 	}
 
@@ -225,7 +235,12 @@ public class GiRenderer extends RenderUpdater {
 					8 * Buffers.SIZEOF_FLOAT, 2 * Buffers.SIZEOF_FLOAT);
 			gl.glVertexAttribPointer(2, 3, GL2.GL_FLOAT, false,
 					8 * Buffers.SIZEOF_FLOAT, 5 * Buffers.SIZEOF_FLOAT);
-			gl.glDrawArrays(GL2.GL_TRIANGLES, 0, giUtil.triangleNum());
+			for (int i = 0; i < 2; i++) {
+				gl.glCullFace(i == 0 ? GL2.GL_BACK : GL2.GL_FRONT);
+				ShaderScript.setUniform(gl, "colorscale", (float) (1 - i));
+				gl.glDrawArrays(GL2.GL_TRIANGLES, 0, giUtil.triangleNum());
+			}
+			gl.glCullFace(GL2.GL_BACK);
 		}
 		giShader.end(gl);
 	}

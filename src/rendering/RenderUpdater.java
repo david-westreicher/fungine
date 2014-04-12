@@ -370,10 +370,10 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		gl.glEnable(GL2.GL_DEPTH_TEST);
 		gl.glDepthFunc(GL2.GL_LEQUAL);
 		// culling
-		gl.glDisable(GL2.GL_CULL_FACE);
-		// gl.glFrontFace(GL2.GL_CCW);
-		// gl.glEnable(GL2.GL_CULL_FACE);
-		// gl.glCullFace(GL2.GL_BACK);
+		// gl.glDisable(GL2.GL_CULL_FACE);
+		gl.glFrontFace(GL2.GL_CCW);
+		gl.glEnable(GL2.GL_CULL_FACE);
+		gl.glCullFace(GL2.GL_BACK);
 		// point cloud rendering
 		// gl.glEnable(GL2.GL_POINT_SMOOTH);
 		// gl.glEnable(GL2.GL_VERTEX_PROGRAM_POINT_SIZE);

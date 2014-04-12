@@ -92,7 +92,6 @@ public class RenderUtil {
 		gl.glFrustum(-fW, fW, -fH, fH, zNear, zFar);
 	}
 
-
 	public static void init(GL2 gl) {
 		FloatBuffer verticeUVs = FloatBuffer.wrap(rectangle);
 		textureBuffer = new int[1];
@@ -114,6 +113,7 @@ public class RenderUtil {
 		gl.glEnable(GL2.GL_BLEND);
 		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
 
+		gl.glDisable(GL2.GL_CULL_FACE);
 		glutil.glPushMatrix();
 		{
 			glutil.glTranslatef(x, y, z);
@@ -133,6 +133,7 @@ public class RenderUtil {
 			}
 			fpsShader.end(gl);
 		}
+		gl.glEnable(GL2.GL_CULL_FACE);
 		glutil.glPopMatrix();
 
 		gl.glDisable(GL2.GL_BLEND);
@@ -201,18 +202,18 @@ public class RenderUtil {
 		verts[count++] = z;
 		verts[count++] = x + width;
 		verts[count++] = y;
-		verts[count++] = z + depth;
+		verts[count++] = z;
 		verts[count++] = x + width;
 		verts[count++] = y;
-		verts[count++] = z;
+		verts[count++] = z + depth;
 		// bottom t2
 		verts[count++] = x;
 		verts[count++] = y;
 		verts[count++] = z;
-		verts[count++] = x;
+		verts[count++] = x + width;
 		verts[count++] = y;
 		verts[count++] = z + depth;
-		verts[count++] = x + width;
+		verts[count++] = x;
 		verts[count++] = y;
 		verts[count++] = z + depth;
 		// top t1
@@ -221,18 +222,18 @@ public class RenderUtil {
 		verts[count++] = z;
 		verts[count++] = x + width;
 		verts[count++] = y + height;
-		verts[count++] = z;
+		verts[count++] = z + depth;
 		verts[count++] = x + width;
 		verts[count++] = y + height;
-		verts[count++] = z + depth;
+		verts[count++] = z;
 		// top t2
 		verts[count++] = x;
 		verts[count++] = y + height;
 		verts[count++] = z;
-		verts[count++] = x + width;
+		verts[count++] = x;
 		verts[count++] = y + height;
 		verts[count++] = z + depth;
-		verts[count++] = x;
+		verts[count++] = x + width;
 		verts[count++] = y + height;
 		verts[count++] = z + depth;
 		// left t1

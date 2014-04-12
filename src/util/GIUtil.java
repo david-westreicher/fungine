@@ -150,15 +150,19 @@ public class GIUtil {
 		return vertices.length / 3;
 	}
 
-	public void getNewPosNormal(Vector3f pos, Vector3f normal, Vector2f uvpos) {
-		// currentLookupIndex = ((int) (Math.random() * TEXTURE_SIZE *
-		// TEXTURE_SIZE))
-		// % (TEXTURE_SIZE * TEXTURE_SIZE);
-		currentLookupIndex = (currentLookupIndex + 1)
-				% (TEXTURE_SIZE * TEXTURE_SIZE);
+	public void getPosNormal(Vector3f pos, Vector3f normal, Vector2f uvpos) {
 		int x = currentLookupIndex / TEXTURE_SIZE;
 		int y = currentLookupIndex % TEXTURE_SIZE;
-		while (!bitmap[x][y]) {
+		uvpos.set(x, y);
+		float[] posNormals = lookup[x][y];
+		pos.set(posNormals[0], posNormals[1], posNormals[2]);
+		normal.set(posNormals[3], posNormals[4], posNormals[5]);
+	}
+
+	public void getNext() {
+		int x;
+		int y;
+		do {
 			// currentLookupIndex = ((int) (Math.random() * TEXTURE_SIZE *
 			// TEXTURE_SIZE))
 			// % (TEXTURE_SIZE * TEXTURE_SIZE);
@@ -166,10 +170,6 @@ public class GIUtil {
 					% (TEXTURE_SIZE * TEXTURE_SIZE);
 			x = currentLookupIndex / TEXTURE_SIZE;
 			y = currentLookupIndex % TEXTURE_SIZE;
-		}
-		uvpos.set(x, y);
-		float[] posNormals = lookup[x][y];
-		pos.set(posNormals[0], posNormals[1], posNormals[2]);
-		normal.set(posNormals[3], posNormals[4], posNormals[5]);
+		} while (!bitmap[x][y]);
 	}
 }

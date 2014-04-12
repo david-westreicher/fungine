@@ -400,7 +400,7 @@ public class MathHelper {
 		tmp2.sub(v1, v2);
 		normal.cross(tmp1, tmp2);
 		normal.normalize();
-		normal.y *= -1;
+		//normal.y *= -1;
 		return normal;
 	}
 

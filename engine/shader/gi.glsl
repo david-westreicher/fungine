@@ -20,9 +20,11 @@ in vec2 uvOut;
 in vec3 normalOut;
 uniform sampler2D giMap;
 uniform float textureSize;
+uniform float colorscale;
  
 void main(){
     //color = vec4((normalOut+1.0)/2.0,1);
     //color = vec4(texture(),1);
-    color = texture(giMap,uvOut);
+    color = texture(giMap,uvOut)*colorscale;
+    color.a = 1;
 }
