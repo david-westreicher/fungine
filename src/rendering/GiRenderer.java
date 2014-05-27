@@ -8,6 +8,7 @@ import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
+import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 
@@ -17,6 +18,7 @@ import shader.ShaderScript;
 import util.GIUtil;
 import util.Log;
 import util.MathHelper;
+import util.GIUtil.ProxyBakeable;
 import util.MathHelper.Tansformation;
 import util.ObjLoader;
 
@@ -24,39 +26,60 @@ import com.jogamp.common.nio.Buffers;
 
 public class GiRenderer extends RenderUpdater {
 
-	private static final int TEXTURE_SIZE = 300;
-	private static final int CUBEMAP_SIZE = 50;
+	private static final int TEXTURE_SIZE = 512;
+	private static final int CUBEMAP_SIZE = 40;
+	private static final int PIXELS_PER_RENDER_TICK = 30;
 	private int[] uvBuffer;
 	private int[] frameBuffer;
 	private int[] renderedTexture;
 	private int cubeSize;
 	private ByteBuffer imageBuffer = ByteBuffer.allocate(CUBEMAP_SIZE
-			* CUBEMAP_SIZE * 6);
+			* CUBEMAP_SIZE * 4);
 	private Vector3f normal = new Vector3f();
 	private Vector3f pos = new Vector3f();
 	private Vector2f uvpos = new Vector2f();
 	private GIUtil giUtil;
 
 	public GiRenderer() {
-		cubeSize = 30;
-		// ObjLoader objloader = new ObjLoader("obj/daemon/daemon.obj", false,
-		// false);
-		// float[] fish = objloader.flattenToTriangle();
-		// MathHelper.mul(fish, cubeSize);
-		// MathHelper
-		// .translate(fish, cubeSize * 3 / 2, cubeSize / 4, cubeSize / 2);
-		float[] vertices = RenderUtil.merge(RenderUtil.box(0, 0, 0,
-				cubeSize * 2, 1, cubeSize), RenderUtil.box(0, 0, 0, cubeSize,
-				cubeSize, 1), RenderUtil.box(0, 0, cubeSize, cubeSize * 2,
-				cubeSize, 1), RenderUtil.box(0, 0, 0, 1, cubeSize, cubeSize),
-				RenderUtil.box(cubeSize * 2 - 1, 0, 0, 1, cubeSize, cubeSize),
-				RenderUtil.box(cubeSize, cubeSize / 2, 0 * -cubeSize / 2, 1,
-						cubeSize, cubeSize), RenderUtil.box(0, cubeSize,
-						cubeSize * 0.0f / 4f, cubeSize, 1, cubeSize));
-		// float[] vertices = RenderUtil.merge(
-		// RenderUtil.box(0, 0, 0, cubeSize, 1, cubeSize),
-		// RenderUtil.box(0, 0, 0, 1, cubeSize, cubeSize));
-		this.giUtil = new GIUtil(TEXTURE_SIZE, vertices);
+		cubeSize = CUBEMAP_SIZE;
+		ObjLoader objloader = new ObjLoader("obj/daemon/daemon.obj", false,
+				false);
+		float[] fish = objloader.flattenToTriangle();
+		float[] fish2 = objloader.flattenToTriangle();
+		float[] sphere = new ObjLoader("obj/sphere.obj", false, false)
+				.flattenToTriangle();
+		Matrix4f rotate = new Matrix4f();
+		rotate.rotY((float) (Math.PI));
+		MathHelper.apply(rotate, fish);
+		MathHelper.apply(rotate, fish2);
+		MathHelper.mul(sphere, cubeSize / 2);
+		MathHelper.mul(fish, cubeSize / 2);
+		MathHelper.mul(fish2, cubeSize / 2);
+		MathHelper
+				.translate(fish, cubeSize * 3 / 2, cubeSize / 4, cubeSize / 2);
+		MathHelper.translate(sphere, cubeSize * 3 / 2, cubeSize, cubeSize / 2);
+		MathHelper.translate(fish2, cubeSize / 2, cubeSize / 4, cubeSize / 2);
+		this.giUtil = new GIUtil(TEXTURE_SIZE);
+		giUtil.add(new ProxyBakeable(RenderUtil.box(0, 0, 0, cubeSize * 2, 1,
+				cubeSize), new float[] { 1f, 1f, 0 }));
+		giUtil.add(new ProxyBakeable(RenderUtil.box(0, 0, 0, cubeSize,
+				cubeSize, 1)));
+		giUtil.add(new ProxyBakeable(RenderUtil.box(0, 0, cubeSize,
+				cubeSize * 2, cubeSize, 1), new float[] { 1f, 0, 0 }, true));
+		giUtil.add(new ProxyBakeable(RenderUtil.box(0, 0, 0, 1, cubeSize,
+				cubeSize)));
+		giUtil.add(new ProxyBakeable(RenderUtil.box(cubeSize * 2 - 1, 0, 0, 1,
+				cubeSize, cubeSize), new float[] { 0.5f, 0f, 1f }));
+		giUtil.add(new ProxyBakeable(RenderUtil.box(cubeSize, cubeSize / 2,
+				-cubeSize / 2, 1, cubeSize, cubeSize)));
+		giUtil.add(new ProxyBakeable(RenderUtil.box(cubeSize, cubeSize / 2,
+				-cubeSize / 2, 1, cubeSize, cubeSize)));
+		giUtil.add(new ProxyBakeable(RenderUtil.box(0, cubeSize,
+				cubeSize * 0.0f / 4f, cubeSize, 1, cubeSize), new float[] { 1,
+				1, 0 }));
+		giUtil.add(new ProxyBakeable(fish, new float[] { 1, 1, 1 }));
+		giUtil.add(new ProxyBakeable(fish2, new float[] { 1, 1, 1 }));
+		giUtil.add(new ProxyBakeable(sphere, new float[] { 1, 1, 1 }));
 
 		// Log.log(this, normals);
 		super.executeInOpenGLContext(new GLRunnable() {
@@ -72,24 +95,11 @@ public class GiRenderer extends RenderUpdater {
 	protected void uploadTexture() {
 		textures.createTex(gl, "gitexture", TEXTURE_SIZE, TEXTURE_SIZE, true,
 				GL2.GL_CLAMP_TO_EDGE, false, true);
-		// textureBuffer = FloatBuffer.allocate(TEXTURE_SIZE * TEXTURE_SIZE *
-		// 4);
-		// for (int i = 0; i < TEXTURE_SIZE; i++) {
-		// for (int j = 0; j < TEXTURE_SIZE; j++) {
-		// textureBuffer.put(0);
-		// textureBuffer.put(0);
-		// textureBuffer.put(0);
-		// // textureBuffer.put(lookup[j][i][0]);
-		// // textureBuffer.put(lookup[j][i][1]);
-		// // textureBuffer.put(lookup[j][i][2]);
-		// textureBuffer.put(1);
-		// }
-		// }
-		// textureBuffer.rewind();
+		FloatBuffer textureBuffer = giUtil.getFloatTexture();
 		gl.glBindTexture(GL2.GL_TEXTURE_2D,
 				textures.getTextureInformation("gitexture")[0]);
 		gl.glTexSubImage2D(GL2.GL_TEXTURE_2D, 0, 0, 0, TEXTURE_SIZE,
-				TEXTURE_SIZE, GL.GL_RGBA, GL.GL_FLOAT, null);
+				TEXTURE_SIZE, GL.GL_RGBA, GL.GL_FLOAT, textureBuffer);
 		gl.glBindTexture(GL2.GL_TEXTURE_2D, 0);
 	}
 
@@ -110,7 +120,7 @@ public class GiRenderer extends RenderUpdater {
 				GL2.GL_NEAREST);
 		gl.glBindRenderbuffer(GL2.GL_RENDERBUFFER, depthrenderbuffer[0]);
 		gl.glRenderbufferStorage(GL2.GL_RENDERBUFFER, GL2.GL_DEPTH_COMPONENT,
-				1024, 768);
+				CUBEMAP_SIZE, CUBEMAP_SIZE);
 		gl.glFramebufferRenderbuffer(GL2.GL_FRAMEBUFFER,
 				GL2.GL_DEPTH_ATTACHMENT, GL2.GL_RENDERBUFFER,
 				depthrenderbuffer[0]);
@@ -141,11 +151,11 @@ public class GiRenderer extends RenderUpdater {
 		glutil.glMatrixMode(GL2.GL_PROJECTION);
 		glutil.glPushMatrix();
 		glutil.glLoadIdentity();
-		glutil.gluPerspective(90, 1, 0.01f, 100);
+		glutil.gluPerspective(90, 1, 0.5f, 100);
 		glutil.glMatrixMode(GL2.GL_MODELVIEW);
 		gl.glClearColor(1, 1, 1, 1);
-		for (int i = 0; i < 30; i++) {
-			// if (Game.INSTANCE.loop.tick % 2 == 0)
+		for (int i = 0; i < PIXELS_PER_RENDER_TICK; i++) {
+			// if (Game.INSTANCE.loop.tick % 100 == 0)
 			giUtil.getNext();
 			gl.glClear(GL2.GL_COLOR_BUFFER_BIT | GL2.GL_DEPTH_BUFFER_BIT);
 			renderFromLookup();
@@ -153,6 +163,7 @@ public class GiRenderer extends RenderUpdater {
 			copyTextureToCPU(renderedTexture[0]);
 			// Log.log(this, System.currentTimeMillis() - start);
 		}
+		// Log.log(this, cpuToGPUTime);
 		gl.glClearColor(1, 1, 1, 1);
 		glutil.glMatrixMode(GL2.GL_PROJECTION);
 		glutil.glPopMatrix();
@@ -161,7 +172,8 @@ public class GiRenderer extends RenderUpdater {
 		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
 		gl.glViewport(0, 0, width, height);
 		glutil.glPushMatrix();
-		glutil.glTranslatef(0, -cubeSize - 3, 0);
+		glutil.scale(10.0f / cubeSize, 10.0f / cubeSize, 10.0f / cubeSize);
+		glutil.glTranslatef(-cubeSize, -cubeSize * 2, -cubeSize);
 		RenderUtil.drawTexture(gl, glutil, pos.x, pos.y, pos.z, 0.25f, 0.25f,
 				textures.getTextureInformation("debugTexture")[0], 0, 1);
 		drawGI();
@@ -190,23 +202,19 @@ public class GiRenderer extends RenderUpdater {
 
 	private void copyTextureToCPU(int tex) {
 		gl.glBindTexture(GL2.GL_TEXTURE_2D, tex);
-		gl.glGetTexImage(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGB,
+		gl.glGetTexImage(GL2.GL_TEXTURE_2D, 0, GL2.GL_RGBA,
 				GL2.GL_UNSIGNED_BYTE, imageBuffer);
 		gl.glBindTexture(GL2.GL_TEXTURE_2D, 0);
 		double color[] = new double[4];
-		double size = CUBEMAP_SIZE * CUBEMAP_SIZE;
-		while (imageBuffer.hasRemaining()) {
-			color[0] += (imageBuffer.get() & 0xFF) / size;
-			color[1] += (imageBuffer.get() & 0xFF) / size;
-			color[2] += (imageBuffer.get() & 0xFF) / size;
+		int skipNumber = 1;
+		double size = CUBEMAP_SIZE * CUBEMAP_SIZE / skipNumber;
+		for (int i = 0; i < imageBuffer.capacity(); i += 4) {
+			color[0] += (imageBuffer.get(i + 0) & 0xFF) / size;
+			color[1] += (imageBuffer.get(i + 1) & 0xFF) / size;
+			color[2] += (imageBuffer.get(i + 2) & 0xFF) / size;
 		}
 		imageBuffer.rewind();
-		MathHelper.mul(color, 0.5 / 255.0);
-		float[] colorf = MathHelper.toFloat(color);
-		colorf[0] += 0.5f;
-		colorf[2] = 0f;
-		colorf[3] = 1f;
-		FloatBuffer newColorBuffer = FloatBuffer.wrap(colorf);
+		FloatBuffer newColorBuffer = giUtil.radiosity(color);
 		gl.glBindTexture(GL2.GL_TEXTURE_2D,
 				textures.getTextureInformation("gitexture")[0]);
 		gl.glTexSubImage2D(GL2.GL_TEXTURE_2D, 0, (int) uvpos.x, (int) uvpos.y,
@@ -225,6 +233,7 @@ public class GiRenderer extends RenderUpdater {
 			ShaderScript.setUniformTexture(gl, "giMap", 0,
 					textures.getTextureInformation("gitexture")[0]);
 			ShaderScript.setUniform(gl, "textureSize", (float) TEXTURE_SIZE);
+			//ShaderScript.setUniform(gl, "camPos", Game.INSTANCE.cam.pos);
 			gl.glEnableVertexAttribArray(0);
 			gl.glEnableVertexAttribArray(1);
 			gl.glEnableVertexAttribArray(2);

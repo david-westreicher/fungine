@@ -2,31 +2,48 @@ package util;
 
 import java.nio.FloatBuffer;
 
+import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
+import javax.vecmath.Vector4f;
 
+import rendering.RenderUtil;
 import util.MathHelper.Tansformation;
 
 public class GIUtil {
 
-	private float[] vertices;
-	private float[] uvs;
-	private float[] normals;
+	private static final double REFLECTIVITY = 0.5;
+	private float[] vertices = new float[0];
+	private float[] uvs = new float[0];
+	private float[] normals = new float[0];
 	private float[][][] lookup;
 	private boolean[][] bitmap;
 	private int TEXTURE_SIZE;
 	private int currentLookupIndex;
+	private boolean[][] emmisive;
 
 	public GIUtil(int texturesize, float[] vertices) {
+		this(texturesize, new ProxyBakeable(vertices, new float[] { 1, 0, 0 },
+				false));
+	}
+
+	public GIUtil(int texturesize, Bakeable... bs) {
 		this.TEXTURE_SIZE = texturesize;
-		this.vertices = vertices;
-		uvs = new float[(vertices.length / 3) * 2];
-		normals = new float[vertices.length];
-		lookup = new float[TEXTURE_SIZE][TEXTURE_SIZE][6];
+		lookup = new float[TEXTURE_SIZE][TEXTURE_SIZE][9];
 		bitmap = new boolean[TEXTURE_SIZE][TEXTURE_SIZE];
+		emmisive = new boolean[TEXTURE_SIZE][TEXTURE_SIZE];
+		for (Bakeable b : bs) {
+			add(b);
+		}
+	}
+
+	public void add(Bakeable b) {
+		float[] vertices = b.getVertices();
+		float[] uvs = new float[(vertices.length / 3) * 2];
+		float[] normals = new float[vertices.length];
 
 		for (int i = 0; i < vertices.length; i += 9) {
-			Log.log(this, (float) 100 * i / vertices.length + "%");
+			// Log.log(this, (float) 100 * i / vertices.length + "%");
 			float x0 = vertices[i + 0];
 			float y0 = vertices[i + 1];
 			float z0 = vertices[i + 2];
@@ -52,7 +69,7 @@ public class GIUtil {
 			normals[i + 8] = normal.z;
 			Vector2f[] newuvs = MathHelper.getProjectedTriangle(triangle);
 			// Log.log(this, newuvs);
-			fit(newuvs, triangle, normal);
+			fit(newuvs, triangle, normal, b);
 			// Log.log(this, newuvs);
 			int count = (i / 3) * 2;
 			for (int j = 0; j < 3; j++) {
@@ -60,9 +77,13 @@ public class GIUtil {
 				uvs[count++] = newuvs[j].y;
 			}
 		}
+		this.vertices = RenderUtil.merge(this.vertices, vertices);
+		this.normals = RenderUtil.merge(this.normals, normals);
+		this.uvs = RenderUtil.merge(this.uvs, uvs);
 	}
 
-	private void fit(Vector2f[] newuvs, Vector3f[] triangle, Vector3f normal) {
+	private void fit(Vector2f[] newuvs, Vector3f[] triangle, Vector3f normal,
+			Bakeable b) {
 		Vector2f translation = new Vector2f();
 		Vector2f size = new Vector2f();
 		translation.x = -Math.min(0, newuvs[2].x);
@@ -86,7 +107,7 @@ public class GIUtil {
 					for (Vector2f uv : newuvs) {
 						uv.add(translation);
 					}
-					rasterize(newuvs, x, y, maxx, maxy, triangle, normal);
+					rasterize(newuvs, x, y, maxx, maxy, triangle, normal, b);
 					return;
 				}
 			}
@@ -94,7 +115,7 @@ public class GIUtil {
 	}
 
 	private void rasterize(Vector2f[] newuvs, int x, int y, float maxx,
-			float maxy, Vector3f[] position, Vector3f normal) {
+			float maxy, Vector3f[] position, Vector3f normal, Bakeable b) {
 		float[][] currPoints = new float[3][3];
 		float[][] realPoints = new float[3][3];
 		for (int i = 0; i < 3; i++) {
@@ -105,19 +126,23 @@ public class GIUtil {
 			currPoints[i][1] = position[i].y;
 			currPoints[i][2] = position[i].z;
 		}
-		Tansformation t = MathHelper.getTransformation(realPoints, currPoints);
-		Vector3f test = new Vector3f(newuvs[0].x, newuvs[0].y, 0);
-		t.transform(test);
+		Matrix4f t = MathHelper.getTransformation(realPoints, currPoints).matrix;
+		// Vector4f test = new Vector4f(newuvs[0].x, newuvs[0].y, 0, 1);
+		// t.transform(test);
 		// Log.log(this, newuvs);
 		// Log.log(this, position);
 		// Log.log(this, position[0], test, t);
-		Vector3f pos = new Vector3f();
+		boolean isEmissive = b.isEmmisive();
+		float[] color = b.getColor();
+		Vector4f pos = new Vector4f();
 		for (int x2 = x; x2 <= maxx; x2++) {
 			for (int y2 = y; y2 <= maxy; y2++) {
 				bitmap[x2][y2] = true;
+				emmisive[x2][y2] = isEmissive;
 				pos.x = x2 + 0.5f;
 				pos.y = y2 + 0.5f;
 				pos.z = 0;
+				pos.w = 1;
 				t.transform(pos);
 				lookup[x2][y2][0] = pos.x;
 				lookup[x2][y2][1] = pos.y;
@@ -125,6 +150,9 @@ public class GIUtil {
 				lookup[x2][y2][3] = normal.x;
 				lookup[x2][y2][4] = normal.y;
 				lookup[x2][y2][5] = normal.z;
+				lookup[x2][y2][6] = color[0];
+				lookup[x2][y2][7] = color[1];
+				lookup[x2][y2][8] = color[2];
 			}
 		}
 	}
@@ -170,6 +198,94 @@ public class GIUtil {
 					% (TEXTURE_SIZE * TEXTURE_SIZE);
 			x = currentLookupIndex / TEXTURE_SIZE;
 			y = currentLookupIndex % TEXTURE_SIZE;
-		} while (!bitmap[x][y]);
+		} while (!bitmap[x][y] || emmisive[x][y]);
 	}
+
+	public FloatBuffer getFloatTexture() {
+		FloatBuffer textureBuffer = FloatBuffer.allocate(TEXTURE_SIZE
+				* TEXTURE_SIZE * 4);
+		for (int i = 0; i < TEXTURE_SIZE; i++) {
+			for (int j = 0; j < TEXTURE_SIZE; j++) {
+				// textureBuffer.put((lookup[j][i][3] + 1) / 2);
+				// textureBuffer.put((lookup[j][i][4] + 1) / 2);
+				// textureBuffer.put((lookup[j][i][5] + 1) / 2);
+				if (emmisive[j][i]) {
+					textureBuffer.put(lookup[j][i][6]);
+					textureBuffer.put(lookup[j][i][7]);
+					textureBuffer.put(lookup[j][i][8]);
+				} else {
+					textureBuffer.put(0);
+					textureBuffer.put(0);
+					textureBuffer.put(0);
+				}
+				textureBuffer.put(1);
+			}
+		}
+		textureBuffer.rewind();
+		return textureBuffer;
+	}
+
+	public static interface Bakeable {
+		public float[] getVertices();
+
+		public boolean isEmmisive();
+
+		public float[] getColor();
+	}
+
+	public static class ProxyBakeable implements Bakeable {
+
+		private float[] vertices;
+		private float[] color;
+		private boolean isEmmisive;
+
+		public ProxyBakeable(float[] vertices, float[] color, boolean isEmmsivie) {
+			this.vertices = vertices;
+			this.color = color;
+			this.isEmmisive = isEmmsivie;
+		}
+
+		public ProxyBakeable(float[] box) {
+			this(box, new float[] { 0.5f, 0.5f, 0.5f }, false);
+		}
+
+		public ProxyBakeable(float[] box, float[] color) {
+			this(box, color, false);
+		}
+
+		public ProxyBakeable(float[] box, boolean b) {
+			// this(box, new float[] { (float) Math.random(),
+			// (float) Math.random(), (float) Math.random() }, b);
+			this(box, new float[] { 0.5f, 0.5f, 0.5f }, b);
+		}
+
+		@Override
+		public float[] getVertices() {
+			return vertices;
+		}
+
+		@Override
+		public float[] getColor() {
+			return color;
+		}
+
+		@Override
+		public boolean isEmmisive() {
+			return isEmmisive;
+		}
+
+	}
+
+	public FloatBuffer radiosity(double[] color) {
+		int x = currentLookupIndex / TEXTURE_SIZE;
+		int y = currentLookupIndex % TEXTURE_SIZE;
+		MathHelper.mul(color, REFLECTIVITY / 255.0);
+		float[] colorf = MathHelper.toFloat(color);
+		colorf[0] *= lookup[x][y][6];
+		colorf[1] *= lookup[x][y][7];
+		colorf[2] *= lookup[x][y][8];
+		colorf[3] = 1;
+		return FloatBuffer.wrap(colorf);
+	}
+
 }

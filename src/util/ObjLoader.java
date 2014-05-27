@@ -302,7 +302,7 @@ public class ObjLoader {
 
 	public float[] flattenToTriangle() {
 		float tris[] = new float[0];
-		for (int i = 0; i < indices.length / 4; i++) {
+		for (int i = 0; i < indices.length; i++) {
 			IntBuffer indice = indices[i];
 			float tris2[] = new float[indice.capacity() * 3];
 			int count = 0;
