@@ -204,4 +204,5 @@ public class GLUtil {
 		Matrix4f current = stacks[currentMatrixStack].stack.peek();
 		current.mul(scaleMatrix);
 	}
+
 }

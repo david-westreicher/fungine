@@ -3,10 +3,13 @@ package util;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
+import javax.vecmath.Tuple4f;
 import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4d;
+import javax.vecmath.Vector4f;
 
+import util.MathHelper.Tansformation;
 import world.GameObject;
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
@@ -15,21 +18,22 @@ public class MathHelper {
 	public static class Tansformation {
 		public Quat4f rotation = new Quat4f();
 		public Vector3f translation = new Vector3f();
+		public Matrix4f matrix = new Matrix4f();
 
-		public void transform(Vector3f pos) {
-			// pos.negate();
-			Matrix3f m = new Matrix3f();
-			m.set(rotation);
-			// Log.log(this, m);
-			// m.transpose();
-			m.transform(pos);
-			pos.add(translation);
+		public Tansformation() {
 		}
 
 		@Override
 		public String toString() {
 			return "Tansformation [rotation=" + rotation + ", translation="
 					+ translation + "]";
+		}
+
+		public Matrix4f updateMatrix() {
+			matrix.setIdentity();
+			matrix.set(rotation);
+			matrix.setTranslation(translation);
+			return matrix;
 		}
 	}
 
@@ -67,6 +71,7 @@ public class MathHelper {
 		tmpMatrix.transform(tempTransform.translation);
 		tempTransform.translation.negate();
 		tempTransform.translation.add(new Vector3f(qCentroid));
+		tempTransform.updateMatrix();
 		return tempTransform;
 	}
 
@@ -400,7 +405,7 @@ public class MathHelper {
 		tmp2.sub(v1, v2);
 		normal.cross(tmp1, tmp2);
 		normal.normalize();
-		//normal.y *= -1;
+		// normal.y *= -1;
 		return normal;
 	}
 
@@ -439,5 +444,19 @@ public class MathHelper {
 		for (int i = 0; i < color.length; i++)
 			ret[i] = (float) color[i];
 		return ret;
+	}
+
+	public static void apply(Matrix4f rotate, float[] fish) {
+		Vector4f tmp = new Vector4f();
+		for (int i = 0; i < fish.length; i += 3) {
+			tmp.x = fish[i + 0];
+			tmp.y = fish[i + 1];
+			tmp.z = fish[i + 2];
+			tmp.w = 1;
+			rotate.transform(tmp);
+			fish[i + 0] = tmp.x / tmp.w;
+			fish[i + 1] = tmp.y / tmp.w;
+			fish[i + 2] = tmp.z / tmp.w;
+		}
 	}
 }
