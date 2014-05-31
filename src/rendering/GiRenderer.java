@@ -1,7 +1,6 @@
 package rendering;
 
 import game.Game;
-import game.GameLoop;
 
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
@@ -16,11 +15,11 @@ import manager.UberManager;
 import shader.Shader;
 import shader.ShaderScript;
 import util.GIUtil;
+import util.GIUtil.ProxyBakeable;
 import util.Log;
 import util.MathHelper;
-import util.GIUtil.ProxyBakeable;
-import util.MathHelper.Tansformation;
 import util.ObjLoader;
+import util.Util;
 
 import com.jogamp.common.nio.Buffers;
 
@@ -29,6 +28,7 @@ public class GiRenderer extends RenderUpdater {
 	private static final int TEXTURE_SIZE = 512;
 	private static final int CUBEMAP_SIZE = 40;
 	private static final int PIXELS_PER_RENDER_TICK = 30;
+	private static final boolean SAVE_DEBUG_SCREENSHOTS = false;
 	private int[] uvBuffer;
 	private int[] frameBuffer;
 	private int[] renderedTexture;
@@ -80,6 +80,7 @@ public class GiRenderer extends RenderUpdater {
 		giUtil.add(new ProxyBakeable(fish, new float[] { 1, 1, 1 }));
 		giUtil.add(new ProxyBakeable(fish2, new float[] { 1, 1, 1 }));
 		giUtil.add(new ProxyBakeable(sphere, new float[] { 1, 1, 1 }));
+		// giUtil.saveTextureAtlasToFile();
 
 		// Log.log(this, normals);
 		super.executeInOpenGLContext(new GLRunnable() {
@@ -146,6 +147,48 @@ public class GiRenderer extends RenderUpdater {
 
 	@Override
 	protected void renderObjects() {
+
+		updateRadiosity();
+
+		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
+		gl.glViewport(0, 0, width, height);
+		glutil.glPushMatrix();
+		glutil.scale(10.0f / cubeSize, 10.0f / cubeSize, 10.0f / cubeSize);
+		glutil.glTranslatef(-cubeSize, -cubeSize * 2, -cubeSize);
+		RenderUtil.drawTexture(gl, glutil, pos.x, pos.y, pos.z, 0.25f, 0.25f,
+				textures.getTextureInformation("debugTexture")[0], 0, 1);
+		if (SAVE_DEBUG_SCREENSHOTS) {
+			takeCubemapScreenshots();
+			takeFrameBufferScreenshot();
+		}
+		drawGI();
+		glutil.glPopMatrix();
+		RenderUtil.drawTexture(gl, glutil, 10, 10, -1, 20, 20,
+				renderedTexture[0], 0, 1);
+		RenderUtil.drawTexture(gl, glutil, -10, 10, -1, 20, 20,
+				textures.getTextureInformation("gitexture")[0], 0, 1);
+	}
+
+	private void takeCubemapScreenshots() {
+		long renderTick = Game.INSTANCE.loop.renderTick;
+		if (renderTick > 15000 && renderTick % 200 == 0) {
+			RenderUtil.textureToFile(renderedTexture[0], CUBEMAP_SIZE,
+					CUBEMAP_SIZE, Util.generateScreenshotFile());
+		}
+	}
+
+	private void takeFrameBufferScreenshot() {
+		long renderTick = Game.INSTANCE.loop.renderTick;
+		if (renderTick == 12000 || renderTick == 12001
+				|| (renderTick > 15000 && renderTick % 1000 == 0)) {
+			// gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_LINE);
+			// gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
+			Log.log(this, "saving framebuffer screenshot");
+			super.takeScreen = true;
+		}
+	}
+
+	private void updateRadiosity() {
 		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, frameBuffer[0]);
 		gl.glViewport(0, 0, CUBEMAP_SIZE, CUBEMAP_SIZE);
 		glutil.glMatrixMode(GL2.GL_PROJECTION);
@@ -168,20 +211,6 @@ public class GiRenderer extends RenderUpdater {
 		glutil.glMatrixMode(GL2.GL_PROJECTION);
 		glutil.glPopMatrix();
 		glutil.glMatrixMode(GL2.GL_MODELVIEW);
-
-		gl.glBindFramebuffer(GL2.GL_FRAMEBUFFER, 0);
-		gl.glViewport(0, 0, width, height);
-		glutil.glPushMatrix();
-		glutil.scale(10.0f / cubeSize, 10.0f / cubeSize, 10.0f / cubeSize);
-		glutil.glTranslatef(-cubeSize, -cubeSize * 2, -cubeSize);
-		RenderUtil.drawTexture(gl, glutil, pos.x, pos.y, pos.z, 0.25f, 0.25f,
-				textures.getTextureInformation("debugTexture")[0], 0, 1);
-		drawGI();
-		glutil.glPopMatrix();
-		RenderUtil.drawTexture(gl, glutil, 10, 10, -1, 20, 20,
-				renderedTexture[0], 0, 1);
-		RenderUtil.drawTexture(gl, glutil, -10, 10, -1, 20, 20,
-				textures.getTextureInformation("gitexture")[0], 0, 1);
 	}
 
 	private void renderFromLookup() {
@@ -233,7 +262,7 @@ public class GiRenderer extends RenderUpdater {
 			ShaderScript.setUniformTexture(gl, "giMap", 0,
 					textures.getTextureInformation("gitexture")[0]);
 			ShaderScript.setUniform(gl, "textureSize", (float) TEXTURE_SIZE);
-			//ShaderScript.setUniform(gl, "camPos", Game.INSTANCE.cam.pos);
+			// ShaderScript.setUniform(gl, "camPos", Game.INSTANCE.cam.pos);
 			gl.glEnableVertexAttribArray(0);
 			gl.glEnableVertexAttribArray(1);
 			gl.glEnableVertexAttribArray(2);

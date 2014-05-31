@@ -1,14 +1,16 @@
 package util;
 
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.nio.FloatBuffer;
 
+import javax.imageio.ImageIO;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 import javax.vecmath.Vector4f;
 
 import rendering.RenderUtil;
-import util.MathHelper.Tansformation;
 
 public class GIUtil {
 
@@ -34,6 +36,42 @@ public class GIUtil {
 		emmisive = new boolean[TEXTURE_SIZE][TEXTURE_SIZE];
 		for (Bakeable b : bs) {
 			add(b);
+		}
+	}
+
+	public void saveTextureAtlasToFile() {
+		BufferedImage bi = new BufferedImage(TEXTURE_SIZE, TEXTURE_SIZE,
+				BufferedImage.TYPE_INT_RGB);
+		int[] colorData = new int[TEXTURE_SIZE * TEXTURE_SIZE];
+		int[] normalData = new int[TEXTURE_SIZE * TEXTURE_SIZE];
+		int[] positionData = new int[TEXTURE_SIZE * TEXTURE_SIZE];
+		for (int x = 0; x < TEXTURE_SIZE; x++)
+			for (int y = 0; y < TEXTURE_SIZE; y++) {
+				int col = ((int) (lookup[x][y][6] * 255)) << 16;
+				col |= ((int) (lookup[x][y][7] * 255)) << 8;
+				col |= ((int) (lookup[x][y][8] * 255));
+				colorData[x + (TEXTURE_SIZE - y - 1) * TEXTURE_SIZE] = col;
+				int norm = ((int) ((lookup[x][y][3] + 1.0f) / 2.0f * 255)) << 16;
+				norm |= ((int) ((lookup[x][y][4] + 1.0f) / 2.0f * 255)) << 8;
+				norm |= ((int) ((lookup[x][y][5] + 1.0f) / 2.0f * 255));
+				normalData[x + (TEXTURE_SIZE - y - 1) * TEXTURE_SIZE] = norm;
+				int pos = ((int) ((lookup[x][y][0]) / 40.0f * 255)) << 16;
+				pos |= ((int) ((lookup[x][y][1]) / 40.0f * 255)) << 8;
+				pos |= ((int) ((lookup[x][y][2]) / 40.0f * 255));
+				positionData[x + (TEXTURE_SIZE - y - 1) * TEXTURE_SIZE] = pos;
+			}
+		try {
+			bi.setRGB(0, 0, TEXTURE_SIZE, TEXTURE_SIZE, colorData, 0,
+					TEXTURE_SIZE);
+			ImageIO.write(bi, "png", Util.generateScreenshotFile());
+			bi.setRGB(0, 0, TEXTURE_SIZE, TEXTURE_SIZE, normalData, 0,
+					TEXTURE_SIZE);
+			ImageIO.write(bi, "png", Util.generateScreenshotFile());
+			bi.setRGB(0, 0, TEXTURE_SIZE, TEXTURE_SIZE, positionData, 0,
+					TEXTURE_SIZE);
+			ImageIO.write(bi, "png", Util.generateScreenshotFile());
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 

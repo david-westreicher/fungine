@@ -1,15 +1,22 @@
 package rendering;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL2;
+import javax.media.opengl.GLException;
 
 import manager.UberManager;
 import shader.Shader;
 import shader.ShaderScript;
 import util.GLUtil;
+import util.Log;
+import util.Util;
 
 import com.jogamp.common.nio.Buffers;
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureIO;
 
 public class RenderUtil {
 	private static final float[] rectangle = new float[] { -0.5f, 0.5f, 0.0f,
@@ -276,6 +283,20 @@ public class RenderUtil {
 		verts[count++] = y;
 		verts[count++] = z + depth;
 		return verts;
+	}
+
+	public static void textureToFile(int textureID, int width, int height,
+			File generateScreenshotFile) {
+		Texture text = TextureIO.newTexture(textureID, GL2.GL_TEXTURE_2D,
+				width, height, width, height, false);
+		try {
+			TextureIO.write(text, Util.generateScreenshotFile());
+			Log.log(RenderUtil.class, "saving texture screenshot");
+		} catch (GLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
