@@ -286,11 +286,11 @@ public class RenderUtil {
 	}
 
 	public static void textureToFile(int textureID, int width, int height,
-			File generateScreenshotFile) {
+			File file) {
 		Texture text = TextureIO.newTexture(textureID, GL2.GL_TEXTURE_2D,
 				width, height, width, height, false);
 		try {
-			TextureIO.write(text, Util.generateScreenshotFile());
+			TextureIO.write(text, file());
 			Log.log(RenderUtil.class, "saving texture screenshot");
 		} catch (GLException e) {
 			e.printStackTrace();
