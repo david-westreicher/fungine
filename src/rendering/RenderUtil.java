@@ -5,12 +5,11 @@ import java.nio.FloatBuffer;
 import javax.media.opengl.GL2;
 
 import manager.UberManager;
-
-import com.jogamp.common.nio.Buffers;
-
 import shader.Shader;
 import shader.ShaderScript;
 import util.GLUtil;
+
+import com.jogamp.common.nio.Buffers;
 
 public class RenderUtil {
 	private static final float[] rectangle = new float[] { -0.5f, 0.5f, 0.0f,
@@ -278,4 +277,5 @@ public class RenderUtil {
 		verts[count++] = z + depth;
 		return verts;
 	}
+
 }

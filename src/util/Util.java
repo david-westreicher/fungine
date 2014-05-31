@@ -1,20 +1,13 @@
 package util;
 
-import game.Game;
-
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.GraphicsDevice;
-import java.awt.GraphicsEnvironment;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.util.GregorianCalendar;
 
 import javax.media.opengl.GL2;
@@ -22,7 +15,6 @@ import javax.swing.JFrame;
 import javax.vecmath.Matrix3f;
 
 import manager.UberManager;
-import settings.Settings;
 
 import com.jogamp.opengl.util.texture.Texture;
 

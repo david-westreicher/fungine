@@ -2,20 +2,12 @@ package rendering;
 
 import java.nio.Buffer;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
-import manager.UberManager;
-import shader.Shader;
 import shader.ShaderScript;
 import util.GLUtil;
-import util.Log;
-
-import com.jogamp.common.nio.Buffers;
-import com.jogamp.opengl.util.glsl.ShaderUtil;
 
 public class FPSRenderer {
 	public static final int WIDTH = 200;

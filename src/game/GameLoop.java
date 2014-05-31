@@ -13,7 +13,6 @@ public class GameLoop extends RepeatedRunnable {
 	private int SKIP_TICKS;
 	private final int MAX_FRAMESKIP = 5;
 	private final int MAX_FPS = 200;
-	private int renderloops = 0;
 	public RenderUpdater renderer;
 	public GameMechanics mechanics;
 	public SoundManager sound;
@@ -22,6 +21,7 @@ public class GameLoop extends RepeatedRunnable {
 	private float interpolation;
 	public TickCounter currentFPS;
 	public TickCounter currentTick;
+	public long renderTick = 0;
 	public int tick = 0;
 	private boolean pauseLogic;
 	public long timePerTick;
@@ -77,7 +77,7 @@ public class GameLoop extends RepeatedRunnable {
 			tick++;
 			currentTick.tick();
 			loops++;
-			renderloops = 0;
+			// renderTick = 0;
 		}
 		if (renderer != null) {
 			/*
@@ -96,7 +96,7 @@ public class GameLoop extends RepeatedRunnable {
 			long timePerRenderStart = System.currentTimeMillis();
 			renderer.update(interpolation);
 			timePerRender = System.currentTimeMillis() - timePerRenderStart;
-			renderloops++;
+			renderTick++;
 			/*
 			 * } else { Thread.yield(); Util.sleep(1); }
 			 */

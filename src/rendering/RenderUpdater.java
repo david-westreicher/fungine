@@ -47,7 +47,7 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 	private static final List<GLRunnable> contextExecutions = new ArrayList<GLRunnable>();
 	private static final float ZFAR_DISTANCE = 1000;
 	private List<float[][]> debugLines = new LinkedList<float[][]>();
-	private boolean takeScreen = false;
+	protected boolean takeScreen = false;
 	private FPSRenderer fpsRenderer;
 	private float debugAngle;
 	private OpenGLRendering renderer;

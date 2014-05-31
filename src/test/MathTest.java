@@ -16,7 +16,7 @@ public class MathTest {
 		Tansformation t = MathHelper.getTransformation(realPoints, currPoints);
 		Log.log(t);
 		Vector3f tmp = new Vector3f(0, 1, 1);
-		//t.transform(tmp);
+		// t.transform(tmp);
 		Log.log(tmp);
 	}
 

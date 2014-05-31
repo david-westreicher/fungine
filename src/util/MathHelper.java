@@ -3,13 +3,10 @@ package util;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
-import javax.vecmath.Tuple4f;
 import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
-import javax.vecmath.Vector4d;
 import javax.vecmath.Vector4f;
 
-import util.MathHelper.Tansformation;
 import world.GameObject;
 import Jama.EigenvalueDecomposition;
 import Jama.Matrix;
