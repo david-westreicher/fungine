@@ -12,7 +12,6 @@ import shader.Shader;
 import shader.ShaderScript;
 import util.GLUtil;
 import util.Log;
-import util.Util;
 
 import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.util.texture.Texture;

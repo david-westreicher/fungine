@@ -7,7 +7,7 @@ import com.sun.jna.Platform;
 public class Settings {
 	public static String RESSOURCE_FOLDER = "ressources" + File.separator;
 	public static String OBJECTS_XML = "objects.xml";
-	public static String MAIN_SCRIPT = "main.js";
+	public static String MAIN_SCRIPT = "scripts/Main.java";
 	public static String INIT_SCRIPT = "init.js";
 	public static int WIDTH = 640;
 	public static int HEIGHT = 800;

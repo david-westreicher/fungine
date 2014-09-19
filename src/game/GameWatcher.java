@@ -3,7 +3,6 @@ package game;
 import java.io.File;
 
 import javax.media.opengl.GL2;
-import javax.script.ScriptException;
 
 import manager.UberManager;
 import rendering.GLRunnable;
@@ -12,7 +11,6 @@ import rendering.model.ModelRenderer;
 import script.JavaScript;
 import script.Script;
 import settings.Settings;
-import util.Factory;
 import util.FolderListener;
 import util.Log;
 import util.Util;
@@ -31,6 +29,7 @@ public class GameWatcher implements FolderListener {
 	public void added(String s) {
 	}
 
+	// TODO update to engine overhaul (main_script is a java file)
 	@Override
 	public void changed(String s) {
 		Log.log(this, s + " changed");
@@ -44,14 +43,7 @@ public class GameWatcher implements FolderListener {
 			JavaScript.reset();
 			Game.INSTANCE.world = new World();
 			Game.INSTANCE.world.add(Game.INSTANCE.cam);
-			try {
-				Script.executeFunction(Settings.MAIN_SCRIPT, "init",
-						Game.INSTANCE, Factory.INSTANCE);
-			} catch (ScriptException e) {
-				e.printStackTrace();
-			} catch (NoSuchMethodException e) {
-				e.printStackTrace();
-			}
+			JavaScript.execute("Main.java", false);
 			gl.endPause();
 		} else if (s.equals(Settings.OBJECTS_XML)) {
 			GameLoop gl = game.loop;

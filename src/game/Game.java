@@ -1,9 +1,6 @@
 package game;
 
 import input.Input;
-
-import javax.script.ScriptException;
-
 import manager.SoundManager;
 import physics.OdePhysics;
 import rendering.DeferredRenderer;
@@ -69,35 +66,7 @@ public class Game {
 	public void start() {
 		world = new World();
 		world.add(cam);
-		parseXML();
-		try {
-			Script.executeFunction(Settings.INIT_SCRIPT, "init", this,
-					Factory.INSTANCE);
-		} catch (ScriptException e) {
-			loop.startPause();
-			System.err.println("Couldn't parse the init script!");
-			System.err.println(e.getMessage());
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			loop.startPause();
-			System.err.println("Couldn't parse the init script!");
-			System.err.println(e.getMessage());
-			e.printStackTrace();
-		}
-		try {
-			Script.executeFunction(Settings.MAIN_SCRIPT, "init", this,
-					Factory.INSTANCE);
-		} catch (ScriptException e) {
-			loop.startPause();
-			System.err.println("Couldn't parse the main script!");
-			System.err.println(e.getMessage());
-			e.printStackTrace();
-		} catch (NoSuchMethodException e) {
-			loop.startPause();
-			System.err.println("Couldn't parse the main script!");
-			System.err.println(e.getMessage());
-			e.printStackTrace();
-		}
+		JavaScript.execute("Main.java", true);
 		if (Settings.LOW_GRAPHICS)
 			Util.sleep(1000);
 		loop.endPause();

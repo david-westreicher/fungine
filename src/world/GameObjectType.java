@@ -46,7 +46,7 @@ public class GameObjectType extends VariableHolder {
 
 	public void setRuntimeScript(String runtimeScript) {
 		this.runtimeScript = runtimeScript;
-		JavaScript.compileIfNew(runtimeScript);
+		JavaScript.loadIfNew(runtimeScript);
 	}
 
 }
