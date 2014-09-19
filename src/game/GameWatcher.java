@@ -9,7 +9,6 @@ import rendering.GLRunnable;
 import rendering.RenderUpdater;
 import rendering.model.ModelRenderer;
 import script.JavaScript;
-import script.Script;
 import settings.Settings;
 import util.FolderListener;
 import util.Log;
@@ -36,7 +35,6 @@ public class GameWatcher implements FolderListener {
 		if (s.equals(Settings.INIT_SCRIPT)) {
 			game.restart();
 		} else if (s.equals(Settings.MAIN_SCRIPT)) {
-			Script.scripts.remove(Settings.MAIN_SCRIPT);
 			GameLoop gl = game.loop;
 			gl.startPause();
 			Util.sleep(10);

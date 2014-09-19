@@ -10,7 +10,6 @@ import rendering.OpenGLRendering;
 import rendering.SimpleRenderer;
 import rendering.TestSkinningRenderer;
 import script.JavaScript;
-import script.Script;
 import settings.Settings;
 import util.Factory;
 import util.FolderWatcher;
@@ -58,7 +57,6 @@ public class Game {
 		loop.startPause();
 		loop.exit();
 		JavaScript.reset();
-		Script.restart();
 		Util.sleep(100);
 		start();
 	}
