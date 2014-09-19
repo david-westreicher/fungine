@@ -161,8 +161,8 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 			}
 
 			gl.glDisable(GL2.GL_DEPTH_TEST);
-			// if (Game.DEBUG || !Settings.SHOW_STATUS)
-			// renderDebug();
+			if (Game.DEBUG || !Settings.SHOW_STATUS)
+				renderDebug();
 
 		}
 
