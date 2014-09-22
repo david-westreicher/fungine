@@ -30,6 +30,7 @@ public class Game {
 	public static boolean DEBUG = false;
 	public Camera cam = new Camera();
 	public boolean exitFlag = false;
+	public boolean fullscreenFlag = Settings.USE_FULL_SCREEN;
 	public static VRFactory.VR vr;
 
 	public Game() {
@@ -64,7 +65,7 @@ public class Game {
 	public void start() {
 		world = new World();
 		world.add(cam);
-		JavaScript.execute("Main.java", true);
+		JavaScript.execute(Settings.MAIN_SCRIPT, true);
 		if (Settings.LOW_GRAPHICS)
 			Util.sleep(1000);
 		loop.endPause();
