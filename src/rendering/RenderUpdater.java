@@ -39,7 +39,12 @@ import browser.Browser;
 import com.jogamp.opengl.util.awt.Screenshot;
 import com.jogamp.opengl.util.gl2.GLUT;
 
-public abstract class RenderUpdater implements Updatable, GLEventListener {
+public class RenderUpdater implements Updatable, GLEventListener {
+	public interface Renderer {
+		public void renderObjects(GL3 gl, GLUtil glutil);
+
+	}
+
 	private static final float ZNEAR = 0.01f;
 	private static final float DEBUG_SIZE = 250f;
 	private static final Browser browser = new AwesomiumWrapper();
@@ -49,6 +54,7 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 	private List<float[][]> debugLines = new LinkedList<float[][]>();
 	protected boolean takeScreen = false;
 	private FPSRenderer fpsRenderer;
+	public Renderer objectsRenderer = null;
 	private float debugAngle;
 	private OpenGLRendering renderer;
 	protected static final boolean SMOOTHSTEP_INTERP = false;
@@ -238,26 +244,31 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 
 	private void renderText() {
 		gl.glColor3f(1, 0, 0);
+		gl.glPixelZoom(((float) width / Settings.WIDTH),
+				((float) height / Settings.HEIGHT));
 		GameLoop loop = Game.INSTANCE.loop;
 		// text
-		int i = 1;
-		int x = width * (Settings.STEREO ? 2 : 1) - 200;
+		int i = 0;
+		int x = width * (Settings.STEREO ? 2 : 1) / 2 - 200;
+		int startY = height / 2 - 100;
 		renderString("Render-FPS: " + Util.roundDigits(loop.currentFPS.fps, 1),
-				x, 15 * i++ + 80);
+				x, startY - 15 * i++);
 		renderString(
 				"Tick-FPS  :  " + Util.roundDigits(loop.currentTick.fps, 1), x,
-				15 * i++ + 80);
-		renderString("TpT       :  " + loop.timePerTick + "ms", x,
-				15 * i++ + 80);
+				startY - 15 * i++);
+		renderString("TpT       :  " + loop.timePerTick + "ms", x, startY - 15
+				* i++);
 		renderString("#Objects  :  " + Game.INSTANCE.world.getObjectNum(), x,
-				15 * i++ + 80);
+				startY - 15 * i++);
 		renderString("Textures to load:  " + UberManager.getTexturesToLoad(),
-				x, 15 * i++ + 80);
+				x, startY - 15 * i++);
 
 	}
 
 	private void renderString(String string, int posX, int posY) {
-		gl.glRasterPos2f(posX, posY);
+		// gl.glRasterPos2f(posX, posY);
+		gl.glRasterPos2i(0, 0);
+		gl.glBitmap(0, 0, 0, 0, posX, posY, null);
 		glut.glutBitmapString(GLUT.BITMAP_8_BY_13, string);
 	}
 
@@ -343,7 +354,10 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		gl.glEnd();
 	}
 
-	protected abstract void renderObjects();
+	protected void renderObjects() {
+		if (objectsRenderer != null)
+			objectsRenderer.renderObjects(gl3, glutil);
+	}
 
 	@Override
 	public void dispose(GLAutoDrawable arg0) {
@@ -440,9 +454,11 @@ public abstract class RenderUpdater implements Updatable, GLEventListener {
 		return settings;
 	}
 
-	public abstract void initShaderUniforms();
+	public void initShaderUniforms() {
+	}
 
-	public abstract void endShaderUniforms();
+	public void endShaderUniforms() {
+	}
 
 	public static Browser getBrowser() {
 		return browser;

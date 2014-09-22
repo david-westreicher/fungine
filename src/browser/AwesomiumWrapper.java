@@ -94,9 +94,13 @@ public class AwesomiumWrapper extends Browser {
 
 	@Override
 	public void render(GL2 gl) {
-		gl.glRasterPos2i(0, 0);
 		gl.glPixelZoom(((float) Game.INSTANCE.getWidth() / Settings.WIDTH),
 				-((float) Game.INSTANCE.getHeight() / Settings.HEIGHT));
+		// ugly hack
+		// http://www.gamedev.net/topic/438203-glrasterpos-gldrawpixel-and-discarding-images/
+		gl.glRasterPos2i(0, 0);
+		gl.glBitmap(0, 0, 0, 0, -Game.INSTANCE.getWidth() / 2,
+				Game.INSTANCE.getHeight() / 2, null);
 		ByteBuffer buffer = AwesomiumHelper.getBuffer();
 		gl.glEnable(GL2.GL_BLEND);
 		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
@@ -104,7 +108,6 @@ public class AwesomiumWrapper extends Browser {
 			gl.glDrawPixels(Settings.WIDTH, Settings.HEIGHT, GL2.GL_BGRA,
 					GL2.GL_UNSIGNED_BYTE, buffer);
 		gl.glDisable(GL2.GL_BLEND);
-		gl.glPixelZoom(1, 1);
 	}
 
 	@Override
