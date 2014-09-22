@@ -17,15 +17,19 @@ import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 
 import settings.Settings;
-import util.Factory;
 import util.Log;
 import world.GameObject;
 import world.GameObjectType;
 
 public class JavaScript {
 
+	public static interface OnUpdate {
+		public void update(Object object);
+	}
+
 	private static Map<String, List<RuntimeScript>> gotScriptMap = new HashMap<String, List<RuntimeScript>>();
 	private static List<RuntimeScript> allScripts = new ArrayList<RuntimeScript>();
+	private static Map<String, OnUpdate> onUpdateMap = new HashMap<String, OnUpdate>();
 
 	public interface RuntimeScript {
 		public void update(List<GameObject> go);
@@ -38,9 +42,9 @@ public class JavaScript {
 	}
 
 	public interface Executable {
-		public void init(Game game, Factory factory);
+		public void init(Game game);
 
-		public void execute(Game game, Factory factory);
+		public void execute(Game game);
 	}
 
 	/*
@@ -51,6 +55,7 @@ public class JavaScript {
 	 */
 
 	private static void loadRuntimeScript(final String name) {
+		Log.log(JavaScript.class, "Loading runtime script " + name);
 		String compileFolder = Settings.RESSOURCE_FOLDER + "scripts"
 				+ File.separator;
 		FunClassLoader cls = new FunClassLoader();
@@ -95,7 +100,8 @@ public class JavaScript {
 		public void init(String compileFolder, String name) {
 			String newFile = "tmp" + name;
 			if (compile(compileFolder, name, newFile)) {
-				Log.log(JavaScript.class, "Compilation is successful");
+				Log.log(JavaScript.class, "Compilation of " + name
+						+ " is successful");
 				cls = loadClass(compileFolder, newFile);
 			} else {
 				throw new RuntimeException("Compilation Failed");
@@ -120,7 +126,11 @@ public class JavaScript {
 
 		public Object newInstance() {
 			try {
-				return cls.newInstance();
+				Object inst = cls.newInstance();
+				if (inst == null)
+					throw new RuntimeException(
+							"Creating new instance failed (=null)");
+				return inst;
 			} catch (InstantiationException e) {
 				e.printStackTrace();
 			} catch (IllegalAccessException e) {
@@ -158,10 +168,30 @@ public class JavaScript {
 	}
 
 	public static void scriptChanged(String s) {
-		Log.log(JavaScript.class, s + " changed");
 		String filename = s.substring("scripts/".length());
-		if (!filename.startsWith("tmp"))
-			loadRuntimeScript(filename);
+		OnUpdate updater = onUpdateMap.get(filename);
+		if (updater == null) {
+			if (!filename.startsWith("tmp")) {
+				loadRuntimeScript(filename);
+			}
+		} else {
+			updater.update(newInstance(filename));
+		}
+	}
+
+	private static Object newInstance(String name) {
+		String compileFolder = Settings.RESSOURCE_FOLDER + "scripts"
+				+ File.separator;
+		FunClassLoader cls = new FunClassLoader();
+		try {
+			Log.log(JavaScript.class, "loading " + name + " class");
+			cls.init(compileFolder, name);
+			Log.log(JavaScript.class, "returning new instance of: " + name);
+			return cls.newInstance();
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	public static void reset() {
@@ -190,15 +220,26 @@ public class JavaScript {
 				+ File.separator;
 		FunClassLoader cls = new FunClassLoader();
 		try {
+			Log.log(JavaScript.class, "loading " + name + " class");
 			cls.init(compileFolder, name);
 			Executable executable = (Executable) cls.newInstance();
-			if (init)
-				executable.init(Game.INSTANCE, Factory.INSTANCE);
-			executable.execute(Game.INSTANCE, Factory.INSTANCE);
+			if (init) {
+				Log.log(JavaScript.class, name + ".init()");
+				executable.init(Game.INSTANCE);
+			}
+			Log.log(JavaScript.class, name + ".execute()");
+			executable.execute(Game.INSTANCE);
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 			return;
 		}
 	}
 
+	public static <T> void onUpdate(Class<? extends T> class1, OnUpdate r) {
+		String name = class1.getSimpleName() + ".java";
+		Object inst = newInstance(name);
+		if (inst != null)
+			r.update((T) inst);
+		onUpdateMap.put(name, r);
+	}
 }
