@@ -8,6 +8,7 @@ import java.util.Map;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
 import javax.vecmath.Vector3f;
 
 import util.Log;
@@ -32,7 +33,7 @@ public class ShaderScript {
 		return "ShaderScript [shaderNum=" + shaderNum + ", file=" + file + "]";
 	}
 
-	public void execute(GL2 gl) {
+	public void execute(GL2GL3 gl) {
 		if (shaderNum != 0) {
 			if (activatedShader != null) {
 				Log.log(this, activatedShader + " and " + this);
@@ -43,7 +44,7 @@ public class ShaderScript {
 		}
 	}
 
-	public void end(GL2 gl) {
+	public void end(GL2GL3 gl) {
 		activatedShader = null;
 		gl.glUseProgram(0);
 	}
@@ -97,7 +98,7 @@ public class ShaderScript {
 				matrix);
 	}
 
-	public static void setUniformMatrix4(GL2 gl, String str,
+	public static void setUniformMatrix4(GL2GL3 gl, String str,
 			FloatBuffer matrix, boolean transpose) {
 		int location = glGetUniformLocation(gl, getActiveShader(), str);
 		gl.glUniformMatrix4fv(location, matrix.capacity() / 16, transpose,
@@ -247,7 +248,7 @@ public class ShaderScript {
 				rotationMatrixArray, 0);
 	}
 
-	private static int glGetUniformLocation(GL2 gl, int shadernum, String str) {
+	private static int glGetUniformLocation(GL2GL3 gl, int shadernum, String str) {
 		Integer location = locationCache.get(shadernum + str);
 		if (location == null) {
 			location = gl.glGetUniformLocation(shadernum, str);

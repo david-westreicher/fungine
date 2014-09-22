@@ -63,10 +63,11 @@ public class OpenGLRendering {
 				Settings.HEIGHT);
 		window.addGLEventListener(r);
 		setFullscreen(Settings.USE_FULL_SCREEN);
-		// window.setAlwaysOnTop(true);
+		window.setAlwaysOnTop(true);
 		window.setAutoSwapBufferMode(true);
 		window.setVisible(true);
-		window.setTitle("NEWT Window Test");
+		window.setPosition(window.getScreen().getWidth() - window.getWidth(), 0);
+		window.setTitle("fungine");
 		CanvasListener c = new CanvasListener();
 		window.addMouseListener(c);
 		window.addKeyListener(c);

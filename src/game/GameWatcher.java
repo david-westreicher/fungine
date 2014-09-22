@@ -34,14 +34,14 @@ public class GameWatcher implements FolderListener {
 		Log.log(this, s + " changed");
 		if (s.equals(Settings.INIT_SCRIPT)) {
 			game.restart();
-		} else if (s.equals(Settings.MAIN_SCRIPT)) {
+		} else if (s.equals("scripts/" + Settings.MAIN_SCRIPT)) {
 			GameLoop gl = game.loop;
 			gl.startPause();
 			Util.sleep(10);
 			JavaScript.reset();
 			Game.INSTANCE.world = new World();
 			Game.INSTANCE.world.add(Game.INSTANCE.cam);
-			JavaScript.execute("Main.java", false);
+			JavaScript.execute(Settings.MAIN_SCRIPT, false);
 			gl.endPause();
 		} else if (s.equals(Settings.OBJECTS_XML)) {
 			GameLoop gl = game.loop;
@@ -55,7 +55,7 @@ public class GameWatcher implements FolderListener {
 			String folder = s.split(File.separator.equals("\\") ? "\\\\"
 					: File.separator)[0];
 			s = s.replace("\\", "/");
-			Log.log(this, folder);
+			// Log.log(this, folder);
 			if (folder.equals("scripts")) {
 				JavaScript.scriptChanged(s);
 				// game.getManager("script").changed(s);
