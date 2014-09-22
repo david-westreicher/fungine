@@ -14,7 +14,7 @@ void main(){
 	uvOut = uv/textureSize;
 	//vec3 pa = vertex-camPos;
 	//vec3 vertex2 = pa*(radiusSQ/length(pa))+camPos;
-    gl_Position = modelviewprojection*vec4(vertex,1.0);
+	gl_Position = modelviewprojection*vec4(vertex,1.0);
 }
 
 //fragment
@@ -27,8 +27,8 @@ uniform float textureSize;
 uniform float colorscale;
  
 void main(){
-   // color = vec4((normalOut+1.0)/2.0,1);
-    ////color = vec4(texture(),1);
-    color = texture(giMap,uvOut)*colorscale;
-    color.a = 1;
+	// color = vec4((normalOut+1.0)/2.0,1);
+	////color = vec4(texture(),1);
+	color = texture(giMap,uvOut)*colorscale;
+	color.a = 1;
 }

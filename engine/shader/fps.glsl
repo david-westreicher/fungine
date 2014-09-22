@@ -5,7 +5,7 @@ uniform mat4 modelviewprojection;
 
 void main(){
 	uv = vertex.xy+0.5;
-    gl_Position = modelviewprojection*vec4(vertex,1.0);
+	gl_Position = modelviewprojection*vec4(vertex,1.0);
 }
 
 //fragment
@@ -19,6 +19,6 @@ uniform float colorScale =0;
 void main(){
 	vec2 trans = vec2(uv);
 	trans.x+=translateX;
-    color = texture(fpsTex,trans)*colorScale;//50;
-    //color.a = 1;
+	color = texture(fpsTex,trans)*colorScale;//50;
+	//color.a = 1;
 }
