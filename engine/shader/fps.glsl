@@ -19,6 +19,11 @@ uniform float colorScale =0;
 void main(){
 	vec2 trans = vec2(uv);
 	trans.x+=translateX;
-	color = texture(fpsTex,trans)*colorScale;//50;
+	color = vec4(0,0,0,0)*colorScale;//50;
+	for(float lvl = 1;lvl<15;lvl+=1){
+		color += textureLod(fpsTex,trans,lvl);
+	}
+	color/=2;
+	//color = textureLod(fpsTex,trans,14);
 	//color.a = 1;
 }

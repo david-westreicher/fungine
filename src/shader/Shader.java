@@ -11,7 +11,8 @@ public enum Shader {
 			"shader/skybox.glsl"), HATCH("shader/hatch.glsl"), VOXEL(
 			"shader/voxel.glsl"), VOXEL_DEPTH("shader/voxelDepth.glsl"), TEXTURE3(
 			"shader/texture3.glsl"), TRIANGLE("shader/triangle.glsl"), FPS(
-			"shader/fps.glsl"), UVMAP("shader/uvmap.glsl"), GI("shader/gi.glsl");
+			"shader/fps.glsl"), UVMAP("shader/uvmap.glsl"), GI("shader/gi.glsl"), OVERHAUL(
+			"shader/overhaul.glsl");
 	public String file;
 
 	Shader(String file) {

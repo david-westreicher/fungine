@@ -167,8 +167,8 @@ public class RenderUpdater implements Updatable, GLEventListener {
 			}
 
 			gl.glDisable(GL2.GL_DEPTH_TEST);
-			if (Game.DEBUG || !Settings.SHOW_STATUS)
-				renderDebug();
+			// if (Game.DEBUG || !Settings.SHOW_STATUS)
+			// renderDebug();
 
 		}
 
@@ -221,7 +221,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 				tmp2Vector3f.y, tmp2Vector3f.z);
 	}
 
-	protected void endOrthoRender() {
+	public void endOrthoRender() {
 		glutil.glPopMatrix();
 		glutil.glMatrixMode(GL2.GL_PROJECTION);
 		glutil.glPopMatrix();
@@ -238,7 +238,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		glutil.glLoadIdentity();
 	}
 
-	protected void startOrthoRender() {
+	public void startOrthoRender() {
 		startOrthoRender(false);
 	}
 
@@ -356,7 +356,11 @@ public class RenderUpdater implements Updatable, GLEventListener {
 
 	protected void renderObjects() {
 		if (objectsRenderer != null)
-			objectsRenderer.renderObjects(gl3, glutil);
+			try {
+				objectsRenderer.renderObjects(gl3, glutil);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 	}
 
 	@Override
@@ -380,11 +384,13 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		gl.glClearColor(1, 1, 1, 1);
 		gl.glDisable(GL2.GL_LINE_SMOOTH);
 		gl.glHint(GL2.GL_LINE_SMOOTH_HINT, GL2.GL_FASTEST);
+		// gl.glHint(GL3.GL_GENERATE_MIPMAP_HINT, GL3.GL_NICEST);
 		// gl.glHint(GL2.GL_PERSPECTIVE_CORRECTION_HINT, GL2.GL_FASTEST);
 		gl.glEnable(GL2.GL_DEPTH_TEST);
 		gl.glDepthFunc(GL2.GL_LEQUAL);
 		// culling
 		// gl.glDisable(GL2.GL_CULL_FACE);
+		gl.glLineWidth(4);
 		gl.glFrontFace(GL2.GL_CCW);
 		gl.glEnable(GL2.GL_CULL_FACE);
 		gl.glCullFace(GL2.GL_BACK);
