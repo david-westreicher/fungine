@@ -66,7 +66,7 @@ public class OpenGLRendering {
 		window.setAlwaysOnTop(true);
 		window.setAutoSwapBufferMode(true);
 		window.setVisible(true);
-		window.setPosition(window.getScreen().getWidth() - window.getWidth(), 0);
+		window.setPosition(window.getScreen().getWidth() - window.getWidth(), 50);
 		window.setTitle("fungine");
 		CanvasListener c = new CanvasListener();
 		window.addMouseListener(c);
