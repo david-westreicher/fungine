@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.FloatBuffer;
 
 import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GLException;
 
 import manager.UberManager;
@@ -109,7 +110,7 @@ public class RenderUtil {
 				* Buffers.SIZEOF_FLOAT, verticeUVs, GL2.GL_STATIC_DRAW);
 	}
 
-	public static void drawTexture(GL2 gl, GLUtil glutil, float x, float y,
+	public static void drawTexture(GL2GL3 gl, GLUtil glutil, float x, float y,
 			float z, float width, float height, int texID, float translateX,
 			float colorScale) {
 		ShaderScript fpsShader = UberManager.getShader(Shader.FPS);

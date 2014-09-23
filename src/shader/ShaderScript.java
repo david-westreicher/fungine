@@ -76,7 +76,7 @@ public class ShaderScript {
 		return tmpFloatArr;
 	}
 
-	public static void setUniform(GL2 gl, String str, float time) {
+	public static void setUniform(GL2GL3 gl, String str, float time) {
 		int location = glGetUniformLocation(gl, getActiveShader(), str);
 		gl.glUniform1f(location, time);
 	}
@@ -110,7 +110,7 @@ public class ShaderScript {
 		gl.glUniform3fv(location, scales.limit() / 3, scales);
 	}
 
-	public static void setUniformTexture(GL2 gl, String string, int num,
+	public static void setUniformTexture(GL2GL3 gl, String string, int num,
 			int texId) {
 		int location = glGetUniformLocation(gl, getActiveShader(), string);
 		gl.glUniform1i(location, num);
