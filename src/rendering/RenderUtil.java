@@ -112,9 +112,8 @@ public class RenderUtil {
 
 	public static void drawTexture(GL2GL3 gl, GLUtil glutil, float x, float y,
 			float z, float width, float height, int texID, float translateX,
-			float colorScale) {
-		ShaderScript fpsShader = UberManager.getShader(Shader.FPS);
-		if (fpsShader == null)
+			float colorScale, ShaderScript shader) {
+		if (shader == null)
 			return;
 		gl.glEnable(GL2.GL_BLEND);
 		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
@@ -124,25 +123,31 @@ public class RenderUtil {
 		{
 			glutil.glTranslatef(x, y, z);
 			glutil.scale(width, height, 1);
-			fpsShader.execute(gl);
+			shader.execute(gl);
 			{
 				ShaderScript.setUniformTexture(gl, "fpsTex", 0, texID);
 				ShaderScript.setUniformMatrix4(gl, "modelviewprojection",
 						glutil.getModelViewProjection(), true);
 				ShaderScript.setUniform(gl, "translateX", translateX);
-				ShaderScript.setUniform(gl, "colorScale", colorScale);
 
 				gl.glEnableVertexAttribArray(0);
 				gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, textureBuffer[0]);
 				gl.glVertexAttribPointer(0, 3, GL2.GL_FLOAT, false, 0, 0);
 				gl.glDrawArrays(GL2.GL_TRIANGLE_STRIP, 0, rectangle.length / 3);
 			}
-			fpsShader.end(gl);
+			shader.end(gl);
 		}
 		gl.glEnable(GL2.GL_CULL_FACE);
 		glutil.glPopMatrix();
 
 		gl.glDisable(GL2.GL_BLEND);
+	}
+
+	public static void drawTexture(GL2GL3 gl, GLUtil glutil, float x, float y,
+			float z, float width, float height, int texID, float translateX,
+			float colorScale) {
+		drawTexture(gl, glutil, x, y, z, width, height, texID, translateX,
+				colorScale, UberManager.getShader(Shader.FPS));
 	}
 
 	public static float[] merge(float[]... boxs) {
