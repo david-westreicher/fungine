@@ -5,9 +5,14 @@ import game.Game;
 import java.io.File;
 import java.nio.ByteBuffer;
 
-import javax.media.opengl.GL2;
+import javax.media.opengl.GL;
+import javax.media.opengl.GL2GL3;
+import javax.media.opengl.GL3;
 
+import rendering.RenderUtil;
+import rendering.TextureHelper;
 import settings.Settings;
+import util.GLUtil;
 import util.Log;
 
 import com.google.gson.Gson;
@@ -15,10 +20,12 @@ import com.jogamp.newt.event.KeyEvent;
 import com.jogamp.newt.event.MouseEvent;
 import com.jogamp.opengl.util.texture.Texture;
 
-public class AwesomiumWrapper extends Browser {
+public class AwesomiumWrapper {
 	private static final boolean ENGINE_GUI = true;
+	public static final String BROWSER_TEXTURE = "browserTexture";
 	public static String ENGINE_GUI_FILE = "gui/gui.html";
 	public static Runnable onLoadGUI;
+	private TextureHelper textures;
 
 	public AwesomiumWrapper() {
 		AwesomiumHelper.init(!ENGINE_GUI);
@@ -30,26 +37,21 @@ public class AwesomiumWrapper extends Browser {
 		};
 	}
 
-	@Override
 	public void mouseMoved(int x, int y) {
 		AwesomiumHelper.mouseMoved(x, y);
 	}
 
-	@Override
 	public void mouseButton(int i, boolean down) {
 		// Log.log(this, "mouse down:" + down + ", #" + i);
 		AwesomiumHelper.mouseButton(i, down);
 	}
 
-	@Override
 	public void mouseWheel(MouseEvent e) {
 	}
 
-	@Override
 	public void keyEvent(KeyEvent e, boolean b) {
 	}
 
-	@Override
 	public void debugSite() {
 		if (ENGINE_GUI)
 			AwesomiumHelper.loadFile(new File(ENGINE_GUI_FILE).getPath(),
@@ -78,46 +80,40 @@ public class AwesomiumWrapper extends Browser {
 				+ settingsString + ")");
 	}
 
-	@Override
 	public void restoreSite() {
 	}
 
-	@Override
 	public void keyTyped(KeyEvent e) {
 		AwesomiumHelper.keyTyped(e);
 	}
 
-	@Override
-	public Texture getTexture() {
-		return null;
-	}
-
-	@Override
-	public void render(GL2 gl) {
-		gl.glPixelZoom(((float) Game.INSTANCE.getWidth() / Settings.WIDTH),
-				-((float) Game.INSTANCE.getHeight() / Settings.HEIGHT));
-		// ugly hack
-		// http://www.gamedev.net/topic/438203-glrasterpos-gldrawpixel-and-discarding-images/
-		gl.glRasterPos2i(0, 0);
-		gl.glBitmap(0, 0, 0, 0, -Game.INSTANCE.getWidth() / 2,
-				Game.INSTANCE.getHeight() / 2, null);
-		ByteBuffer buffer = AwesomiumHelper.getBuffer();
-		gl.glEnable(GL2.GL_BLEND);
-		gl.glBlendFunc(GL2.GL_SRC_ALPHA, GL2.GL_ONE_MINUS_SRC_ALPHA);
-		if (buffer != null)
-			gl.glDrawPixels(Settings.WIDTH, Settings.HEIGHT, GL2.GL_BGRA,
-					GL2.GL_UNSIGNED_BYTE, buffer);
-		gl.glDisable(GL2.GL_BLEND);
-	}
-
-	@Override
-	public void dispose(GL2 gl) {
-		AwesomiumHelper.dispose();
-	}
-
-	@Override
 	public boolean isDummy() {
 		return false;
 	}
 
+	public void render(GL2GL3 gl, GLUtil glutil) {
+		int texture = textures.getTextureInformation(BROWSER_TEXTURE)[0];
+		ByteBuffer buffer = AwesomiumHelper.getBuffer();
+		gl.glBindTexture(GL3.GL_TEXTURE_2D, texture);
+		gl.glTexImage2D(GL.GL_TEXTURE_2D, 0, GL3.GL_RGBA8, Settings.WIDTH,
+				Settings.HEIGHT, 0, GL3.GL_BGRA, GL3.GL_UNSIGNED_BYTE, buffer);
+		gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
+		RenderUtil.drawTexture(gl, glutil, Game.INSTANCE.getWidth() / 2,
+				Game.INSTANCE.getHeight() / 2, 0, Game.INSTANCE.getWidth(),
+				Game.INSTANCE.getHeight(), texture, 0, 1);
+	}
+
+	public void dispose(GL2GL3 gl) {
+		AwesomiumHelper.dispose();
+	}
+
+	public void init(TextureHelper textures, GL2GL3 gl3) {
+		this.textures = textures;
+		textures.createTex(gl3, BROWSER_TEXTURE, Settings.WIDTH,
+				Settings.HEIGHT, true, GL3.GL_CLAMP_TO_EDGE, false, false);
+	}
+
+	public Texture getTexture() {
+		return new Texture(textures.getTextureInformation(BROWSER_TEXTURE)[0]);
+	}
 }

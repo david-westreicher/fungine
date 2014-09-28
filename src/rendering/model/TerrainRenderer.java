@@ -10,7 +10,7 @@ import javax.media.opengl.GL2;
 import javax.vecmath.Vector3f;
 
 import rendering.material.Material;
-import browser.Browser;
+import browser.AwesomiumWrapper;
 
 public class TerrainRenderer extends ModelRenderer {
 	public static final int WIDTH = 1300;
@@ -29,9 +29,9 @@ public class TerrainRenderer extends ModelRenderer {
 	public TerrainRenderer() {
 		generate();
 		this.materials = new ArrayList<Material>();
-		Material m = new Material(Browser.TEXTURE_NAME);
-		m.texture = Browser.TEXTURE_NAME;
-		m.displacementMap = Browser.TEXTURE_NAME;
+		Material m = new Material(AwesomiumWrapper.BROWSER_TEXTURE);
+		m.texture = AwesomiumWrapper.BROWSER_TEXTURE;
+		m.displacementMap = AwesomiumWrapper.BROWSER_TEXTURE;
 		materials.add(m);
 	}
 

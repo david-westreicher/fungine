@@ -34,7 +34,6 @@ import world.GameObject;
 import world.GameObjectType;
 import world.PointLight;
 import browser.AwesomiumWrapper;
-import browser.Browser;
 
 import com.jogamp.opengl.util.awt.Screenshot;
 import com.jogamp.opengl.util.gl2.GLUT;
@@ -47,7 +46,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 
 	private static final float ZNEAR = 0.01f;
 	private static final float DEBUG_SIZE = 250f;
-	private static final Browser browser = new AwesomiumWrapper();
+	private static final AwesomiumWrapper browser = new AwesomiumWrapper();
 	private static final List<GLRunnable> queue = new ArrayList<GLRunnable>();
 	private static final List<GLRunnable> contextExecutions = new ArrayList<GLRunnable>();
 	private static final float ZFAR_DISTANCE = 1000;
@@ -177,10 +176,10 @@ public class RenderUpdater implements Updatable, GLEventListener {
 			gl.glViewport(0, 0, width * 2, height);
 
 		if (Settings.USE_BROWSER)
-			browser.render(gl);
+			browser.render(gl, glutil);
 		// renderCrosshair();
-		if (!Settings.SHOW_STATUS)
-			renderText();
+		// if (!Settings.SHOW_STATUS)
+		// renderText();
 		GameLoop loop = Game.INSTANCE.loop;
 		fpsRenderer.render(gl, glutil, textures, width, loop.timePerRender,
 				loop.timePerTick);
@@ -402,6 +401,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		// UberManager.initializeShaders(gl);
 
 		fpsRenderer = new FPSRenderer(textures, gl);
+		browser.init(textures, arg0.getGL().getGL3());
 	}
 
 	public void setProjection(int width, int height) {
@@ -466,7 +466,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	public void endShaderUniforms() {
 	}
 
-	public static Browser getBrowser() {
+	public static AwesomiumWrapper getBrowser() {
 		return browser;
 	}
 

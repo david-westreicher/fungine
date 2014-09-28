@@ -9,9 +9,9 @@ import java.awt.Toolkit;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.GregorianCalendar;
+import java.util.Random;
 
 import javax.media.opengl.GL2;
-import javax.swing.JFrame;
 import javax.vecmath.Matrix3f;
 
 import manager.UberManager;
@@ -20,8 +20,8 @@ import com.jogamp.opengl.util.texture.Texture;
 
 public class Util {
 
-	public static JFrame frame;
 	private static float[] eyeVector = new float[3];
+	public static Random random = new Random(0);
 
 	public static void sleep(long l) {
 		try {

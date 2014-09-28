@@ -7,6 +7,7 @@ import java.util.Map;
 
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GLException;
 
 import settings.Settings;
@@ -19,7 +20,7 @@ import com.jogamp.opengl.util.texture.TextureIO;
 public class TextureHelper {
 	private Map<String, int[]> textures = new HashMap<String, int[]>();
 
-	protected void createTex(GL2 gl, String name, int width, int height,
+	public void createTex(GL2GL3 gl, String name, int width, int height,
 			boolean linear, int texparam, boolean withFrameBuffer,
 			boolean floatTexture) {
 		int[] fboId = new int[1];
@@ -61,9 +62,9 @@ public class TextureHelper {
 		}
 	}
 
-	public void createTex(GL2 gl, String name) {
+	public void createTex(GL2GL3 gl, String name) {
 		createTex(gl, name, Settings.WIDTH, Settings.HEIGHT, true,
-				GL2.GL_CLAMP, true, false);
+				GL2.GL_CLAMP_TO_EDGE, true, false);
 	}
 
 	public void createShadowFob(GL2 gl, String name, int width, int height) {

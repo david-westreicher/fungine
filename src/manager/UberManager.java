@@ -21,7 +21,7 @@ import shader.ShaderScript;
 import shader.ShaderUtil;
 import util.Log;
 import util.RepeatedRunnable;
-import browser.Browser;
+import browser.AwesomiumWrapper;
 
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureData;
@@ -49,7 +49,7 @@ public class UberManager {
 		if (name == null || loadingTextures.contains(name)
 				|| RenderUpdater.getGLProfile() == null)
 			return null;
-		if (name.equals(Browser.TEXTURE_NAME))
+		if (name.equals(AwesomiumWrapper.BROWSER_TEXTURE))
 			return RenderUpdater.getBrowser().getTexture();
 		Texture t = textures.get(name);
 		if (t != null)
