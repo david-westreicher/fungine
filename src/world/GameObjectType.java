@@ -4,9 +4,14 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.media.opengl.GL2;
+
 import physics.AbstractCollisionShape;
+import rendering.GLRunnable;
 import rendering.GameObjectRenderer;
+import rendering.RenderInformation;
 import rendering.RenderState;
+import rendering.RenderUpdater;
 import script.JavaScript;
 
 public class GameObjectType extends VariableHolder {
@@ -20,6 +25,7 @@ public class GameObjectType extends VariableHolder {
 	public float reflective = 0;
 	public boolean airShader = false;
 	public RenderState renderState = new RenderState();
+	public RenderInformation renderInformation = null;
 
 	public GameObjectType(String name) {
 		allTypes.put(name, this);
@@ -47,6 +53,18 @@ public class GameObjectType extends VariableHolder {
 	public void setRuntimeScript(String runtimeScript) {
 		this.runtimeScript = runtimeScript;
 		JavaScript.loadIfNew(runtimeScript);
+	}
+
+	public void setRenderInformation(final RenderInformation ri) {
+		RenderUpdater.executeInOpenGLContext(new GLRunnable() {
+
+			@Override
+			public void run(GL2 gl) {
+				if (renderInformation != null)
+					renderInformation.dispose(gl);
+				renderInformation = ri;
+			}
+		});
 	}
 
 }

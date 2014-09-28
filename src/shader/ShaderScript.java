@@ -208,7 +208,8 @@ public class ShaderScript {
 		return activatedShader.shaderNum;
 	}
 
-	public void deleteShader(GL2 gl) {
+	public void deleteShader(GL2GL3 gl) {
+		Log.log(this, "disposing");
 		gl.glDeleteShader(shaderNum);
 		List<String> toDelete = new ArrayList<String>();
 		for (String shaderLocation : locationCache.keySet()) {

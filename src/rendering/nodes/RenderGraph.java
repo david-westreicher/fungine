@@ -82,9 +82,8 @@ public class RenderGraph {
 		ShaderUtil.compileFromString(gl, sb.toString(), name,
 				new ShaderUtil.ShaderCompiledListener() {
 					@Override
-					public void shaderCompiled(int shaderprogram) {
-						RenderGraph.this.shader = new ShaderScript(
-								shaderprogram, name);
+					public void shaderCompiled(ShaderScript ss) {
+						RenderGraph.this.shader = ss;
 					}
 				});
 		Log.log(this, "shader:\n", sb.toString());

@@ -189,11 +189,10 @@ public class UberManager {
 		ShaderUtil.compile(gl, shader.file,
 				new ShaderUtil.ShaderCompiledListener() {
 					@Override
-					public void shaderCompiled(int shaderprogram) {
-						ShaderScript ss = new ShaderScript(shaderprogram,
-								shader.file);
-						Log.log(UberManager.class, ss, " compiled", shader);
-						shaders.put(shader, ss);
+					public void shaderCompiled(ShaderScript shaderprogram) {
+						Log.log(UberManager.class, shaderprogram, " compiled",
+								shader);
+						shaders.put(shader, shaderprogram);
 						loadingShaders.remove(shader);
 					}
 				});

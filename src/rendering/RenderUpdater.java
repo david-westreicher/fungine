@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.media.opengl.GL2;
+import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GL3;
 import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
@@ -40,7 +41,10 @@ import com.jogamp.opengl.util.gl2.GLUT;
 
 public class RenderUpdater implements Updatable, GLEventListener {
 	public interface Renderer {
-		public void renderObjects(GL3 gl, GLUtil glutil);
+		public void renderObjects(GL3 gl, GLUtil glutil,
+				Map<String, List<GameObject>> renderObjs);
+
+		void dispose(GL2GL3 gl);
 
 	}
 
@@ -356,7 +360,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	protected void renderObjects() {
 		if (objectsRenderer != null)
 			try {
-				objectsRenderer.renderObjects(gl3, glutil);
+				objectsRenderer.renderObjects(gl3, glutil, renderObjs);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -492,5 +496,18 @@ public class RenderUpdater implements Updatable, GLEventListener {
 				|| Game.INSTANCE.loop.renderer.gl == null)
 			return null;
 		return Game.INSTANCE.loop.renderer.gl.getGLProfile();
+	}
+
+	public void setObjectsRenderer(final Renderer r) {
+		Log.log(this, "setting object renderer to "
+				+ r.getClass().getSimpleName());
+		executeInOpenGLContext(new GLRunnable() {
+			@Override
+			public void run(GL2 gl) {
+				if (objectsRenderer != null)
+					objectsRenderer.dispose(gl3);
+				objectsRenderer = r;
+			}
+		});
 	}
 }
