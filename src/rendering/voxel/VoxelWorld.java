@@ -102,7 +102,8 @@ public class VoxelWorld extends GameObject {
 			voxelType = new GameObjectType(VOXEL_OBJECT_TYPE_NAME);
 		}
 		voxelWorldRenderer = new VoxelWorldRenderer();
-		voxelType.renderer = voxelWorldRenderer;
+		// TODO update to overhaulrenderer
+		// voxelType.renderer = voxelWorldRenderer;
 	}
 
 	public void setNoise() {

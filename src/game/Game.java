@@ -1,14 +1,7 @@
 package game;
 
 import input.Input;
-import manager.SoundManager;
-import physics.OdePhysics;
-import rendering.DeferredRenderer;
-import rendering.GiRenderer;
-import rendering.NiceRenderer;
 import rendering.OpenGLRendering;
-import rendering.SimpleRenderer;
-import rendering.TestSkinningRenderer;
 import script.JavaScript;
 import settings.Settings;
 import util.Factory;
@@ -16,7 +9,6 @@ import util.FolderWatcher;
 import util.Log;
 import util.Stoppable;
 import util.Util;
-import util.XMLToObjectParser;
 import vr.VRFactory;
 import world.Camera;
 import world.World;
@@ -47,10 +39,6 @@ public class Game {
 		loop.start();
 	}
 
-	public void parseXML() {
-		new XMLToObjectParser().parse();
-	}
-
 	public void restart() {
 		Log.log(this, "Restarting!");
 		// TODO restart the whole shit
@@ -69,35 +57,6 @@ public class Game {
 		if (Settings.LOW_GRAPHICS)
 			Util.sleep(1000);
 		loop.endPause();
-	}
-
-	public void addComponent(String c) {
-		c = c.toLowerCase();
-		if (c.contains("renderer")) {
-			if (c.equals("renderer") || Settings.LOW_GRAPHICS) {
-				loop.renderer = new SimpleRenderer();
-			} else if (c.equals("deferredrenderer")) {
-				loop.renderer = new DeferredRenderer();
-			} else if (c.equals("skinrenderer")) {
-				loop.renderer = new TestSkinningRenderer();
-			} else if (c.equals("nicerenderer")) {
-				loop.renderer = new NiceRenderer();
-			} else if (c.equals("girenderer")) {
-				loop.renderer = new GiRenderer();
-			} else {
-				System.err.println("Can't add component: " + c);
-			}
-		} else {
-			if (c.equals("gamemechanics")) {
-				loop.mechanics = new GameMechanics();
-			} else if (c.equals("sound")) {
-				loop.sound = new SoundManager();
-			} else if (c.equals("physics")) {
-				loop.mechanics.physics = new OdePhysics();
-			} else {
-				System.err.println("Can't add component: " + c);
-			}
-		}
 	}
 
 	public void exit() {

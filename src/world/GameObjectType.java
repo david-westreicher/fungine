@@ -8,7 +8,6 @@ import javax.media.opengl.GL2;
 
 import physics.AbstractCollisionShape;
 import rendering.GLRunnable;
-import rendering.GameObjectRenderer;
 import rendering.RenderInformation;
 import rendering.RenderState;
 import rendering.RenderUpdater;
@@ -17,7 +16,6 @@ import script.JavaScript;
 public class GameObjectType extends VariableHolder {
 	private static Map<String, GameObjectType> allTypes = new HashMap<String, GameObjectType>();
 
-	public GameObjectRenderer renderer = null;
 	private String runtimeScript = null;
 	public AbstractCollisionShape shape = null;
 	public String name;
@@ -38,8 +36,8 @@ public class GameObjectType extends VariableHolder {
 
 	@Override
 	public String toString() {
-		return "GameObjectType [renderer=" + renderer + ", shape=" + shape
-				+ ", name=" + name + ", shininess=" + shininess + "]";
+		return "GameObjectType [renderer=" + renderInformation + ", shape="
+				+ shape + ", name=" + name + ", shininess=" + shininess + "]";
 	}
 
 	public static Collection<GameObjectType> getTypes() {

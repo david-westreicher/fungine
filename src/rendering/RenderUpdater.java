@@ -23,7 +23,6 @@ import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
 
 import manager.UberManager;
-import rendering.material.Material;
 import settings.Settings;
 import util.GLUtil;
 import util.Log;
@@ -32,8 +31,6 @@ import util.Util;
 import vr.Rift;
 import world.Camera;
 import world.GameObject;
-import world.GameObjectType;
-import world.PointLight;
 import browser.AwesomiumWrapper;
 
 import com.jogamp.opengl.util.awt.Screenshot;
@@ -276,85 +273,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	}
 
 	private void renderDebug() {
-		// bboxes
-		gl.glColor4f(0.5f, 0.5f, 0.5f, 1);
-		// gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_LINE);
-		for (List<GameObject> list : renderObjs.values()) {
-			for (GameObject go : list) {
-				if ((Game.DEBUG || go.marked)) {
-					gl.glColor3fv(go.color, 0);
-					gl.glBegin(GL2.GL_LINES);
-					RenderUtil.drawLinedBox(go.bbox, gl);
-					gl.glEnd();
-					if (go instanceof PointLight) {
-						PointLight l = (PointLight) go;
-						RenderUtil.drawSphere(go.pos, l.radius, l.color, gl,
-								true);
-					}
-					// draw wireframe of object into center
-					debugAngle += 0.01f;
-					startOrthoRender();
-					gl.glPushMatrix();
-					gl.glTranslatef(400, DEBUG_SIZE / 2, 0);
-					gl.glScalef(DEBUG_SIZE, -DEBUG_SIZE, 1);
-					gl.glRotatef(debugAngle, 0, 1, 0);
-					GameObjectRenderer objectRenderer = GameObjectType
-							.getType(go.getType()).renderer;
-					if (objectRenderer == null)
-						return;
-					gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_LINE);
-					objectRenderer.drawSimple(gl);
-					gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
-					gl.glPopMatrix();
-					gl.glPushMatrix();
-					List<Material> mats = objectRenderer.getMaterials();
-					gl.glColor4f(1, 1, 1, 1);
-					gl.glDisable(GL2.GL_CULL_FACE);
-					gl.glEnable(GL2.GL_TEXTURE_2D);
-					gl.glTranslatef(400, DEBUG_SIZE / 2, 0);
-					if (mats != null && mats.size() > 0) {
-						for (int i = 0; i < Math.min(3, mats.size()); i++) {
-							Material mat = mats.get(i);
-							if (mat != null) {
-								if (mat.texture != null) {
-									gl.glTranslatef(DEBUG_SIZE, 0, 0);
-									Util.drawTexture(gl, mat.texture,
-											DEBUG_SIZE / 2, DEBUG_SIZE / 2);
-								}
-								if (mat.normalMap != null) {
-									gl.glTranslatef(DEBUG_SIZE, 0, 0);
-									Util.drawTexture(gl, mat.normalMap,
-											DEBUG_SIZE / 2, DEBUG_SIZE / 2);
-								}
-							}
-						}
-					}
-					gl.glDisable(GL2.GL_TEXTURE_2D);
-					gl.glEnable(GL2.GL_CULL_FACE);
-					gl.glPopMatrix();
-					endOrthoRender();
-				}
-			}
-		}
-
-		gl.glBegin(GL2.GL_LINES);
-		gl.glColor4f(1, 0, 0, 1);
-		for (float line[][] : debugLines) {
-			gl.glVertex3fv(line[0], 0);
-			gl.glVertex3fv(line[1], 0);
-		}
-		{
-			gl.glColor4f(1, 0, 0, 1);
-			gl.glVertex3f(0, 0, 0);
-			gl.glVertex3f(1, 0, 0);
-			gl.glColor4f(0, 1, 0, 1);
-			gl.glVertex3f(0, 0, 0);
-			gl.glVertex3f(0, 1, 0);
-			gl.glColor4f(0, 0, 1, 1);
-			gl.glVertex3f(0, 0, 0);
-			gl.glVertex3f(0, 0, 1);
-		}
-		gl.glEnd();
+		// TODO update debug rendering to opengl3
 	}
 
 	protected void renderObjects() {

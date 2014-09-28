@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.vecmath.Vector3f;
 
@@ -17,16 +16,13 @@ import manager.UberManager;
 import rendering.GLRunnable;
 import rendering.GameObjectRenderer;
 import rendering.RenderUpdater;
-import rendering.model.ModelRenderer;
 import rendering.voxel.VoxelWorld.GameObjectVoxel;
 import shader.Shader;
 import shader.ShaderScript;
 import world.GameObject;
-import world.GameObjectType;
 import algorithms.MarchingCube;
 import algorithms.Minecraft;
 
-import com.jogamp.common.nio.Buffers;
 import com.jogamp.opengl.util.texture.Texture;
 
 public class VoxelWorldRenderer extends GameObjectRenderer {
@@ -174,41 +170,27 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 
 	@Override
 	public void drawSimple(GL2 gl) {
-		gl.glEnableClientState(GL2.GL_VERTEX_ARRAY);
-		if (!depthOnly) {
-			gl.glColor3fv(world.color, 0);
-			gl.glEnableClientState(GL2.GL_NORMAL_ARRAY);
-			GameObjectType got = GameObjectType.getType(world.getType());
-			ShaderScript.setUniform(gl, "shininess", got.shininess);
-			ShaderScript.setUniform(gl, "reflective", got.reflective);
-		} else {
-			voxelDepth.execute(gl);
-		}
-		ShaderScript.setUniform(gl, "scale", 4.0f);
-		for (ChunkInfo ci : visibleChunks) {
-			int i = (int) ci.pos.x;
-			int j = (int) ci.pos.y;
-			int k = (int) ci.pos.z;
-			if (chunks[i][j][k].vertexCount == 0)
-				continue;
-			ShaderScript
-					.setUniform(gl, "chunkPos", world.getChunk(i, j, k).pos);
-			gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, chunks[i][j][k].vboVertices[0]);
-			gl.glVertexPointer(3, GL2.GL_FLOAT, 0, 0);
-			if (!depthOnly) {
-				gl.glBindBuffer(GL2.GL_ARRAY_BUFFER,
-						chunks[i][j][k].vboNormals[0]);
-				gl.glNormalPointer(GL.GL_FLOAT, 0, 0);
-			}
-			gl.glDrawArrays(chunks[i][j][k].drawMode, 0,
-					chunks[i][j][k].vertexCount);
-		}
-		gl.glDisableClientState(GL2.GL_VERTEX_ARRAY);
-		if (!depthOnly) {
-			gl.glDisableClientState(GL2.GL_NORMAL_ARRAY);
-		} else {
-			voxelDepth.end(gl);
-		}
+		/*
+		 * gl.glEnableClientState(GL2.GL_VERTEX_ARRAY); if (!depthOnly) {
+		 * gl.glColor3fv(world.color, 0);
+		 * gl.glEnableClientState(GL2.GL_NORMAL_ARRAY); GameObjectType got =
+		 * GameObjectType.getType(world.getType()); ShaderScript.setUniform(gl,
+		 * "shininess", got.shininess); ShaderScript.setUniform(gl,
+		 * "reflective", got.reflective); } else { voxelDepth.execute(gl); }
+		 * ShaderScript.setUniform(gl, "scale", 4.0f); for (ChunkInfo ci :
+		 * visibleChunks) { int i = (int) ci.pos.x; int j = (int) ci.pos.y; int
+		 * k = (int) ci.pos.z; if (chunks[i][j][k].vertexCount == 0) continue;
+		 * ShaderScript .setUniform(gl, "chunkPos", world.getChunk(i, j,
+		 * k).pos); gl.glBindBuffer(GL2.GL_ARRAY_BUFFER,
+		 * chunks[i][j][k].vboVertices[0]); gl.glVertexPointer(3, GL2.GL_FLOAT,
+		 * 0, 0); if (!depthOnly) { gl.glBindBuffer(GL2.GL_ARRAY_BUFFER,
+		 * chunks[i][j][k].vboNormals[0]); gl.glNormalPointer(GL.GL_FLOAT, 0,
+		 * 0); } gl.glDrawArrays(chunks[i][j][k].drawMode, 0,
+		 * chunks[i][j][k].vertexCount); }
+		 * gl.glDisableClientState(GL2.GL_VERTEX_ARRAY); if (!depthOnly) {
+		 * gl.glDisableClientState(GL2.GL_NORMAL_ARRAY); } else {
+		 * voxelDepth.end(gl); }
+		 */
 	}
 
 	public static final class ChunkInfo implements Comparable<ChunkInfo> {
@@ -222,11 +204,12 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 		}
 	}
 
-	private static class ChunkR extends ModelRenderer {
+	private static class ChunkR {
+		// TODO update to OverhaulRenderer
 
 		public ChunkR(float voxels[][][]) {
 			FloatBuffer[] vertNorms = getMesh(voxels, null, null);
-			init(vertNorms[0], vertNorms[1], null, null, null, null);
+			// init(vertNorms[0], vertNorms[1], null, null, null, null);
 		}
 
 		private FloatBuffer[] getMesh(float voxels[][][], float[] pos,
@@ -238,25 +221,23 @@ public class VoxelWorldRenderer extends GameObjectRenderer {
 
 		public void updateMesh(float voxels[][][], float[] pos,
 				VoxelWorld world, GL2 gl) {
-			int i = (int) pos[0];
-			int j = (int) pos[1];
-			int k = (int) pos[2];
-			if (world != null)
-				world.getChunk(i, j, k).updateVisibleObjects();
-			FloatBuffer[] vertNorms = getMesh(voxels, pos, world);
-			this.vertexCount = vertNorms[0].capacity() / 3;
-			gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, vboVertices[0]);
-			gl.glBufferData(GL2.GL_ARRAY_BUFFER, vertNorms[0].capacity()
-					* Buffers.SIZEOF_FLOAT, vertNorms[0], isStatic());
-			if (vertNorms[1] != null) {
-				gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, vboNormals[0]);
-				gl.glBufferData(GL2.GL_ARRAY_BUFFER, vertNorms[1].capacity()
-						* Buffers.SIZEOF_FLOAT, vertNorms[1], isStatic());
-			}
-			gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, 0);
+			/*
+			 * int i = (int) pos[0]; int j = (int) pos[1]; int k = (int) pos[2];
+			 * if (world != null) world.getChunk(i, j,
+			 * k).updateVisibleObjects(); FloatBuffer[] vertNorms =
+			 * getMesh(voxels, pos, world); this.vertexCount =
+			 * vertNorms[0].capacity() / 3; gl.glBindBuffer(GL2.GL_ARRAY_BUFFER,
+			 * vboVertices[0]); gl.glBufferData(GL2.GL_ARRAY_BUFFER,
+			 * vertNorms[0].capacity() Buffers.SIZEOF_FLOAT, vertNorms[0],
+			 * isStatic()); if (vertNorms[1] != null) {
+			 * gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, vboNormals[0]);
+			 * gl.glBufferData(GL2.GL_ARRAY_BUFFER, vertNorms[1].capacity()
+			 * Buffers.SIZEOF_FLOAT, vertNorms[1], isStatic()); }
+			 * gl.glBindBuffer(GL2.GL_ARRAY_BUFFER, 0);
+			 */
 		}
 
-		@Override
+		// @Override
 		protected int isStatic() {
 			return GL2.GL_DYNAMIC_DRAW;
 		}
