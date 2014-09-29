@@ -24,20 +24,15 @@ import com.jogamp.common.nio.Buffers;
 //TODO shadowShader (no cols/normals/textures ...)
 //TODO integrate textures
 public class RenderInformation {
-	public enum InstanceData {
-		POSITION, SCALE, ROTATION
-	};
 
 	private static Map<Integer, ShaderScript> shaders = new HashMap<Integer, ShaderScript>();
-	private static final int MAX_INSTANCES = 200000;
+	private static final int MAX_INSTANCES = 10000;
 
-	private ArrayList<VBO> vbos = new ArrayList<VBO>();
+	private List<VBOFloat> vbos = new ArrayList<VBOFloat>();
 	private ShaderScript shader;
 	private int numOfVertices;
 	private int drawType = GL3.GL_TRIANGLES;
-	private static VBOInstanceAttr instanceBufferPos;
-	private static VBOInstanceAttr instanceBufferScale;
-	private static VBOInstanceAttr instanceBufferRotation;
+	private static InstanceVBO instanceBuffer;
 
 	public void add(String name, float[] data, int perVertexSize) {
 		vbos.add(new VBOFloat(name, perVertexSize, data));
@@ -49,47 +44,41 @@ public class RenderInformation {
 
 	public void render(GL3 gl, GLUtil glutil, List<GameObject> gos) {
 		if (shader == null) {
-			if (instanceBufferPos == null) {
-				instanceBufferPos = new VBOInstanceAttr("instancePos",
-						InstanceData.POSITION);
-				instanceBufferPos.init(gl);
-				instanceBufferScale = new VBOInstanceAttr("instanceScale",
-						InstanceData.SCALE);
-				instanceBufferScale.init(gl);
-				instanceBufferRotation = new VBOInstanceAttr(
-						"instanceRotation", InstanceData.ROTATION);
-				instanceBufferRotation.init(gl);
+			if (instanceBuffer == null) {
+				instanceBuffer = new InstanceVBO("instance");
+				instanceBuffer.init(gl);
 			}
 			init(gl);
 			return;
 		}
 
 		shader.execute(gl);
+		ShaderScript.setUniformMatrix4(gl, "modelviewprojection",
+				glutil.getModelViewProjection(), true);
 		int attrib = 0;
 		for (VBO vbo : vbos)
 			vbo.bind(attrib++, gl);
-		instanceBufferPos.bind(attrib++, (GL3) gl, gos);
-		instanceBufferScale.bind(attrib++, (GL3) gl, gos);
-		instanceBufferRotation.bind(attrib++, (GL3) gl, gos);
-		// for (GameObject go : gos) {
-		// glutil.glPushMatrix();
-		// glutil.glTranslatef(go.pos[0], go.pos[1], go.pos[2]);
-		// glutil.scale(go.size[0], go.size[1], go.size[2]);
-		// glutil.multiply(go.rotationMatrix);
-		ShaderScript.setUniformMatrix4(gl, "modelviewprojection",
-				glutil.getModelViewProjection(), true);
-		// gl.glDrawArrays(drawType, 0, numOfVertices);
-		gl.glDrawArraysInstanced(drawType, 0, numOfVertices, gos.size());
-		// glutil.glPopMatrix();
-		// }
-		for (int i = 0; i < vbos.size() + 1; i++)
+		int currentInstance = 0;
+		do {
+			int renderThisRound = Math.min(gos.size() - currentInstance,
+					MAX_INSTANCES);
+			instanceBuffer.bind(
+					attrib,
+					(GL3) gl,
+					gos.subList(currentInstance, currentInstance
+							+ renderThisRound));
+			gl.glDrawArraysInstanced(drawType, 0, numOfVertices,
+					renderThisRound);
+			currentInstance += renderThisRound;
+		} while (currentInstance < gos.size());
+		for (int i = 0; i < vbos.size() + instanceBuffer.perInstanceSize / 3; i++)
 			gl.glDisableVertexAttribArray(i);
 		shader.end(gl);
 	}
 
 	public void init(GL2GL3 gl) {
 		numOfVertices = vbos.get(0).getNumOfVertices();
-		for (VBO vbo : vbos) {
+		for (VBOFloat vbo : vbos) {
 			if (vbo.getNumOfVertices() != numOfVertices)
 				throw new RuntimeException("VBO " + vbo.name
 						+ " has not the same amount of vertices: "
@@ -118,14 +107,12 @@ public class RenderInformation {
 		for (VBO vbo : vbos)
 			sb.append("layout(location = " + (location++) + ") in vec"
 					+ vbo.perVertexSize + " " + vbo.name + ";\n");
-		sb.append("layout(location = " + (location++) + ") in vec"
-				+ instanceBufferPos.perVertexSize + " "
-				+ instanceBufferPos.name + ";\n");
-		sb.append("layout(location = " + (location++) + ") in vec"
-				+ instanceBufferScale.perVertexSize + " "
-				+ instanceBufferScale.name + ";\n");
-		sb.append("layout(location = " + (location++) + ") in mat3" + " "
-				+ instanceBufferRotation.name + ";\n");
+		sb.append("layout(location = " + (location++)
+				+ ") in vec3 instancePos;\n");
+		sb.append("layout(location = " + (location++)
+				+ ") in vec3 instanceScale;\n");
+		sb.append("layout(location = " + (location++)
+				+ ") in mat3 instanceRotation;\n");
 		sb.append("out vec3 col;\n");
 		sb.append("uniform mat4 modelviewprojection;\n");
 		sb.append("void main(){\n");
@@ -133,7 +120,8 @@ public class RenderInformation {
 			sb.append("\tcol = color;\n");
 		else
 			sb.append("\tcol = vec3(1,1,1);\n");
-		sb.append("\tgl_Position = modelviewprojection*vec4((transpose(instanceRotation)*vertex)*instanceScale+instancePos,1.0);\n");
+		sb.append("\tvec3 transformed = (transpose(instanceRotation)*vertex)*instanceScale+instancePos;\n");
+		sb.append("\tgl_Position = modelviewprojection*vec4(transformed,1.0);\n");
 		sb.append("}\n");
 
 		// FRAGMENT shader
@@ -169,6 +157,10 @@ public class RenderInformation {
 		protected int perVertexSize;
 		private int gpuBuffer = -1;
 		private Buffer data;
+		protected boolean isStatic = true;
+		protected int gpuSize = Buffers.SIZEOF_FLOAT;
+		protected int type = GL3.GL_FLOAT;
+		protected int arrayType = GL3.GL_ARRAY_BUFFER;
 
 		public VBO(String name, int perVertexSize) {
 			this.name = name;
@@ -176,10 +168,9 @@ public class RenderInformation {
 		}
 
 		public void bind(int attrib, GL2GL3 gl) {
-			gl.glBindBuffer(getArrayType(), gpuBuffer);
+			gl.glBindBuffer(arrayType, gpuBuffer);
 			gl.glEnableVertexAttribArray(attrib);
-			gl.glVertexAttribPointer(attrib, perVertexSize, getType(), false,
-					0, 0);
+			gl.glVertexAttribPointer(attrib, perVertexSize, type, false, 0, 0);
 		}
 
 		public void init(GL2GL3 gl) {
@@ -187,27 +178,11 @@ public class RenderInformation {
 				return;
 			int dataBuffer[] = new int[1];
 			gl.glGenBuffers(1, dataBuffer, 0);
-			int arrayType = getArrayType();
 			gl.glBindBuffer(arrayType, dataBuffer[0]);
-			gl.glBufferData(arrayType, data.capacity() * getGPUSize(),
-					getData(), isStatic() ? GL3.GL_STATIC_DRAW
-							: GL3.GL_DYNAMIC_DRAW);
+			gl.glBufferData(arrayType, data.capacity() * gpuSize, getData(),
+					isStatic ? GL3.GL_STATIC_DRAW : GL3.GL_DYNAMIC_DRAW);
 			gl.glBindBuffer(arrayType, 0);
 			gpuBuffer = dataBuffer[0];
-		}
-
-		protected abstract int getArrayType();
-
-		protected abstract int getGPUSize();
-
-		protected abstract int getType();
-
-		protected int getNumOfVertices() {
-			return data.capacity() / perVertexSize;
-		}
-
-		protected boolean isStatic() {
-			return true;
 		}
 
 		protected Buffer getData() {
@@ -228,83 +203,38 @@ public class RenderInformation {
 			super.data = FloatBuffer.wrap(data);
 		}
 
-		@Override
-		protected int getGPUSize() {
-			return Buffers.SIZEOF_FLOAT;
-		}
-
-		@Override
-		protected int getArrayType() {
-			return GL3.GL_ARRAY_BUFFER;
-		}
-
-		@Override
-		protected int getType() {
-			return GL3.GL_FLOAT;
+		private int getNumOfVertices() {
+			return super.data.capacity() / perVertexSize;
 		}
 	}
 
-	public class VBOInstanceAttr extends VBO {
+	public static class InstanceVBO extends VBO {
 
-		private InstanceData id;
+		private int perInstanceSize;
 
-		public VBOInstanceAttr(String name, InstanceData id) {
-			super(name, id == InstanceData.ROTATION ? 9 : 3);
-			this.id = id;
-			super.data = FloatBuffer.wrap(new float[MAX_INSTANCES
-					* perVertexSize]);
-		}
-
-		@Override
-		protected int getArrayType() {
-			return GL3.GL_ARRAY_BUFFER;
-		}
-
-		@Override
-		protected int getGPUSize() {
-			return Buffers.SIZEOF_FLOAT;
-		}
-
-		@Override
-		protected int getType() {
-			return GL3.GL_FLOAT;
-		}
-
-		protected boolean isStatic() {
-			return false;
+		public InstanceVBO(String name) {
+			super(name, 3 + 3 + 9);
+			super.isStatic = false;
+			this.perInstanceSize = perVertexSize;
+			super.data = FloatBuffer.allocate(MAX_INSTANCES * perInstanceSize);
 		}
 
 		public void bind(int attrib, GL3 gl, List<GameObject> gos) {
-			if (id == InstanceData.ROTATION) {
-				gl.glBindBuffer(getArrayType(), super.gpuBuffer);
-				for (int i = 0; i < 3; i++) {
-					gl.glEnableVertexAttribArray(attrib + i);
-					gl.glVertexAttribPointer(attrib + i, 3, getType(), false,
-							9 * getGPUSize(), i * 3 * getGPUSize());
-					gl.glVertexAttribDivisor(attrib + i, 1);
-				}
-			} else {
-				super.bind(attrib, gl);
-				gl.glVertexAttribDivisor(attrib, 1);
+			gl.glBindBuffer(arrayType, super.gpuBuffer);
+			for (int i = 0; i < 5; i++) {
+				gl.glEnableVertexAttribArray(attrib + i);
+				gl.glVertexAttribPointer(attrib + i, 3, type, false,
+						perInstanceSize * gpuSize, i * 3 * gpuSize);
+				gl.glVertexAttribDivisor(attrib + i, 1);
 			}
 			super.data.rewind();
-			switch (id) {
-			case POSITION:
-				for (GameObject go : gos)
-					((FloatBuffer) super.data).put(go.pos);
-				break;
-			case ROTATION:
-				for (GameObject go : gos)
-					((FloatBuffer) super.data).put(go.rotationMatrixArray);
-				break;
-			case SCALE:
-				for (GameObject go : gos)
-					((FloatBuffer) super.data).put(go.size);
-				break;
+			for (GameObject go : gos) {
+				((FloatBuffer) super.data).put(go.pos);
+				((FloatBuffer) super.data).put(go.size);
+				((FloatBuffer) super.data).put(go.rotationMatrixArray);
 			}
-			super.data.rewind();
-			gl.glBufferSubData(getArrayType(), 0, gos.size() * perVertexSize
-					* getGPUSize(), getData());
+			gl.glBufferSubData(arrayType, 0, gos.size() * perInstanceSize
+					* gpuSize, getData());
 		}
 	}
 
