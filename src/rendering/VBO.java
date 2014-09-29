@@ -2,6 +2,7 @@ package rendering;
 
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.List;
 
 import javax.media.opengl.GL2GL3;
@@ -13,26 +14,12 @@ import world.GameObject;
 import com.jogamp.common.nio.Buffers;
 
 public abstract class VBO {
-	protected String name;
-	protected int perVertexSize;
 	private int gpuBuffer = -1;
 	private Buffer data;
 	protected boolean isStatic = true;
 	protected int gpuSize = Buffers.SIZEOF_FLOAT;
 	protected int type = GL3.GL_FLOAT;
 	protected int arrayType = GL3.GL_ARRAY_BUFFER;
-
-	public VBO(String name, int perVertexSize) {
-		this.name = name;
-		this.perVertexSize = perVertexSize;
-	}
-
-	public void bind(int attrib, GL3 gl) {
-		gl.glBindBuffer(arrayType, gpuBuffer);
-		gl.glEnableVertexAttribArray(attrib);
-		gl.glVertexAttribPointer(attrib, perVertexSize, type, false, 0, 0);
-		gl.glVertexAttribDivisor(attrib, 0);
-	}
 
 	public void init(GL2GL3 gl) {
 		if (gpuBuffer > -1)
@@ -57,14 +44,24 @@ public abstract class VBO {
 	}
 
 	public static class VBOFloat extends VBO {
+		protected String name;
+		protected int perVertexSize;
 
 		public VBOFloat(String name, int perVertexSize, float[] data) {
-			super(name, perVertexSize);
+			this.perVertexSize = perVertexSize;
+			this.name = name;
 			super.data = FloatBuffer.wrap(data);
 		}
 
 		public int getNumOfVertices() {
 			return super.data.capacity() / perVertexSize;
+		}
+
+		public void bind(int attrib, GL3 gl) {
+			gl.glBindBuffer(arrayType, super.gpuBuffer);
+			gl.glEnableVertexAttribArray(attrib);
+			gl.glVertexAttribPointer(attrib, perVertexSize, type, false, 0, 0);
+			gl.glVertexAttribDivisor(attrib, 0);
 		}
 	}
 
@@ -72,10 +69,9 @@ public abstract class VBO {
 		public static final int MAX_INSTANCES = 10000;
 		public int perInstanceSize;
 
-		public InstanceVBO(String name) {
-			super(name, 3 + 3 + 9);
+		public InstanceVBO() {
 			super.isStatic = false;
-			this.perInstanceSize = perVertexSize;
+			this.perInstanceSize = 3 + 3 + 9;
 			super.data = FloatBuffer.allocate(MAX_INSTANCES * perInstanceSize);
 		}
 
@@ -96,5 +92,27 @@ public abstract class VBO {
 			gl.glBufferSubData(arrayType, 0, gos.size() * perInstanceSize
 					* gpuSize, getData());
 		}
+	}
+
+	public static class IndexVBO extends VBO {
+
+		private int indicesNum;
+
+		public IndexVBO(int[] indices) {
+			gpuSize = Buffers.SIZEOF_INT;
+			type = GL3.GL_INT;
+			arrayType = GL3.GL_ELEMENT_ARRAY_BUFFER;
+			indicesNum = indices.length;
+			super.data = IntBuffer.wrap(indices);
+		}
+
+		public void bind(GL3 gl) {
+			gl.glBindBuffer(arrayType, super.gpuBuffer);
+		}
+
+		public int getIndicesNum() {
+			return indicesNum;
+		}
+
 	}
 }

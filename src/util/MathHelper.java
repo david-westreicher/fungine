@@ -1,5 +1,7 @@
 package util;
 
+import java.util.List;
+
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
@@ -455,5 +457,19 @@ public class MathHelper {
 			fish[i + 1] = tmp.y / tmp.w;
 			fish[i + 2] = tmp.z / tmp.w;
 		}
+	}
+
+	public static int[] toArray(List<Integer> l) {
+		int[] ret = new int[l.size()];
+		for (int i = 0; i < l.size(); i++)
+			ret[i] = l.get(i);
+		return ret;
+	}
+
+	public static float[] toArray(List<Float> l) {
+		float[] ret = new float[l.size()];
+		for (int i = 0; i < l.size(); i++)
+			ret[i] = l.get(i);
+		return ret;
 	}
 }

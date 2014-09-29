@@ -1,6 +1,7 @@
 package rendering.material;
 
 import javax.media.opengl.GL2;
+import javax.media.opengl.GL3;
 
 import manager.UberManager;
 import shader.ShaderScript;
@@ -54,6 +55,13 @@ public class Material {
 		} else
 			ShaderScript.setUniform(gl, "hasDisplacement", false);
 		activateMaskMap(gl);
+	}
+
+	public void activate(GL3 gl) {
+		Texture colorTexture = UberManager.getTexture(texture);
+		if (colorTexture != null)
+			ShaderScript.setUniformTexture(gl, "tex", 0,
+					colorTexture.getTextureObject(gl));
 	}
 
 	@Override
