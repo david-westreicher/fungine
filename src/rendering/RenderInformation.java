@@ -16,7 +16,6 @@ import shader.ShaderScript;
 import shader.ShaderUtil;
 import util.GLUtil;
 import util.Log;
-import util.MathHelper;
 import util.ObjLoader;
 import world.GameObject;
 
@@ -67,6 +66,8 @@ public class RenderInformation {
 			init(gl);
 			return;
 		}
+		if (shader == null)
+			return;
 		if (wireFrame)
 			gl.glPolygonMode(GL3.GL_FRONT_AND_BACK, GL3.GL_LINE);
 		shader.execute(gl);
@@ -154,7 +155,7 @@ public class RenderInformation {
 				+ ") in vec3 instanceScale;\n");
 		sb.append("layout(location = " + (location++)
 				+ ") in mat3 instanceRotation;\n");
-		if (hasVBO("color"))
+		if (hasVBO("color") || !hasVBO("uv") || materials == null)
 			sb.append("out vec3 col;\n");
 		if (hasVBO("uv"))
 			sb.append("out vec2 uvCoord;\n");
@@ -172,7 +173,7 @@ public class RenderInformation {
 
 		// FRAGMENT shader
 		sb.append("//fragment\n#version 330\n");
-		if (hasVBO("color"))
+		if (hasVBO("color") || !hasVBO("uv") || materials == null)
 			sb.append("in vec3 col;\n");
 		if (hasVBO("uv"))
 			sb.append("in vec2 uvCoord;\n");
@@ -180,7 +181,7 @@ public class RenderInformation {
 			sb.append("uniform sampler2D tex;\n");
 		sb.append("out vec4 outputColor;\n");
 		sb.append("void main(){\n");
-		if (hasVBO("color"))
+		if (hasVBO("color") || !hasVBO("uv") || materials == null)
 			sb.append("\toutputColor = vec4(col, 1.0f);\n");
 		if (hasVBO("uv") && materials != null)
 			sb.append("\toutputColor = texture(tex, uvCoord);\n");
@@ -227,13 +228,15 @@ public class RenderInformation {
 			objMap.put(objFile, obj);
 		}
 		RenderInformation ri = new RenderInformation();
-		float[] verts = MathHelper.toArray(obj.correctVertices);
+		float[] verts = obj.vertices.array();
 		ri.addVA("vertex", verts, 3);
 		int[][] multiIndices = new int[obj.indices.length][];
 		for (int i = 0; i < obj.indices.length; i++)
 			multiIndices[i] = obj.indices[i].array();
-		ri.addVA("uv", MathHelper.toArray(obj.correctUVs), 2);
+		if (obj.correctUVs.size() > 0)
+			ri.addVA("uv", obj.uvs.array(), 2);
 		ri.setIndexed(multiIndices);
+		// Log.log(RenderInformation.class, Arrays.toString(multiIndices[0]));
 		ri.setDrawType(GL3.GL_TRIANGLES);
 		ri.setMaterials(obj.materials);
 		return ri;
