@@ -4,6 +4,7 @@ import java.nio.FloatBuffer;
 import java.util.Stack;
 
 import javax.media.opengl.GL2;
+import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Vector3f;
 
@@ -203,6 +204,13 @@ public class GLUtil {
 		scaleMatrix.m22 = z;
 		Matrix4f current = stacks[currentMatrixStack].stack.peek();
 		current.mul(scaleMatrix);
+	}
+
+	public void multiply(Matrix3f rotationMatrix) {
+		Matrix4f current = stacks[currentMatrixStack].stack.peek();
+		tmpM.setIdentity();
+		tmpM.set(rotationMatrix);
+		current.mul(tmpM);
 	}
 
 }
