@@ -6,7 +6,7 @@ import java.util.Map;
 
 import physics.AbstractPhysics;
 import script.JavaScript;
-import script.JavaScript.RuntimeScript;
+import script.JavaScript.GotScript;
 import world.GameObject;
 
 public class GameMechanics implements Updatable {
@@ -42,7 +42,7 @@ public class GameMechanics implements Updatable {
 			}
 		}
 
-		for (RuntimeScript rs : JavaScript.getScripts()) {
+		for (GotScript rs : JavaScript.getScripts()) {
 			String typeName = rs.getGameObjectType();
 			rs.update(typeName == null ? null : objs.get(typeName));
 		}

@@ -27,11 +27,11 @@ public class JavaScript {
 		public void update(Object object);
 	}
 
-	private static Map<String, List<RuntimeScript>> gotScriptMap = new HashMap<String, List<RuntimeScript>>();
-	private static List<RuntimeScript> allScripts = new ArrayList<RuntimeScript>();
+	private static Map<String, List<GotScript>> gotScriptMap = new HashMap<String, List<GotScript>>();
+	private static List<GotScript> allScripts = new ArrayList<GotScript>();
 	private static Map<String, OnUpdate> onUpdateMap = new HashMap<String, OnUpdate>();
 
-	public interface RuntimeScript {
+	public interface GotScript {
 		public void update(List<GameObject> go);
 
 		public void init(GameObjectType gameObjectType);
@@ -61,26 +61,26 @@ public class JavaScript {
 		FunClassLoader cls = new FunClassLoader();
 		try {
 			cls.init(compileFolder, name);
-			final List<RuntimeScript> rts = new ArrayList<RuntimeScript>();
+			final List<GotScript> rts = new ArrayList<GotScript>();
 			final List<GameObjectType> gots = new ArrayList<GameObjectType>();
 			for (GameObjectType got : GameObjectType.getTypes()) {
 				if (name.equals(got.getRuntimeScript())) {
-					rts.add((RuntimeScript) cls.newInstance());
+					rts.add((GotScript) cls.newInstance());
 					gots.add(got);
 				}
 			}
-			final List<RuntimeScript> oldScripts = gotScriptMap.get("scripts/"
+			final List<GotScript> oldScripts = gotScriptMap.get("scripts/"
 					+ name);
 
 			Game.INSTANCE.loop.mechanics.addRunnable(new Runnable() {
 				@Override
 				public void run() {
 					if (oldScripts != null)
-						for (RuntimeScript rs : oldScripts) {
+						for (GotScript rs : oldScripts) {
 							rs.exit();
 							allScripts.remove(rs);
 						}
-					for (RuntimeScript rs : rts)
+					for (GotScript rs : rts)
 						allScripts.add(rs);
 					for (int i = 0; i < gots.size(); i++)
 						rts.get(i).init(gots.get(i));
@@ -112,7 +112,7 @@ public class JavaScript {
 			try {
 				URL u = new File(compileFolder).toURI().toURL();
 				URLClassLoader classLoader = new URLClassLoader(
-						new URL[] { u }, RuntimeScript.class.getClassLoader());
+						new URL[] { u }, GotScript.class.getClassLoader());
 				Class<?> cls = classLoader.loadClass(newFile.replace(".java",
 						""));
 				return cls;
@@ -196,15 +196,15 @@ public class JavaScript {
 
 	public static void reset() {
 		synchronized (allScripts) {
-			for (List<RuntimeScript> listRS : gotScriptMap.values())
-				for (RuntimeScript rs : listRS)
+			for (List<GotScript> listRS : gotScriptMap.values())
+				for (GotScript rs : listRS)
 					rs.exit();
 			allScripts.clear();
 			gotScriptMap.clear();
 		}
 	}
 
-	public static Collection<RuntimeScript> getScripts() {
+	public static Collection<GotScript> getScripts() {
 		synchronized (allScripts) {
 			return allScripts;
 		}
