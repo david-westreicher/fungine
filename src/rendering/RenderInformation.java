@@ -91,8 +91,7 @@ public class RenderInformation {
 				int materialIndex = 0;
 				for (IndexVBO indices : multiIndices) {
 					indices.bind(gl);
-					if (materials != null)
-						materials.get(materialIndex++).activate(gl);
+					activateMaterial(materialIndex++, gl);
 					gl.glDrawElementsInstanced(drawType,
 							indices.getIndicesNum(), GL3.GL_UNSIGNED_INT, null,
 							renderThisRound);
@@ -103,9 +102,16 @@ public class RenderInformation {
 		for (int i = 0; i < vertexAttribs.size()
 				+ instanceBuffer.perInstanceSize / 3; i++)
 			gl.glDisableVertexAttribArray(i);
+		if (materials != null)
+			gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
 		shader.end(gl);
 		if (wireFrame)
 			gl.glPolygonMode(GL3.GL_FRONT_AND_BACK, GL3.GL_FILL);
+	}
+
+	private void activateMaterial(int materialIndex, GL3 gl) {
+		if (materials != null && materialIndex < materials.size())
+			materials.get(materialIndex).activate(gl);
 	}
 
 	public void init(GL2GL3 gl) {

@@ -30,7 +30,7 @@ void main(){
 	for(int lvl = 0;lvl<12;lvl+=1){
 		color += textureLod(fpsTex,trans,lvl);
 	}
-	//color/=2;
+	color/=8;
 	//if(length(color.rgb)>sqrt(3)){
 		//color = vec4(0,0,0,0);
 		//color.rgb = tonemap(color.rgb);
