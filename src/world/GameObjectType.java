@@ -9,7 +9,6 @@ import javax.media.opengl.GL2;
 import physics.AbstractCollisionShape;
 import rendering.GLRunnable;
 import rendering.RenderInformation;
-import rendering.RenderState;
 import rendering.RenderUpdater;
 import script.JavaScript;
 
