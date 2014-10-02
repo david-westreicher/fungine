@@ -19,10 +19,6 @@ public class GameObjectType extends VariableHolder {
 	private String runtimeScript = null;
 	public AbstractCollisionShape shape = null;
 	public String name;
-	public float shininess = (float) (Math.random() * 2000);
-	public float reflective = 0;
-	public boolean airShader = false;
-	public RenderState renderState = new RenderState();
 	public RenderInformation renderInformation = null;
 
 	public GameObjectType(String name) {
@@ -36,8 +32,8 @@ public class GameObjectType extends VariableHolder {
 
 	@Override
 	public String toString() {
-		return "GameObjectType [renderer=" + renderInformation + ", shape="
-				+ shape + ", name=" + name + ", shininess=" + shininess + "]";
+		return "GameObjectType [renderer=" + renderInformation + ", name="
+				+ name + "]";
 	}
 
 	public static Collection<GameObjectType> getTypes() {
