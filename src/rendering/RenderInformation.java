@@ -11,6 +11,7 @@ import javax.media.opengl.GL3;
 import rendering.VBO.IndexVBO;
 import rendering.VBO.InstanceVBO;
 import rendering.VBO.VBOFloat;
+import rendering.VBO.VertexAttribute;
 import rendering.material.Material;
 import shader.ShaderScript;
 import shader.ShaderUtil;
@@ -21,21 +22,19 @@ import world.GameObject;
 
 //TODO interleaved VBO's
 //TODO shadowShader (no cols/normals/textures ...)
-//TODO integrate textures
 public class RenderInformation {
-
 	private static Map<Integer, ShaderScript> shaders = new HashMap<Integer, ShaderScript>();
 	private static Map<String, ObjLoader> objMap = new HashMap<String, ObjLoader>();
 	private static InstanceVBO instanceBuffer;
 	private List<VBOFloat> vertexAttribs = new ArrayList<VBOFloat>();
 	private IndexVBO[] multiIndices = null;
 	private ShaderScript shader;
-	private int numOfVertices = 0;
+	private int numOfVertices = -1;
 	private int drawType = GL3.GL_TRIANGLES;
 	private boolean wireFrame = false;
 	private List<Material> materials;
 
-	public void addVA(String name, float[] data, int perVertexSize) {
+	public void addVA(VBO.VertexAttribute name, float[] data, int perVertexSize) {
 		vertexAttribs.add(new VBOFloat(name, perVertexSize, data));
 	}
 
@@ -57,12 +56,17 @@ public class RenderInformation {
 		this.materials = materials;
 	}
 
+	public void render(GL3 gl, GLUtil glutil) {
+		// TODO do i need this?
+		render(gl, glutil, null);
+	}
+
 	public void render(GL3 gl, GLUtil glutil, List<GameObject> gos) {
 		if (instanceBuffer == null) {
 			instanceBuffer = new InstanceVBO();
 			instanceBuffer.init(gl);
 		}
-		if (numOfVertices == 0) {
+		if (numOfVertices == -1) {
 			init(gl);
 			return;
 		}
@@ -76,18 +80,32 @@ public class RenderInformation {
 		int attrib = 0;
 		for (VBOFloat vbo : vertexAttribs)
 			vbo.bind(attrib++, gl);
+		if (gos == null) {
+		} else {
+			if (gos.size() > 0)
+				renderInstanced(gl, attrib, gos);
+		}
+		for (int i = 0; i < vertexAttribs.size()
+				+ instanceBuffer.PER_INSTANCE_SIZE / 3; i++)
+			gl.glDisableVertexAttribArray(i);
+		shader.end(gl);
+		if (wireFrame)
+			gl.glPolygonMode(GL3.GL_FRONT_AND_BACK, GL3.GL_FILL);
+	}
+
+	private void renderInstanced(GL3 gl, int attrib, List<GameObject> gos) {
 		int currentInstance = 0;
 		do {
 			int renderThisRound = Math.min(gos.size() - currentInstance,
 					InstanceVBO.MAX_INSTANCES);
-			instanceBuffer.bind(
+			int instancesToRender = instanceBuffer.bind(
 					attrib,
 					(GL3) gl,
 					gos.subList(currentInstance, currentInstance
 							+ renderThisRound));
 			if (multiIndices == null)
 				gl.glDrawArraysInstanced(drawType, 0, numOfVertices,
-						renderThisRound);
+						instancesToRender);
 			else {
 				int materialIndex = 0;
 				for (IndexVBO indices : multiIndices) {
@@ -95,19 +113,11 @@ public class RenderInformation {
 					activateMaterial(materialIndex++, gl);
 					gl.glDrawElementsInstanced(drawType,
 							indices.getIndicesNum(), GL3.GL_UNSIGNED_INT, null,
-							renderThisRound);
+							instancesToRender);
 				}
 			}
 			currentInstance += renderThisRound;
 		} while (currentInstance < gos.size());
-		for (int i = 0; i < vertexAttribs.size()
-				+ instanceBuffer.perInstanceSize / 3; i++)
-			gl.glDisableVertexAttribArray(i);
-		if (materials != null)
-			gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
-		shader.end(gl);
-		if (wireFrame)
-			gl.glPolygonMode(GL3.GL_FRONT_AND_BACK, GL3.GL_FILL);
 	}
 
 	private void activateMaterial(int materialIndex, GL3 gl) {
@@ -155,35 +165,39 @@ public class RenderInformation {
 				+ ") in vec3 instanceScale;\n");
 		sb.append("layout(location = " + (location++)
 				+ ") in mat3 instanceRotation;\n");
-		if (hasVBO("color") || !hasVBO("uv") || materials == null)
+		if (hasVBO(VertexAttribute.COLOR) || !hasVBO(VertexAttribute.UV)
+				|| materials == null)
 			sb.append("out vec3 col;\n");
-		if (hasVBO("uv"))
+		if (hasVBO(VertexAttribute.UV))
 			sb.append("out vec2 uvCoord;\n");
 		sb.append("uniform mat4 modelviewprojection;\n");
 		sb.append("void main(){\n");
-		if (hasVBO("color"))
-			sb.append("\tcol = color;\n");
-		else if (!hasVBO("uv") || materials == null)
+		if (hasVBO(VertexAttribute.COLOR))
+			sb.append("\tcol = " + VertexAttribute.COLOR + ";\n");
+		else if (!hasVBO(VertexAttribute.UV) || materials == null)
 			sb.append("\tcol = vec3(0.5f,0.5f,0.5f);\n");
-		if (hasVBO("uv"))
-			sb.append("\tuvCoord=uv;\n");
-		sb.append("\tvec3 transformed = (transpose(instanceRotation)*vertex)*instanceScale+instancePos;\n");
+		if (hasVBO(VertexAttribute.UV))
+			sb.append("\tuvCoord=" + VertexAttribute.UV + ";\n");
+		sb.append("\tvec3 transformed = (transpose(instanceRotation)*"
+				+ VertexAttribute.POSITION + ")*instanceScale+instancePos;\n");
 		sb.append("\tgl_Position = modelviewprojection*vec4(transformed,1.0);\n");
 		sb.append("}\n");
 
 		// FRAGMENT shader
 		sb.append("//fragment\n#version 330\n");
-		if (hasVBO("color") || !hasVBO("uv") || materials == null)
+		if (hasVBO(VertexAttribute.COLOR) || !hasVBO(VertexAttribute.UV)
+				|| materials == null)
 			sb.append("in vec3 col;\n");
-		if (hasVBO("uv"))
+		if (hasVBO(VertexAttribute.UV))
 			sb.append("in vec2 uvCoord;\n");
 		if (materials != null)
 			sb.append("uniform sampler2D tex;\n");
 		sb.append("out vec4 outputColor;\n");
 		sb.append("void main(){\n");
-		if (hasVBO("color") || !hasVBO("uv") || materials == null)
+		if (hasVBO(VertexAttribute.COLOR) || !hasVBO(VertexAttribute.UV)
+				|| materials == null)
 			sb.append("\toutputColor = vec4(col, 1.0f);\n");
-		if (hasVBO("uv") && materials != null)
+		if (hasVBO(VertexAttribute.UV) && materials != null)
 			sb.append("\toutputColor = texture(tex, uvCoord);\n");
 		sb.append("}\n");
 		Log.log(this, sb.toString());
@@ -193,18 +207,18 @@ public class RenderInformation {
 	private int getDescription() {
 		int descr = 0;
 		// vertices
-		if (hasVBO("vertex"))
+		if (hasVBO(VertexAttribute.POSITION))
 			descr |= 1 << 0;
-		if (hasVBO("color"))
+		if (hasVBO(VertexAttribute.COLOR))
 			descr |= 1 << 1;
-		if (hasVBO("uv"))
+		if (hasVBO(VertexAttribute.UV))
 			descr |= 1 << 2;
 		return descr;
 	}
 
-	private boolean hasVBO(String name) {
+	private boolean hasVBO(VertexAttribute name) {
 		for (VBOFloat vbo : vertexAttribs)
-			if (vbo.name.equals(name))
+			if (vbo.name == name)
 				return true;
 		return false;
 	}
@@ -224,17 +238,22 @@ public class RenderInformation {
 	public static RenderInformation fromObj(String objFile) {
 		ObjLoader obj = objMap.get(objFile);
 		if (obj == null) {
-			obj = new ObjLoader(objFile, false, false);
+			try {
+				obj = new ObjLoader(objFile, false, false);
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+				return null;
+			}
 			objMap.put(objFile, obj);
 		}
 		RenderInformation ri = new RenderInformation();
 		float[] verts = obj.vertices.array();
-		ri.addVA("vertex", verts, 3);
+		ri.addVA(VertexAttribute.POSITION, verts, 3);
 		int[][] multiIndices = new int[obj.indices.length][];
 		for (int i = 0; i < obj.indices.length; i++)
 			multiIndices[i] = obj.indices[i].array();
 		if (obj.correctUVs.size() > 0)
-			ri.addVA("uv", obj.uvs.array(), 2);
+			ri.addVA(VertexAttribute.UV, obj.uvs.array(), 2);
 		ri.setIndexed(multiIndices);
 		// Log.log(RenderInformation.class, Arrays.toString(multiIndices[0]));
 		ri.setDrawType(GL3.GL_TRIANGLES);

@@ -14,6 +14,10 @@ import world.GameObject;
 import com.jogamp.common.nio.Buffers;
 
 public abstract class VBO {
+	public enum VertexAttribute {
+		POSITION, COLOR, UV;
+	};
+
 	private int gpuBuffer = -1;
 	private Buffer data;
 	protected boolean isStatic = true;
@@ -44,10 +48,11 @@ public abstract class VBO {
 	}
 
 	public static class VBOFloat extends VBO {
-		protected String name;
+
+		protected VertexAttribute name;
 		protected int perVertexSize;
 
-		public VBOFloat(String name, int perVertexSize, float[] data) {
+		public VBOFloat(VertexAttribute name, int perVertexSize, float[] data) {
 			this.perVertexSize = perVertexSize;
 			this.name = name;
 			super.data = FloatBuffer.wrap(data);
@@ -67,30 +72,56 @@ public abstract class VBO {
 
 	public static class InstanceVBO extends VBO {
 		public static final int MAX_INSTANCES = 10000;
-		public int perInstanceSize;
+		public static int PER_INSTANCE_SIZE = 3 + 3 + 9;
+		public static final float[] dataCache = new float[MAX_INSTANCES
+				* PER_INSTANCE_SIZE];
+		private int instancesToRender = -1;
 
 		public InstanceVBO() {
 			super.isStatic = false;
-			this.perInstanceSize = 3 + 3 + 9;
-			super.data = FloatBuffer.allocate(MAX_INSTANCES * perInstanceSize);
+			super.data = FloatBuffer
+					.allocate(MAX_INSTANCES * PER_INSTANCE_SIZE);
 		}
 
-		public void bind(int attrib, GL3 gl, List<GameObject> gos) {
+		public int bind(int attrib, GL3 gl, List<GameObject> gos) {
 			gl.glBindBuffer(arrayType, super.gpuBuffer);
 			for (int i = 0; i < 5; i++) {
 				gl.glEnableVertexAttribArray(attrib + i);
 				gl.glVertexAttribPointer(attrib + i, 3, type, false,
-						perInstanceSize * gpuSize, i * 3 * gpuSize);
+						PER_INSTANCE_SIZE * gpuSize, i * 3 * gpuSize);
 				gl.glVertexAttribDivisor(attrib + i, 1);
 			}
-			super.data.rewind();
+			// TODO use for static objects
+			// if (instancesToRender > -1)
+			// return instancesToRender;
+			FloatBuffer instanceBuffer = ((FloatBuffer) super.data);
+			int dataCacheIndex = 0;
 			for (GameObject go : gos) {
-				((FloatBuffer) super.data).put(go.pos);
-				((FloatBuffer) super.data).put(go.size);
-				((FloatBuffer) super.data).put(go.rotationMatrixArray);
+				if (go.render) {
+					for (int i = 0; i < 3; i++) {
+						dataCache[dataCacheIndex++] = go.pos[i];
+					}
+					for (int i = 0; i < 3; i++) {
+						dataCache[dataCacheIndex++] = go.size[i];
+					}
+					dataCache[dataCacheIndex++] = go.rotationMatrix.m00;
+					dataCache[dataCacheIndex++] = go.rotationMatrix.m01;
+					dataCache[dataCacheIndex++] = go.rotationMatrix.m02;
+					dataCache[dataCacheIndex++] = go.rotationMatrix.m10;
+					dataCache[dataCacheIndex++] = go.rotationMatrix.m11;
+					dataCache[dataCacheIndex++] = go.rotationMatrix.m12;
+					dataCache[dataCacheIndex++] = go.rotationMatrix.m20;
+					dataCache[dataCacheIndex++] = go.rotationMatrix.m21;
+					dataCache[dataCacheIndex++] = go.rotationMatrix.m22;
+					instancesToRender++;
+				}
 			}
-			gl.glBufferSubData(arrayType, 0, gos.size() * perInstanceSize
-					* gpuSize, getData());
+			instanceBuffer.rewind();
+			instanceBuffer.put(dataCache);
+			instanceBuffer.rewind();
+			gl.glBufferSubData(arrayType, 0, instancesToRender
+					* PER_INSTANCE_SIZE * gpuSize, instanceBuffer);
+			return instancesToRender;
 		}
 	}
 
