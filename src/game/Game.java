@@ -21,6 +21,7 @@ import world.World;
 //TODO send all go's data to GPU once after gamemechanics (currently send every frame -.- )
 //TODO use glMapBuffer/glMapBufferRange to update per frame vbo's (go's data), maybe with doublebuffering?
 //TODO use VAO(binds all the buffers, attribPointer, divisor) for renderinformation
+//TODO Ubermanager consuming 100% cpu?
 public class Game {
 	public static Game INSTANCE;
 	public GameLoop loop = new GameLoop();

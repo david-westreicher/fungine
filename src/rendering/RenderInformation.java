@@ -86,7 +86,7 @@ public class RenderInformation {
 				renderInstanced(gl, attrib, gos);
 		}
 		for (int i = 0; i < vertexAttribs.size()
-				+ instanceBuffer.PER_INSTANCE_SIZE / 3; i++)
+				+ InstanceVBO.PER_INSTANCE_SIZE / 3; i++)
 			gl.glDisableVertexAttribArray(i);
 		shader.end(gl);
 		if (wireFrame)
@@ -152,25 +152,33 @@ public class RenderInformation {
 
 	private String getShaderSource() {
 		StringBuilder sb = new StringBuilder();
+		// #################
 		// VERTEX shader
+		// #################
 		sb.append("#version 330\n");
+
+		// UNIFORMS
+		sb.append("uniform mat4 modelviewprojection;\n");
+
+		// VERTEX ATTRIBUTES
 		int location = 0;
-		// sb.append("layout(location = 1) in vec3 color;\n");
 		for (VBOFloat vbo : vertexAttribs)
 			sb.append("layout(location = " + (location++) + ") in vec"
 					+ vbo.perVertexSize + " " + vbo.name + ";\n");
+
+		// INSTANCE ATTRIBUTES
 		sb.append("layout(location = " + (location++)
 				+ ") in vec3 instancePos;\n");
 		sb.append("layout(location = " + (location++)
 				+ ") in vec3 instanceScale;\n");
 		sb.append("layout(location = " + (location++)
 				+ ") in mat3 instanceRotation;\n");
+
 		if (hasVBO(VertexAttribute.COLOR) || !hasVBO(VertexAttribute.UV)
 				|| materials == null)
 			sb.append("out vec3 col;\n");
 		if (hasVBO(VertexAttribute.UV))
 			sb.append("out vec2 uvCoord;\n");
-		sb.append("uniform mat4 modelviewprojection;\n");
 		sb.append("void main(){\n");
 		if (hasVBO(VertexAttribute.COLOR))
 			sb.append("\tcol = " + VertexAttribute.COLOR + ";\n");

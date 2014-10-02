@@ -72,20 +72,20 @@ public abstract class VBO {
 
 	public static class InstanceVBO extends VBO {
 		public static final int MAX_INSTANCES = 10000;
-		public static int PER_INSTANCE_SIZE = 3 + 3 + 9;
-		public static final float[] dataCache = new float[MAX_INSTANCES
+		// pos, color, rot
+		public static final int PER_INSTANCE_SIZE = 3 + 3 + 9;
+		public final float[] instanceData = new float[MAX_INSTANCES
 				* PER_INSTANCE_SIZE];
 		private int instancesToRender = -1;
 
 		public InstanceVBO() {
 			super.isStatic = false;
-			super.data = FloatBuffer
-					.allocate(MAX_INSTANCES * PER_INSTANCE_SIZE);
+			super.data = FloatBuffer.wrap(instanceData);
 		}
 
 		public int bind(int attrib, GL3 gl, List<GameObject> gos) {
 			gl.glBindBuffer(arrayType, super.gpuBuffer);
-			for (int i = 0; i < 5; i++) {
+			for (int i = 0; i < PER_INSTANCE_SIZE / 3; i++) {
 				gl.glEnableVertexAttribArray(attrib + i);
 				gl.glVertexAttribPointer(attrib + i, 3, type, false,
 						PER_INSTANCE_SIZE * gpuSize, i * 3 * gpuSize);
@@ -94,34 +94,31 @@ public abstract class VBO {
 			// TODO use for static objects
 			// if (instancesToRender > -1)
 			// return instancesToRender;
-			instancesToRender = 0;
 			FloatBuffer instanceBuffer = ((FloatBuffer) super.data);
 			int dataCacheIndex = 0;
 			for (GameObject go : gos) {
 				if (go.render) {
 					for (int i = 0; i < 3; i++) {
-						dataCache[dataCacheIndex++] = go.pos[i];
+						instanceData[dataCacheIndex++] = go.pos[i];
 					}
 					for (int i = 0; i < 3; i++) {
-						dataCache[dataCacheIndex++] = go.size[i];
+						instanceData[dataCacheIndex++] = go.size[i];
 					}
-					dataCache[dataCacheIndex++] = go.rotationMatrix.m00;
-					dataCache[dataCacheIndex++] = go.rotationMatrix.m01;
-					dataCache[dataCacheIndex++] = go.rotationMatrix.m02;
-					dataCache[dataCacheIndex++] = go.rotationMatrix.m10;
-					dataCache[dataCacheIndex++] = go.rotationMatrix.m11;
-					dataCache[dataCacheIndex++] = go.rotationMatrix.m12;
-					dataCache[dataCacheIndex++] = go.rotationMatrix.m20;
-					dataCache[dataCacheIndex++] = go.rotationMatrix.m21;
-					dataCache[dataCacheIndex++] = go.rotationMatrix.m22;
-					instancesToRender++;
+					instanceData[dataCacheIndex++] = go.rotationMatrix.m00;
+					instanceData[dataCacheIndex++] = go.rotationMatrix.m01;
+					instanceData[dataCacheIndex++] = go.rotationMatrix.m02;
+					instanceData[dataCacheIndex++] = go.rotationMatrix.m10;
+					instanceData[dataCacheIndex++] = go.rotationMatrix.m11;
+					instanceData[dataCacheIndex++] = go.rotationMatrix.m12;
+					instanceData[dataCacheIndex++] = go.rotationMatrix.m20;
+					instanceData[dataCacheIndex++] = go.rotationMatrix.m21;
+					instanceData[dataCacheIndex++] = go.rotationMatrix.m22;
 				}
 			}
+			instancesToRender = dataCacheIndex / PER_INSTANCE_SIZE;
 			instanceBuffer.rewind();
-			instanceBuffer.put(dataCache, 0, dataCacheIndex);
-			instanceBuffer.rewind();
-			gl.glBufferSubData(arrayType, 0, instancesToRender
-					* PER_INSTANCE_SIZE * gpuSize, instanceBuffer);
+			gl.glBufferSubData(arrayType, 0, dataCacheIndex * gpuSize,
+					instanceBuffer);
 			return instancesToRender;
 		}
 	}
