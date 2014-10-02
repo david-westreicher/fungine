@@ -4,12 +4,9 @@ import java.util.ArrayList;
 
 import javax.media.opengl.GL3;
 
-import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
-
 import rendering.VBO.VertexAttribute;
 import util.GLUtil;
 import util.MathHelper;
-import util.Util;
 import world.GameObject;
 
 public class DebugRenderer {

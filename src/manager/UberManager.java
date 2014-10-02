@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +19,6 @@ import shader.Shader;
 import shader.ShaderScript;
 import shader.ShaderUtil;
 import util.Log;
-import util.RepeatedRunnable;
 import browser.AwesomiumWrapper;
 
 import com.jogamp.opengl.util.texture.Texture;
