@@ -82,6 +82,8 @@ public class ObjLoader {
 		this.name = s;
 		BufferedReader br = IO.read(engineFolder ? Settings.ENGINE_FOLDER
 				: Settings.RESSOURCE_FOLDER, s);
+		if (br == null)
+			throw new RuntimeException("couldn't find file: " + s);
 		String line;
 		int lineNum = 0;
 		boolean shouldNormalizeVerts = true;

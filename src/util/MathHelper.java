@@ -472,4 +472,11 @@ public class MathHelper {
 			ret[i] = l.get(i);
 		return ret;
 	}
+
+	public static float[] copy(float[] pos) {
+		float[] ret = new float[pos.length];
+		for (int i = 0; i < pos.length; i++)
+			ret[i] = pos[i];
+		return ret;
+	}
 }
