@@ -29,11 +29,11 @@ public abstract class AbstractCollisionShape {
 				body.setMass(getMass(go));
 				body.setPosition(go.pos[0] * ODE_SCALE, go.pos[1] * ODE_SCALE,
 						go.pos[2] * ODE_SCALE);
-				body.setRotation(new DMatrix3(go.rotationMatrixArray[0],
-						go.rotationMatrixArray[1], go.rotationMatrixArray[2],
-						go.rotationMatrixArray[3], go.rotationMatrixArray[4],
-						go.rotationMatrixArray[5], go.rotationMatrixArray[6],
-						go.rotationMatrixArray[7], go.rotationMatrixArray[8]));
+				body.setRotation(new DMatrix3(go.rotationMatrix.m00,
+						go.rotationMatrix.m01, go.rotationMatrix.m02,
+						go.rotationMatrix.m10, go.rotationMatrix.m11,
+						go.rotationMatrix.m12, go.rotationMatrix.m20,
+						go.rotationMatrix.m21, go.rotationMatrix.m22));
 				body.setLinearVel(go.physics.force[0], go.physics.force[1],
 						go.physics.force[2]);
 				go.physics.resetForce();
@@ -41,11 +41,11 @@ public abstract class AbstractCollisionShape {
 			} else {
 				geom.setPosition(go.pos[0] * ODE_SCALE, go.pos[1] * ODE_SCALE,
 						go.pos[2] * ODE_SCALE);
-				geom.setRotation(new DMatrix3(go.rotationMatrixArray[0],
-						go.rotationMatrixArray[1], go.rotationMatrixArray[2],
-						go.rotationMatrixArray[3], go.rotationMatrixArray[4],
-						go.rotationMatrixArray[5], go.rotationMatrixArray[6],
-						go.rotationMatrixArray[7], go.rotationMatrixArray[8]));
+				geom.setRotation(new DMatrix3(go.rotationMatrix.m00,
+						go.rotationMatrix.m01, go.rotationMatrix.m02,
+						go.rotationMatrix.m10, go.rotationMatrix.m11,
+						go.rotationMatrix.m12, go.rotationMatrix.m20,
+						go.rotationMatrix.m21, go.rotationMatrix.m22));
 			}
 			return geom;
 		}
