@@ -62,6 +62,8 @@ public class Material {
 		if (colorTexture != null)
 			ShaderScript.setUniformTexture(gl, "tex", 0,
 					colorTexture.getTextureObject(gl));
+		else
+			gl.glBindTexture(GL3.GL_TEXTURE_2D, 0);
 	}
 
 	@Override

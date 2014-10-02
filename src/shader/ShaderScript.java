@@ -49,7 +49,7 @@ public class ShaderScript {
 		gl.glUseProgram(0);
 	}
 
-	public static void setUniform(GL2 gl, String str, float[] pos) {
+	public static void setUniform(GL2GL3 gl, String str, float[] pos) {
 		int location = glGetUniformLocation(gl, getActiveShader(), str);
 		switch (pos.length) {
 		case 2:

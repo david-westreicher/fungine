@@ -75,6 +75,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	public int width;
 	public int height;
 	public RenderState renderState = new RenderState();
+	private DebugRenderer debugRenderer;
 	private static Vector3f tmpVector3f = new Vector3f();
 	private static Vector3f tmp2Vector3f = new Vector3f();
 
@@ -167,9 +168,8 @@ public class RenderUpdater implements Updatable, GLEventListener {
 			}
 
 			gl.glDisable(GL2.GL_DEPTH_TEST);
-			// if (Game.DEBUG || !Settings.SHOW_STATUS)
-			// renderDebug();
-
+			if (Game.DEBUG || !Settings.SHOW_STATUS)
+				debugRenderer.render(gl3, glutil);
 		}
 
 		startOrthoRender(Settings.STEREO);
@@ -278,11 +278,11 @@ public class RenderUpdater implements Updatable, GLEventListener {
 
 	protected void renderObjects() {
 		if (objectsRenderer != null)
-			try {
-				objectsRenderer.renderObjects(gl3, glutil, renderObjs);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			// try {
+			objectsRenderer.renderObjects(gl3, glutil, renderObjs);
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
 	}
 
 	@Override
@@ -290,6 +290,8 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		gl = arg0.getGL().getGL2();
 		UberManager.clearNow(gl);
 		textures.dispose(gl);
+		fpsRenderer.dispose(gl);
+		debugRenderer.dispose(gl3);
 		Log.log(this, "gl dispose");
 	}
 
@@ -325,6 +327,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 
 		fpsRenderer = new FPSRenderer(textures, gl);
 		browser.init(textures, arg0.getGL().getGL3());
+		debugRenderer = new DebugRenderer(arg0.getGL().getGL3());
 	}
 
 	public void setProjection(int width, int height) {

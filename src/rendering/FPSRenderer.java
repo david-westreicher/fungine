@@ -20,7 +20,6 @@ public class FPSRenderer {
 		textures.createTex(gl, "debugTexture", WIDTH, HEIGHT, false,
 				GL2.GL_REPEAT, false, false);
 		buf = ByteBuffer.allocate(HEIGHT * 4);
-
 		RenderUtil.init(gl);
 	}
 
@@ -76,4 +75,9 @@ public class FPSRenderer {
 		buf.rewind();
 		return buf;
 	}
+
+	public void dispose(GL2 gl) {
+		// TODO implement dispose for this
+	}
+
 }
