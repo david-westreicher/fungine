@@ -18,7 +18,7 @@ import com.jogamp.opengl.util.texture.Texture;
 public class ShaderScript {
 
 	private static ShaderScript activatedShader = null;
-	private static Map<String, Integer> locationCache = new HashMap<String, Integer>();
+	private static Map<String, Map<Integer, Integer>> locationCache = new HashMap<String, Map<Integer, Integer>>();
 	private static final float[] tmpFloatArr = new float[4];
 	public int shaderNum;
 	private String file;
@@ -249,17 +249,24 @@ public class ShaderScript {
 				rotationMatrixArray, 0);
 	}
 
-	private static int glGetUniformLocation(GL2GL3 gl, int shadernum, String str) {
-		Integer location = locationCache.get(shadernum + str);
+	private static int glGetUniformLocation(GL2GL3 gl, int shadernum,
+			String uniform) {
+		Integer location = null;
+		Map<Integer, Integer> shaderTolocation = locationCache.get(uniform);
+		if (shaderTolocation == null) {
+			shaderTolocation = new HashMap<Integer, Integer>();
+			locationCache.put(uniform, shaderTolocation);
+		}
+		location = shaderTolocation.get(shadernum);
 		if (location == null) {
-			location = gl.glGetUniformLocation(shadernum, str);
+			location = gl.glGetUniformLocation(shadernum, uniform);
 			if (location == -1) {
 				Log.err(ShaderScript.class, "couldn't find location for "
-						+ ShaderScript.activatedShader + ": " + str
+						+ ShaderScript.activatedShader + ": " + uniform
 						+ ", because location=" + location
 						+ ", activatedShader=" + shadernum);
-				locationCache.put(shadernum + str, location);
-			}
+			} else
+				shaderTolocation.put(shadernum, location);
 		}
 		return location;
 	}

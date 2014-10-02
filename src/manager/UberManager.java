@@ -32,13 +32,7 @@ public class UberManager {
 	private static List<String> loadingTextures = new ArrayList<String>();
 	private static List<Shader> loadingShaders = new ArrayList<Shader>();
 	private static Map<String, Texture> textures = new HashMap<String, Texture>();
-	private static Worker worker;
 	private static Map<Shader, ShaderScript> shaders = new HashMap<Shader, ShaderScript>();
-
-	static {
-		worker = new Worker();
-		worker.start();
-	}
 
 	public static Texture getTexture(final String name) {
 		return getTexture(name, false);
@@ -140,30 +134,6 @@ public class UberManager {
 			textures.get(s).destroy(gl);
 		}
 		textures.clear();
-	}
-
-	public static final class Worker extends RepeatedRunnable {
-		private List<Runnable> jobs = new LinkedList<Runnable>();
-
-		public Worker() {
-			super("Ubermanager Loader");
-		}
-
-		public void addJob(Runnable job) {
-			synchronized (jobs) {
-				jobs.add(job);
-			}
-		}
-
-		@Override
-		protected void executeRepeatedly() {
-			Runnable job = null;
-			synchronized (jobs) {
-				job = jobs.size() == 0 ? null : jobs.remove(0);
-			}
-			if (job != null)
-				job.run();
-		}
 	}
 
 	public static ShaderScript getShader(final Shader shader) {
