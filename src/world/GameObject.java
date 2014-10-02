@@ -16,7 +16,7 @@ public class GameObject extends VariableHolder {
 	public float[] bbox = new float[6];
 	public float[] pos = new float[3];
 	public float[] oldPos = new float[3];
-	public float[] size = new float[] { 10, 10, 10 };
+	public float[] size = new float[] { 1, 1, 1 };
 	public float[] rotation = new float[3];
 	public float[] color = new float[] { (float) Math.random(),
 			(float) Math.random(), (float) Math.random() };

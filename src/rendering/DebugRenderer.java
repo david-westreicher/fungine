@@ -4,6 +4,8 @@ import java.util.ArrayList;
 
 import javax.media.opengl.GL3;
 
+import com.sun.xml.internal.bind.v2.schemagen.xmlschema.List;
+
 import rendering.VBO.VertexAttribute;
 import util.GLUtil;
 import util.MathHelper;
@@ -12,6 +14,8 @@ import world.GameObject;
 
 public class DebugRenderer {
 
+	private static final int GRID_NUM = 20;
+	private static final float GRID_SIZE = 1f;
 	private RenderInformation debugRi;
 	private ArrayList<GameObject> objs;
 
@@ -19,7 +23,6 @@ public class DebugRenderer {
 		debugRi = getMesh();
 		objs = new ArrayList<GameObject>();
 		GameObject go = new GameObject(null);
-		go.beforeUpdate();
 		objs.add(go);
 	}
 
@@ -33,25 +36,53 @@ public class DebugRenderer {
 	}
 
 	private RenderInformation getMesh() {
-		int verticesNum = 100000;
-		float[] vers = new float[verticesNum * 3];
-		float[] cols = new float[verticesNum * 3];
-		float[] pos = new float[3];
-		Util.random.setSeed(0);
-		for (int i = 0; i < vers.length; i += 3) {
-			float[] color = new float[3];
-			float hue = (float) i / (vers.length);
-			MathHelper.HSLtoRGB(hue, 0.5f, 0.5f, color);
-			for (int k = 0; k < 3; k++) {
-				pos[k] += Util.random.nextFloat() - 0.5f;
-				vers[i + k] = pos[k];
-				cols[i + k] = color[k] * 0.8f;
-			}
+		ArrayList<Float> vertices = new ArrayList<Float>();
+		float translation = -GRID_NUM * GRID_SIZE / 2;
+		for (float i = 1; i < GRID_NUM; i++) {
+			vertices.add(i * GRID_SIZE + translation);
+			vertices.add(0f);
+			vertices.add(0f + translation);
+			vertices.add(i * GRID_SIZE + translation);
+			vertices.add(0f);
+			vertices.add(GRID_NUM * GRID_SIZE + translation);
+			vertices.add(0f + translation);
+			vertices.add(0f);
+			vertices.add(i * GRID_SIZE + translation);
+			vertices.add(GRID_NUM * GRID_SIZE + translation);
+			vertices.add(0f);
+			vertices.add(i * GRID_SIZE + translation);
 		}
+		{
+			vertices.add(0f);
+			vertices.add(0f);
+			vertices.add(0f);
+			vertices.add(1f);
+			vertices.add(0f);
+			vertices.add(0f);
+
+			vertices.add(0f);
+			vertices.add(0f);
+			vertices.add(0f);
+			vertices.add(0f);
+			vertices.add(1f);
+			vertices.add(0f);
+
+			vertices.add(0f);
+			vertices.add(0f);
+			vertices.add(0f);
+			vertices.add(0f);
+			vertices.add(0f);
+			vertices.add(1f);
+		}
+		float[] cols = new float[vertices.size()];
+		for (int i = 0; i < cols.length; i++)
+			cols[i] = 0.5f;
+		for (int i = cols.length - 6 * 3; i < cols.length; i++)
+			cols[i] = vertices.get(i);
 		RenderInformation ri = new RenderInformation();
-		ri.addVA(VertexAttribute.POSITION, vers, 3);
+		ri.addVA(VertexAttribute.POSITION, MathHelper.toArray(vertices), 3);
 		ri.addVA(VertexAttribute.COLOR, cols, 3);
-		ri.setDrawType(GL3.GL_TRIANGLE_STRIP);
+		ri.setDrawType(GL3.GL_LINES);
 		return ri;
 	}
 }
