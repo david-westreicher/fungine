@@ -94,6 +94,7 @@ public abstract class VBO {
 			// TODO use for static objects
 			// if (instancesToRender > -1)
 			// return instancesToRender;
+			instancesToRender = 0;
 			FloatBuffer instanceBuffer = ((FloatBuffer) super.data);
 			int dataCacheIndex = 0;
 			for (GameObject go : gos) {
@@ -117,7 +118,7 @@ public abstract class VBO {
 				}
 			}
 			instanceBuffer.rewind();
-			instanceBuffer.put(dataCache);
+			instanceBuffer.put(dataCache, 0, dataCacheIndex);
 			instanceBuffer.rewind();
 			gl.glBufferSubData(arrayType, 0, instancesToRender
 					* PER_INSTANCE_SIZE * gpuSize, instanceBuffer);
