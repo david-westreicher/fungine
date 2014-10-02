@@ -13,6 +13,14 @@ import vr.VRFactory;
 import world.Camera;
 import world.World;
 
+//TODO use data-oriented approach for gamebojects
+//TODO analyze allocations in renderloop (renderupdater settransform?)
+//TODO implement a poolworker for gamemechanics (split gameobjects into arrays)
+//TODO refactor drawTexture
+//TODO use array textures for rgb/normal/spec
+//TODO send all go's data to GPU once after gamemechanics (currently send every frame -.- )
+//TODO use glMapBuffer/glMapBufferRange to update per frame vbo's (go's data), maybe with doublebuffering?
+//TODO use VAO(binds all the buffers, attribPointer, divisor) for renderinformation
 public class Game {
 	public static Game INSTANCE;
 	public GameLoop loop = new GameLoop();
