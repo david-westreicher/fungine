@@ -5,9 +5,7 @@ import java.util.Arrays;
 
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 
-import util.Log;
 import util.MathHelper;
 import util.MathHelper.Tansformation;
 
@@ -133,7 +131,7 @@ public class GameObject extends VariableHolder {
 	public void setType(String name) {
 		GameObjectType goType = GameObjectType.getType(name);
 		if (goType == null) {
-			Log.err(this, "GameObjectType " + name + " doesn't exist!");
+			// Log.err(this, "GameObjectType " + name + " doesn't exist!");
 			return;
 		}
 		if (goType.shape != null || name.equals(Joint.JOINT_OBJECT_TYPE_NAME))
@@ -169,16 +167,6 @@ public class GameObject extends VariableHolder {
 
 	public void setQuaternion(Quat4f q) {
 		setQuaternion(q.x, q.y, q.z, q.w);
-	}
-
-	public void setQuaternionFromVec(float vec1[], float vec2[]) {
-		Vector3f v1 = new Vector3f(vec1);
-		Vector3f v2 = new Vector3f(vec2);
-		v1.normalize();
-		v2.normalize();
-		double w = 1 + v1.dot(v2);
-		v1.cross(v1, v2);
-		setQuaternion(v1.x, v1.y, v1.z, w);
 	}
 
 	public void setPos(float[] p, float s) {

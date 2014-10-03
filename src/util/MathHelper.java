@@ -42,6 +42,7 @@ public class MathHelper {
 	private static Matrix3f tmpMatrix = new Matrix3f();
 	private static final float[] tmpDist = new float[] { 0, 0, 0 };
 	private static double[] tmpDist2 = new double[] { 0, 0, 0 };
+	private static Quat4f tmpQuat = new Quat4f();
 
 	public static Tansformation getTransformation(float realPoints[][],
 			float currPoints[][]) {
@@ -478,5 +479,18 @@ public class MathHelper {
 		for (int i = 0; i < pos.length; i++)
 			ret[i] = pos[i];
 		return ret;
+	}
+
+	public static Quat4f setQuaternionFromVec(float[] vec1, float[] vec2) {
+		Vector3f v1 = tmpVector;
+		tmpVector.set(vec1);
+		Vector3f v2 = tmp2Vector;
+		tmp2Vector.set(vec2);
+		v1.normalize();
+		v2.normalize();
+		float w = 1 + v1.dot(v2);
+		v1.cross(v1, v2);
+		tmpQuat.set(v1.x, v1.y, v1.z, w);
+		return tmpQuat;
 	}
 }
