@@ -10,7 +10,6 @@ import java.util.List;
 import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GL3;
 
-import util.Log;
 import util.WorkerPool;
 import util.WorkerPool.WorkerImpl;
 import world.GameObject;
@@ -47,7 +46,7 @@ public abstract class VBO {
 	}
 
 	protected void dispose(GL2GL3 gl) {
-		Log.log(this, "disposing");
+		// Log.log(this, "disposing");
 		gl.glDeleteBuffers(1, new int[] { gpuBuffer }, 0);
 	}
 
@@ -80,7 +79,6 @@ public abstract class VBO {
 		public static final int PER_INSTANCE_SIZE = 3 + 3 + 9;
 		public final float[] instanceData = new float[MAX_INSTANCES
 				* PER_INSTANCE_SIZE];
-		private int instancesToRender = -1;
 		private WorkerImpl wi;
 
 		public InstanceVBO() {
@@ -118,7 +116,12 @@ public abstract class VBO {
 			}
 		}
 
-		public int bind(int attrib, GL3 gl, List<GameObject> gos) {
+		// TODO fix flickering bug when using multiple RenderInformation, maybe
+		// because glBufferSubData is non blocking-> cpu hasn't uploaded the
+		// buffer yet, but we modify it again with the next renderinformation
+		// -> fix by uploading instancedata once at the beginning for all gos
+		// http://stackoverflow.com/questions/24220583/why-glbuffersubdata-need-to-wait-until-the-vbo-is-not-used-by-gldrawelements
+		public void bind(int attrib, GL3 gl, List<GameObject> gos) {
 			gl.glBindBuffer(arrayType, super.gpuBuffer);
 			for (int i = 0; i < PER_INSTANCE_SIZE / 3; i++) {
 				gl.glEnableVertexAttribArray(attrib + i);
@@ -126,18 +129,11 @@ public abstract class VBO {
 						PER_INSTANCE_SIZE * gpuSize, i * 3 * gpuSize);
 				gl.glVertexAttribDivisor(attrib + i, 1);
 			}
-			// TODO use for static objects
-			// if (instancesToRender > -1)
-			// return instancesToRender;
-
 			Game.workerPool.execute(gos, wi);
-			// updateInstanceData(gos, 0, gos.size());
 			FloatBuffer instanceBuffer = ((FloatBuffer) super.data);
-			instancesToRender = gos.size();
 			instanceBuffer.rewind();
-			gl.glBufferSubData(arrayType, 0, instancesToRender
-					* PER_INSTANCE_SIZE * gpuSize, instanceBuffer);
-			return instancesToRender;
+			gl.glBufferSubData(arrayType, 0, gos.size() * PER_INSTANCE_SIZE
+					* gpuSize, instanceBuffer);
 		}
 	}
 

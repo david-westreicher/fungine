@@ -64,9 +64,6 @@ public class WorkerPool {
 	public void dispose() {
 		for (Worker w : workers)
 			w.dispose();
-		synchronized (this) {
-			this.notify();
-		}
 	}
 
 	private static class Worker extends Thread {
@@ -111,6 +108,7 @@ public class WorkerPool {
 		}
 
 		public void dispose() {
+			Log.log("disposing " + this.getName());
 			exit = true;
 			this.interrupt();
 		}

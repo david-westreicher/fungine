@@ -44,7 +44,7 @@ public class GameMechanics implements Updatable {
 	public void update(float interp) {
 		for (Runnable r : runnables)
 			r.run();
-		
+
 		List<GameObject> objs = Game.INSTANCE.world.getAllObjects();
 		Map<String, List<GameObject>> gotObjs = Game.INSTANCE.world
 				.getAllObjectsTypes();

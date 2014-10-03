@@ -21,8 +21,22 @@ public class GameObjectType extends VariableHolder {
 	public RenderInformation renderInformation = null;
 
 	public GameObjectType(String name) {
+		GameObjectType old = allTypes.get(name);
+		if (old != null)
+			old.dispose();
 		allTypes.put(name, this);
 		this.name = name;
+	}
+
+	private void dispose() {
+		if (renderInformation != null)
+			RenderUpdater.executeInOpenGLContext(new GLRunnable() {
+
+				@Override
+				public void run(GL2 gl) {
+					renderInformation.dispose(gl);
+				}
+			});
 	}
 
 	public static GameObjectType getType(String name) {

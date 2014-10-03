@@ -272,10 +272,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		glut.glutBitmapString(GLUT.BITMAP_8_BY_13, string);
 	}
 
-	private void renderDebug() {
-		// TODO update debug rendering to opengl3
-	}
-
 	protected void renderObjects() {
 		if (objectsRenderer != null)
 			// try {
