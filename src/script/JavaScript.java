@@ -18,7 +18,6 @@ import javax.tools.ToolProvider;
 
 import settings.Settings;
 import util.Log;
-import world.GameObject;
 import world.GameObjectType;
 
 public class JavaScript {
@@ -32,13 +31,12 @@ public class JavaScript {
 	private static Map<String, OnUpdate> onUpdateMap = new HashMap<String, OnUpdate>();
 
 	public interface GotScript {
-		public void update(List<GameObject> go);
+		public void update();
 
 		public void init(GameObjectType gameObjectType);
 
 		public void exit();
 
-		public String getGameObjectType();
 	}
 
 	public interface Executable {
