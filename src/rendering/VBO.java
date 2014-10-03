@@ -1,5 +1,7 @@
 package rendering;
 
+import game.Game;
+
 import java.nio.Buffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -9,6 +11,8 @@ import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GL3;
 
 import util.Log;
+import util.WorkerPool;
+import util.WorkerPool.WorkerImpl;
 import world.GameObject;
 
 import com.jogamp.common.nio.Buffers;
@@ -77,10 +81,41 @@ public abstract class VBO {
 		public final float[] instanceData = new float[MAX_INSTANCES
 				* PER_INSTANCE_SIZE];
 		private int instancesToRender = -1;
+		private WorkerImpl wi;
 
 		public InstanceVBO() {
 			super.isStatic = false;
 			super.data = FloatBuffer.wrap(instanceData);
+			this.wi = new WorkerPool.WorkerImpl() {
+				@Override
+				public void update(List<GameObject> gos, int subListStart,
+						int subListEnd) {
+					updateInstanceData(gos, subListStart, subListEnd);
+				}
+			};
+		}
+
+		protected void updateInstanceData(List<GameObject> gos,
+				int subListStart, int subListEnd) {
+			for (int i = subListStart; i < subListEnd; i++) {
+				GameObject go = gos.get(i);
+				int dataCacheIndex = i * PER_INSTANCE_SIZE;
+				for (int j = 0; j < 3; j++) {
+					instanceData[dataCacheIndex++] = go.pos[j];
+				}
+				for (int j = 0; j < 3; j++) {
+					instanceData[dataCacheIndex++] = go.size[j];
+				}
+				instanceData[dataCacheIndex++] = go.rotationMatrix.m00;
+				instanceData[dataCacheIndex++] = go.rotationMatrix.m01;
+				instanceData[dataCacheIndex++] = go.rotationMatrix.m02;
+				instanceData[dataCacheIndex++] = go.rotationMatrix.m10;
+				instanceData[dataCacheIndex++] = go.rotationMatrix.m11;
+				instanceData[dataCacheIndex++] = go.rotationMatrix.m12;
+				instanceData[dataCacheIndex++] = go.rotationMatrix.m20;
+				instanceData[dataCacheIndex++] = go.rotationMatrix.m21;
+				instanceData[dataCacheIndex++] = go.rotationMatrix.m22;
+			}
 		}
 
 		public int bind(int attrib, GL3 gl, List<GameObject> gos) {
@@ -94,31 +129,14 @@ public abstract class VBO {
 			// TODO use for static objects
 			// if (instancesToRender > -1)
 			// return instancesToRender;
+
+			Game.workerPool.execute(gos, wi);
+			// updateInstanceData(gos, 0, gos.size());
 			FloatBuffer instanceBuffer = ((FloatBuffer) super.data);
-			int dataCacheIndex = 0;
-			for (GameObject go : gos) {
-				if (go.render) {
-					for (int i = 0; i < 3; i++) {
-						instanceData[dataCacheIndex++] = go.pos[i];
-					}
-					for (int i = 0; i < 3; i++) {
-						instanceData[dataCacheIndex++] = go.size[i];
-					}
-					instanceData[dataCacheIndex++] = go.rotationMatrix.m00;
-					instanceData[dataCacheIndex++] = go.rotationMatrix.m01;
-					instanceData[dataCacheIndex++] = go.rotationMatrix.m02;
-					instanceData[dataCacheIndex++] = go.rotationMatrix.m10;
-					instanceData[dataCacheIndex++] = go.rotationMatrix.m11;
-					instanceData[dataCacheIndex++] = go.rotationMatrix.m12;
-					instanceData[dataCacheIndex++] = go.rotationMatrix.m20;
-					instanceData[dataCacheIndex++] = go.rotationMatrix.m21;
-					instanceData[dataCacheIndex++] = go.rotationMatrix.m22;
-				}
-			}
-			instancesToRender = dataCacheIndex / PER_INSTANCE_SIZE;
+			instancesToRender = gos.size();
 			instanceBuffer.rewind();
-			gl.glBufferSubData(arrayType, 0, dataCacheIndex * gpuSize,
-					instanceBuffer);
+			gl.glBufferSubData(arrayType, 0, instancesToRender
+					* PER_INSTANCE_SIZE * gpuSize, instanceBuffer);
 			return instancesToRender;
 		}
 	}

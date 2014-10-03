@@ -7,6 +7,7 @@ import java.util.Map;
 import physics.AbstractPhysics;
 import script.JavaScript;
 import script.JavaScript.GotScript;
+import util.WorkerPool.WorkerImpl;
 import world.GameObject;
 
 public class GameMechanics implements Updatable {
@@ -14,9 +15,24 @@ public class GameMechanics implements Updatable {
 	public AbstractPhysics physics;
 	private boolean restartPhysics = false;
 	private List<Runnable> runnables = new ArrayList<Runnable>();
+	private static final WorkerImpl beforeUpdater = new WorkerImpl() {
 
-	public GameMechanics() {
-	}
+		@Override
+		public void update(List<GameObject> gos, int subListStart,
+				int subListEnd) {
+			for (int i = subListStart; i < subListEnd; i++)
+				gos.get(i).beforeUpdate();
+		}
+	};
+	private static final WorkerImpl bboxUpdater = new WorkerImpl() {
+
+		@Override
+		public void update(List<GameObject> gos, int subListStart,
+				int subListEnd) {
+			for (int i = subListStart; i < subListEnd; i++)
+				gos.get(i).updateBbox();
+		}
+	};
 
 	@Override
 	public void dispose() {
@@ -26,45 +42,30 @@ public class GameMechanics implements Updatable {
 
 	@Override
 	public void update(float interp) {
-
-		Map<String, List<GameObject>> objs = Game.INSTANCE.world
-				.getAllObjectsTypes();
-		final int tick = Game.INSTANCE.loop.tick;
 		for (Runnable r : runnables)
 			r.run();
+		
+		List<GameObject> objs = Game.INSTANCE.world.getAllObjects();
+		Map<String, List<GameObject>> gotObjs = Game.INSTANCE.world
+				.getAllObjectsTypes();
 		runnables.clear();
 
 		Game.INSTANCE.input.update();
 
-		for (String type : objs.keySet()) {
-			for (GameObject go : objs.get(type)) {
-				go.beforeUpdate();
-			}
-		}
+		Game.workerPool.execute(objs, beforeUpdater);
 
-		for (GotScript rs : JavaScript.getScripts()) {
-			String typeName = rs.getGameObjectType();
-			rs.update(typeName == null ? null : objs.get(typeName));
-		}
-		/*
-		 * try { Script.executeFunction(Settings.MAIN_SCRIPT, "update",
-		 * Game.INSTANCE); } catch (ScriptException e1) {
-		 * Log.err(e1.getFileName()); e1.printStackTrace(); } catch
-		 * (NoSuchMethodException e1) { e1.printStackTrace(); }
-		 */
+		for (GotScript rs : JavaScript.getScripts())
+			rs.update();
+
 		if (physics != null) {
 			if (restartPhysics) {
 				physics.restart();
 				restartPhysics = false;
 			}
-			physics.update(objs);
+			physics.update(gotObjs);
 		}
 		if (Game.DEBUG)
-			for (String type : objs.keySet()) {
-				for (GameObject go : objs.get(type)) {
-					go.updateBbox();
-				}
-			}
+			Game.workerPool.execute(objs, bboxUpdater);
 
 		Game.INSTANCE.input.mouse.reset();
 	}

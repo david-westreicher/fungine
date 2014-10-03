@@ -9,6 +9,7 @@ import util.FolderWatcher;
 import util.Log;
 import util.Stoppable;
 import util.Util;
+import util.WorkerPool;
 import vr.VRFactory;
 import world.Camera;
 import world.World;
@@ -22,7 +23,7 @@ import world.World;
 //TODO use glMapBuffer/glMapBufferRange to update per frame vbo's (go's data), maybe with doublebuffering?
 //TODO use VAO(binds all the buffers, attribPointer, divisor) for renderinformation
 //TODO folderwatcher allocates too many string :(
-
+//TODO rename repeatedrunnable/repreatedthread
 public class Game {
 	public static Game INSTANCE;
 	public GameLoop loop = new GameLoop();
@@ -33,6 +34,7 @@ public class Game {
 	public Camera cam = new Camera();
 	public boolean exitFlag = false;
 	public boolean fullscreenFlag = Settings.USE_FULL_SCREEN;
+	public static WorkerPool workerPool;
 	public static VRFactory.VR vr;
 
 	public Game() {
@@ -45,6 +47,8 @@ public class Game {
 		FolderWatcher f2 = new FolderWatcher(Settings.ENGINE_FOLDER);
 		f2.addFolderListener(new GameWatcher(this));
 		f2.start();
+		workerPool = new WorkerPool();
+		workerPool.start();
 		loop.startPause();
 		loop.start();
 	}
@@ -73,6 +77,7 @@ public class Game {
 		Log.log(this, "game exit");
 		// loop.startPause();
 		loop.exit();
+		workerPool.dispose();
 		Stoppable.stopAll();
 	}
 
