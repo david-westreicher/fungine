@@ -212,4 +212,10 @@ public class GLUtil {
 		current.mul(tmpM);
 	}
 
+	public FloatBuffer getMatrix(int mode) {
+		FloatBuffer fb = FloatBuffer.allocate(16);
+		mode = (mode == GL2.GL_PROJECTION ? 0 : 1);
+		set(fb, stacks[mode][stackPointers[mode]]);
+		return fb;
+	}
 }

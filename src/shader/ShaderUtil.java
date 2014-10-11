@@ -74,8 +74,7 @@ public class ShaderUtil {
 		gl.glAttachShader(shaderprogram, v);
 		gl.glAttachShader(shaderprogram, f);
 		gl.glLinkProgram(shaderprogram);
-		if (checkCompileError(gl, shaderprogram, name + " fragment shader",
-				false))
+		if (checkCompileError(gl, shaderprogram, name + " linked shader", false))
 			return;
 		gl.glValidateProgram(shaderprogram);
 		if (shaderprogram != 0) {

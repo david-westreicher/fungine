@@ -45,7 +45,6 @@ public class World {
 		gameObjects.clear();
 		visibleObjs.clear();
 		allObjs.clear();
-		// TODO what happens to the cam? add(Game.INSTANCE.cam);
 	}
 
 	public Map<String, List<GameObject>> getVisibleObjects() {
