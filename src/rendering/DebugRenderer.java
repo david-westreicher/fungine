@@ -20,12 +20,14 @@ public class DebugRenderer {
 		debugRi = getMesh();
 		objs = new ArrayList<GameObject>();
 		GameObject go = new GameObject(null);
+		for (int i = 0; i < 3; i++)
+			go.color[i] = 1;
 		objs.add(go);
 	}
 
 	public void render(GL3 gl, GLUtil glutil) {
 		// debugRi.render(gl, glutil, gos);
-		debugRi.render(gl, glutil, objs);
+		debugRi.render(gl, glutil.getModelViewProjection(), objs);
 	}
 
 	public void dispose(GL3 gl) {

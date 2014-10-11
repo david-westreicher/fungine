@@ -65,7 +65,6 @@ public class UberManager {
 								Texture text;
 								try {
 									text = TextureIO.newTexture(textData);
-
 									text.bind(gl);
 									text.setTexParameteri(gl,
 											GL2.GL_TEXTURE_WRAP_S,

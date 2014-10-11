@@ -173,7 +173,9 @@ public class JavaScript {
 				loadRuntimeScript(filename);
 			}
 		} else {
-			updater.update(newInstance(filename));
+			Object inst = newInstance(filename);
+			if (inst != null)
+				updater.update(inst);
 		}
 	}
 
