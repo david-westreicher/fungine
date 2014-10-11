@@ -23,6 +23,12 @@ import world.World;
 //TODO folderwatcher allocates too many string :(
 //TODO rename repeatedrunnable/repreatedthread
 //TODO nicer way to handle textures?
+//TODO implement simple file-modify listener (listener for ubermanager, shaderutil, javascript)
+//TODO use fbx-conv to load models/bones
+//TODO cleanup renderupdater
+//TODO remove engine/img -> generate on startup
+//TODO update camera every frame / use relative mouse position, just recenter if outside a specific area
+//TODO remove startOrthoRenderer
 public class Game {
 	public static Game INSTANCE;
 	public GameLoop loop = new GameLoop();

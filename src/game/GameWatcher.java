@@ -8,7 +8,6 @@ import settings.Settings;
 import util.FolderListener;
 import util.Log;
 import util.Util;
-import world.World;
 
 public class GameWatcher implements FolderListener {
 
@@ -31,7 +30,7 @@ public class GameWatcher implements FolderListener {
 			gl.startPause();
 			Util.sleep(10);
 			JavaScript.reset();
-			Game.INSTANCE.world = new World();
+			Game.INSTANCE.world.clear();
 			Game.INSTANCE.world.add(Game.INSTANCE.cam);
 			JavaScript.execute(Settings.MAIN_SCRIPT, false);
 			gl.endPause();
