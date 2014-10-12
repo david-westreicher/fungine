@@ -67,7 +67,7 @@ public class OpenGLRendering {
 		window.setAutoSwapBufferMode(true);
 		window.setVisible(true);
 		window.setPosition(window.getScreen().getWidth() - window.getWidth(),
-				50);
+				true ? 50 : window.getScreen().getHeight() - window.getHeight());
 		window.setTitle("fungine");
 		CanvasListener c = new CanvasListener();
 		window.addMouseListener(c);

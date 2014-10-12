@@ -72,7 +72,7 @@ public class RenderGraph {
 		for (ShaderNode n : shaderNodes)
 			n.addVertexCode(sb);
 		sb.append("}\n");
-		sb.append("//fragment\n");
+		sb.append(ShaderUtil.FRAGMENT_SPLITTER + "\n");
 		for (ShaderNode n : shaderNodes)
 			n.addFragmentUniforms(sb);
 		sb.append("void main(void){\n");
