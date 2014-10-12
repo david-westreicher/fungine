@@ -1,5 +1,6 @@
 package rendering;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +16,6 @@ import rendering.VBO.VertexAttribute;
 import rendering.material.Material;
 import shader.ShaderScript;
 import shader.ShaderUtil;
-import util.GLUtil;
 import util.Log;
 import util.ObjLoader;
 import world.GameObject;
@@ -34,6 +34,8 @@ public class RenderInformation {
 	private boolean wireFrame = false;
 	private List<Material> materials;
 	private int description;
+	private Material currentMaterial;
+	private boolean gammaCorrection;
 
 	public void addVA(VBO.VertexAttribute name, float[] data, int perVertexSize) {
 		vertexAttribs.add(new VBOFloat(name, perVertexSize, data));
@@ -57,7 +59,8 @@ public class RenderInformation {
 		this.materials = materials;
 	}
 
-	public void render(GL3 gl, GLUtil glutil, List<GameObject> gos) {
+	public void render(GL3 gl, FloatBuffer modelViewProjection,
+			List<GameObject> gos) {
 		if (instanceBuffer == null) {
 			instanceBuffer = new InstanceVBO();
 			instanceBuffer.init(gl);
@@ -75,7 +78,7 @@ public class RenderInformation {
 			gl.glPolygonMode(GL3.GL_FRONT_AND_BACK, GL3.GL_LINE);
 		shader.execute(gl);
 		ShaderScript.setUniformMatrix4(gl, "modelviewprojection",
-				glutil.getModelViewProjection(), true);
+				modelViewProjection, true);
 		int attrib = 0;
 		for (VBOFloat vbo : vertexAttribs)
 			vbo.bind(attrib++, gl);
@@ -102,6 +105,7 @@ public class RenderInformation {
 						renderThisRound);
 			else {
 				int materialIndex = 0;
+				currentMaterial = null;
 				for (IndexVBO indices : multiIndices) {
 					indices.bind(gl);
 					activateMaterial(materialIndex++, gl);
@@ -109,14 +113,20 @@ public class RenderInformation {
 							indices.getIndicesNum(), GL3.GL_UNSIGNED_INT, null,
 							renderThisRound);
 				}
+				IndexVBO.unbind(gl);
 			}
 			currentInstance += renderThisRound;
 		} while (currentInstance < gos.size());
 	}
 
 	private void activateMaterial(int materialIndex, GL3 gl) {
-		if (materials != null && materialIndex < materials.size())
-			materials.get(materialIndex).activate(gl);
+		if (materials != null && materialIndex < materials.size()) {
+			Material newMaterial = materials.get(materialIndex);
+			if (currentMaterial != newMaterial) {
+				currentMaterial = newMaterial;
+				newMaterial.activate(gl);
+			}
+		}
 	}
 
 	public void init(GL2GL3 gl) {
@@ -166,19 +176,20 @@ public class RenderInformation {
 		sb.append("layout(location = " + (location++)
 				+ ") in vec3 instancePos;\n");
 		sb.append("layout(location = " + (location++)
+				+ ") in vec3 instanceColor;\n");
+		sb.append("layout(location = " + (location++)
 				+ ") in vec3 instanceScale;\n");
 		sb.append("layout(location = " + (location++)
 				+ ") in mat3 instanceRotation;\n");
 
-		if (hasVBO(VertexAttribute.COLOR))
-			sb.append("out vec3 col;\n");
+		sb.append("out vec3 col;\n");
 		if (hasVBO(VertexAttribute.UV))
 			sb.append("out vec2 uvCoord;\n");
 		sb.append("void main(){\n");
 		if (hasVBO(VertexAttribute.COLOR))
-			sb.append("\tcol = " + VertexAttribute.COLOR + ";\n");
-		else if (!hasTexture)
-			sb.append("\tcol = vec3(0.5f,0.5f,0.5f);\n");
+			sb.append("\tcol = " + VertexAttribute.COLOR + "*instanceColor;\n");
+		else
+			sb.append("\tcol = instanceColor;\n");
 		if (hasVBO(VertexAttribute.UV))
 			sb.append("\tuvCoord=" + VertexAttribute.UV + ";\n");
 		sb.append("\tvec3 transformed = (transpose(instanceRotation)*"
@@ -187,21 +198,23 @@ public class RenderInformation {
 		sb.append("}\n");
 
 		// FRAGMENT shader
-		sb.append("//fragment\n#version 330\n");
-		if (hasVBO(VertexAttribute.COLOR))
-			sb.append("in vec3 col;\n");
+		sb.append(ShaderUtil.FRAGMENT_SPLITTER + "\n");
+		sb.append("#version 330\n");
+		sb.append("in vec3 col;\n");
 		if (hasVBO(VertexAttribute.UV))
 			sb.append("in vec2 uvCoord;\n");
 		if (hasTexture)
 			sb.append("uniform sampler2D tex;\n");
 		sb.append("out vec4 outputColor;\n");
 		sb.append("void main(){\n");
-		if (hasVBO(VertexAttribute.COLOR) && !hasTexture)
-			sb.append("\toutputColor = vec4(col, 1.0f);\n");
 		if (hasTexture)
-			sb.append("\toutputColor = texture(tex, uvCoord);\n");
+			sb.append("\toutputColor = texture(tex, uvCoord)*vec4(col,1);\n");
+		else
+			sb.append("\toutputColor = vec4(col, 1.0f);\n");
+		if (gammaCorrection)
+			sb.append("\toutputColor.rgb = pow(outputColor.rgb,vec3(2.2));\n");
 		sb.append("}\n");
-		Log.log(this, sb.toString());
+		// Log.log(this, sb.toString());
 		return sb.toString();
 	}
 
@@ -258,7 +271,13 @@ public class RenderInformation {
 		// Log.log(RenderInformation.class, Arrays.toString(multiIndices[0]));
 		ri.setDrawType(GL3.GL_TRIANGLES);
 		ri.setMaterials(obj.materials);
+		ri.setGammaCorrection(true);
+		// ri.setInstancedColor(true);
 		return ri;
+	}
+
+	public void setGammaCorrection(boolean b) {
+		gammaCorrection = b;
 	}
 
 }

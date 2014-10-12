@@ -18,7 +18,6 @@ import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLException;
 import javax.media.opengl.GLProfile;
-import javax.media.opengl.glu.GLU;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
 
@@ -34,7 +33,6 @@ import world.GameObject;
 import browser.AwesomiumWrapper;
 
 import com.jogamp.opengl.util.awt.Screenshot;
-import com.jogamp.opengl.util.gl2.GLUT;
 
 public class RenderUpdater implements Updatable, GLEventListener {
 	public interface Renderer {
@@ -67,10 +65,8 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	protected GL3 gl3;
 	public static float FOV_Y = 69;
 	public static float INTERP;
-	public static GLUT glut = new GLUT();
 	public static float EYE_GAP = 0.23f;
 	public static boolean WIREFRAME = false;
-	public final static GLU glu = new GLU();
 	public final static GLUtil glutil = new GLUtil();
 	public int width;
 	public int height;
@@ -153,7 +149,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 				setupLook(cam);
 				renderObjects();
 			}
-
 			if (takeScreen) {
 				Log.log(this, "taking screenshot");
 				try {
@@ -179,8 +174,8 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		if (Settings.USE_BROWSER)
 			browser.render(gl, glutil);
 		// renderCrosshair();
-		// if (!Settings.SHOW_STATUS)
-		// renderText();
+		if (!Settings.SHOW_STATUS)
+			renderText();
 		GameLoop loop = Game.INSTANCE.loop;
 		fpsRenderer.render(gl, glutil, textures, width, loop.timePerRender,
 				loop.timePerTick);
@@ -267,9 +262,9 @@ public class RenderUpdater implements Updatable, GLEventListener {
 
 	private void renderString(String string, int posX, int posY) {
 		// gl.glRasterPos2f(posX, posY);
-		gl.glRasterPos2i(0, 0);
-		gl.glBitmap(0, 0, 0, 0, posX, posY, null);
-		glut.glutBitmapString(GLUT.BITMAP_8_BY_13, string);
+		// gl.glRasterPos2i(0, 0);
+		// gl.glBitmap(0, 0, 0, 0, posX, posY, null);
+		// glut.glutBitmapString(GLUT.BITMAP_8_BY_13, string);
 	}
 
 	protected void renderObjects() {
@@ -288,6 +283,8 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		textures.dispose(gl);
 		fpsRenderer.dispose(gl);
 		debugRenderer.dispose(gl3);
+		if (objectsRenderer != null)
+			objectsRenderer.dispose(gl3);
 		Log.log(this, "gl dispose");
 	}
 
@@ -310,7 +307,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		gl.glDepthFunc(GL2.GL_LEQUAL);
 		// culling
 		// gl.glDisable(GL2.GL_CULL_FACE);
-		gl.glLineWidth(4);
 		gl.glFrontFace(GL2.GL_CCW);
 		gl.glEnable(GL2.GL_CULL_FACE);
 		gl.glCullFace(GL2.GL_BACK);
@@ -357,7 +353,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		queue.clear();
 		contextExecutions.clear();
 		browser.dispose(gl);
-		glu.destroy();
 		renderer.dispose();
 	}
 

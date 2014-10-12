@@ -45,7 +45,7 @@ public abstract class VBO {
 		return data;
 	}
 
-	protected void dispose(GL2GL3 gl) {
+	public void dispose(GL2GL3 gl) {
 		// Log.log(this, "disposing");
 		gl.glDeleteBuffers(1, new int[] { gpuBuffer }, 0);
 	}
@@ -74,12 +74,14 @@ public abstract class VBO {
 	}
 
 	public static class InstanceVBO extends VBO {
-		public static final int MAX_INSTANCES = 10000;
-		// pos, color, rot
-		public static final int PER_INSTANCE_SIZE = 3 + 3 + 9;
+		public static final int MAX_INSTANCES = 1000;
+		// pos, color,size, rot
+		public static final int PER_INSTANCE_SIZE = 3 + 3 + 3 + 9;
 		public final float[] instanceData = new float[MAX_INSTANCES
 				* PER_INSTANCE_SIZE];
 		private WorkerImpl wi;
+
+		// TODO maybe nicer way for instancedata?
 
 		public InstanceVBO() {
 			super.isStatic = false;
@@ -100,6 +102,9 @@ public abstract class VBO {
 				int dataCacheIndex = i * PER_INSTANCE_SIZE;
 				for (int j = 0; j < 3; j++) {
 					instanceData[dataCacheIndex++] = go.pos[j];
+				}
+				for (int j = 0; j < 3; j++) {
+					instanceData[dataCacheIndex++] = go.color[j];
 				}
 				for (int j = 0; j < 3; j++) {
 					instanceData[dataCacheIndex++] = go.size[j];
@@ -155,6 +160,10 @@ public abstract class VBO {
 
 		public int getIndicesNum() {
 			return indicesNum;
+		}
+
+		public static void unbind(GL3 gl) {
+			gl.glBindBuffer(GL3.GL_ELEMENT_ARRAY_BUFFER, 0);
 		}
 
 	}
