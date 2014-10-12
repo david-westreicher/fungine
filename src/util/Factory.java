@@ -3,7 +3,6 @@ package util;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import rendering.voxel.VoxelWorld;
 import world.GameObject;
 import world.GameObjectType;
 import world.Joint;
@@ -28,10 +27,6 @@ public class Factory {
 		if (name.equals(Joint.JOINT_OBJECT_TYPE_NAME))
 			return new Joint();
 		return new GameObject(name);
-	}
-
-	public VoxelWorld createVoxelWorld(boolean minecraft, int chunkSize) {
-		return new VoxelWorld(minecraft, chunkSize);
 	}
 
 	public Object create(String str) {

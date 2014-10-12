@@ -16,7 +16,6 @@ import java.util.Map;
 import rendering.material.Material;
 import rendering.material.MaterialLibrary;
 import rendering.util.RenderUtil;
-import rendering.voxel.Voxel;
 import settings.Settings;
 
 public class ObjLoader {
@@ -72,11 +71,6 @@ public class ObjLoader {
 	private String name;
 
 	public ObjLoader(String s, boolean flippedCullface, boolean engineFolder) {
-		this(s, flippedCullface, false, engineFolder);
-	}
-
-	public ObjLoader(String s, boolean flippedCullface, boolean voxelize,
-			boolean engineFolder) {
 		Log.log(this, "starting to parse: " + s);
 		this.flippedCullface = flippedCullface;
 		this.name = s;
@@ -226,10 +220,6 @@ public class ObjLoader {
 					uvs = fillFloat(uvsList);
 			}
 
-			if (voxelize) {
-				voxelize();
-			}
-
 			materials = new ArrayList<Material>();
 			if (materialLibrary != null)
 				for (Material m : materialLibrary.getMaterials())
@@ -254,11 +244,6 @@ public class ObjLoader {
 				e.printStackTrace();
 			}
 		}
-	}
-
-	private void voxelize() {
-		Voxel v = new Voxel(indices, vertices);
-		v.voxelize(name, 200);
 	}
 
 	private void newGroup(String name) {
