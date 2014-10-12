@@ -13,9 +13,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import rendering.RenderUtil;
 import rendering.material.Material;
 import rendering.material.MaterialLibrary;
+import rendering.util.RenderUtil;
 import rendering.voxel.Voxel;
 import settings.Settings;
 

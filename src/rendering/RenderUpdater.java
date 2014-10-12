@@ -22,6 +22,9 @@ import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
 
 import manager.UberManager;
+import rendering.util.GLRunnable;
+import rendering.util.NEWTWindow;
+import rendering.util.TextureHelper;
 import settings.Settings;
 import util.GLUtil;
 import util.Log;
@@ -54,7 +57,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	private FPSRenderer fpsRenderer;
 	public Renderer objectsRenderer = null;
 	private float debugAngle;
-	private OpenGLRendering renderer;
+	private NEWTWindow renderer;
 	protected static final boolean SMOOTHSTEP_INTERP = false;
 	protected static float zFar;
 	protected static float zNear;
@@ -70,13 +73,12 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	public final static GLUtil glutil = new GLUtil();
 	public int width;
 	public int height;
-	public RenderState renderState = new RenderState();
 	private DebugRenderer debugRenderer;
 	private static Vector3f tmpVector3f = new Vector3f();
 	private static Vector3f tmp2Vector3f = new Vector3f();
 
 	public RenderUpdater() {
-		renderer = new OpenGLRendering(this);
+		renderer = new NEWTWindow(this);
 	}
 
 	@Override
@@ -137,14 +139,12 @@ public class RenderUpdater implements Updatable, GLEventListener {
 				setupLook(cam, Settings.VR ? Game.vr.getMatrix()
 						: cam.rotationMatrix);
 				renderObjects();
-				renderState.stereo = true;
 				gl.glLoadIdentity();
 				gl.glTranslatef(-Rift.getDip(), 0, 0);
 				setProjection(width, height, Rift.getFOV(), -Rift.getH());
 				setupLook(cam, Settings.VR ? Game.vr.getMatrix()
 						: cam.rotationMatrix);
 				renderObjects();
-				renderState.stereo = false;
 			} else {
 				setupLook(cam);
 				renderObjects();

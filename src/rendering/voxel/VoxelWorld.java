@@ -8,8 +8,8 @@ import javax.media.opengl.GL2;
 import javax.vecmath.Vector3f;
 
 import physics.IntersectionTest;
-import rendering.GLRunnable;
 import rendering.RenderUpdater;
+import rendering.util.GLRunnable;
 import util.Log;
 import util.ObjLoader;
 import world.GameObject;

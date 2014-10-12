@@ -1,4 +1,4 @@
-package rendering;
+package rendering.util;
 
 import game.Game;
 
@@ -52,8 +52,8 @@ public abstract class VBO {
 
 	public static class VBOFloat extends VBO {
 
-		protected VertexAttribute name;
-		protected int perVertexSize;
+		public VertexAttribute name;
+		public int perVertexSize;
 
 		public VBOFloat(VertexAttribute name, int perVertexSize, float[] data) {
 			this.perVertexSize = perVertexSize;

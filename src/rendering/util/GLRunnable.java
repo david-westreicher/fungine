@@ -1,4 +1,4 @@
-package rendering;
+package rendering.util;
 
 import javax.media.opengl.GL2;
 

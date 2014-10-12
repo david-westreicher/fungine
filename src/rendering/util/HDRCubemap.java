@@ -1,4 +1,4 @@
-package rendering;
+package rendering.util;
 
 import java.nio.FloatBuffer;
 

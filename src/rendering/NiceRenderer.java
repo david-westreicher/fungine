@@ -10,6 +10,7 @@ import rendering.nodes.RenderGraph;
 import rendering.nodes.ShaderConstVec;
 import rendering.nodes.TextureNode;
 import rendering.nodes.UniformVec;
+import rendering.util.GLRunnable;
 import util.Log;
 import world.Camera;
 import world.GameObject;

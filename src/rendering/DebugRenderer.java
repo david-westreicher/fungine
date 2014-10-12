@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import javax.media.opengl.GL3;
 
-import rendering.VBO.VertexAttribute;
+import rendering.util.VBO.VertexAttribute;
 import util.GLUtil;
 import util.MathHelper;
 import world.GameObject;

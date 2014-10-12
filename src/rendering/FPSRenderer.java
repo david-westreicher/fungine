@@ -6,6 +6,8 @@ import java.nio.ByteBuffer;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 
+import rendering.util.RenderUtil;
+import rendering.util.TextureHelper;
 import shader.ShaderScript;
 import util.GLUtil;
 

@@ -12,6 +12,8 @@ import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 
 import manager.UberManager;
+import rendering.util.GLRunnable;
+import rendering.util.RenderUtil;
 import shader.Shader;
 import shader.ShaderScript;
 import util.GIUtil;

@@ -13,9 +13,9 @@ import javax.media.opengl.GL2;
 import javax.vecmath.Vector3f;
 
 import manager.UberManager;
-import rendering.GLRunnable;
 import rendering.GameObjectRenderer;
 import rendering.RenderUpdater;
+import rendering.util.GLRunnable;
 import rendering.voxel.VoxelWorld.GameObjectVoxel;
 import shader.Shader;
 import shader.ShaderScript;

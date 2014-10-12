@@ -1,8 +1,8 @@
 package game;
 
 import manager.SoundManager;
-import rendering.OpenGLRendering;
 import rendering.RenderUpdater;
+import rendering.util.NEWTWindow;
 import util.Log;
 import util.RepeatedRunnable;
 import util.TickCounter;
@@ -60,8 +60,8 @@ public class GameLoop extends RepeatedRunnable {
 			Game.INSTANCE.exit();
 			return;
 		}
-		if (Game.INSTANCE.fullscreenFlag != OpenGLRendering.isFullscreen()) {
-			OpenGLRendering.setFullscreen(Game.INSTANCE.fullscreenFlag);
+		if (Game.INSTANCE.fullscreenFlag != NEWTWindow.isFullscreen()) {
+			NEWTWindow.setFullscreen(Game.INSTANCE.fullscreenFlag);
 		}
 		while (!pauseLogic && System.nanoTime() > nextTick
 				&& loops < MAX_FRAMESKIP) {

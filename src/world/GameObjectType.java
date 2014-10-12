@@ -7,9 +7,9 @@ import java.util.Map;
 import javax.media.opengl.GL2;
 
 import physics.AbstractCollisionShape;
-import rendering.GLRunnable;
 import rendering.RenderInformation;
 import rendering.RenderUpdater;
+import rendering.util.GLRunnable;
 import script.JavaScript;
 
 public class GameObjectType extends VariableHolder {

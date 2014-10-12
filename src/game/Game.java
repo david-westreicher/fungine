@@ -1,7 +1,7 @@
 package game;
 
 import input.Input;
-import rendering.OpenGLRendering;
+import rendering.util.NEWTWindow;
 import script.JavaScript;
 import settings.Settings;
 import util.Factory;
@@ -87,11 +87,11 @@ public class Game {
 	}
 
 	public void hideMouse(boolean b) {
-		OpenGLRendering.hideMouse(b);
+		NEWTWindow.hideMouse(b);
 	}
 
 	public void centerMouse() {
-		OpenGLRendering.centerMouse();
+		NEWTWindow.centerMouse();
 	}
 
 	public void log(Object o) {

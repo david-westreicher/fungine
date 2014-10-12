@@ -9,11 +9,12 @@ import java.util.Map;
 import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GL3;
 
-import rendering.VBO.IndexVBO;
-import rendering.VBO.InstanceVBO;
-import rendering.VBO.VBOFloat;
-import rendering.VBO.VertexAttribute;
 import rendering.material.Material;
+import rendering.util.VBO;
+import rendering.util.VBO.IndexVBO;
+import rendering.util.VBO.InstanceVBO;
+import rendering.util.VBO.VBOFloat;
+import rendering.util.VBO.VertexAttribute;
 import shader.ShaderScript;
 import shader.ShaderUtil;
 import util.Log;

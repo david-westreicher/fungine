@@ -12,8 +12,8 @@ import java.util.Map;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLException;
 
-import rendering.GLRunnable;
 import rendering.RenderUpdater;
+import rendering.util.GLRunnable;
 import settings.Settings;
 import shader.Shader;
 import shader.ShaderScript;
