@@ -6,5 +6,5 @@ if [ ! -d "build" ]; then
 	mkdir build
 fi
 javac -cp .:libs/jna/*:libs/jogl/*:libs/jama/*:libs/joal/*:libs/gson/*:libs/ode4j/*:libs/vecmath/*:libs/rift/*:libs/jinput/*:libs/stackalloc/* -sourcepath src -d build src/**/*.java src/**/**/*.java
-cd build
-java -Djava.library.path=$LD_LIBRARY_PATH -Djna.library.path=$LIBRARY_PATH -cp .:../libs/jna/*:../libs/jogl/*:../libs/jama/*:../libs/joal/*:../libs/gson/*:../libs/ode4j/*:../libs/vecmath/*:../libs/rift/*:../libs/jinput/*:../libs/stackalloc/* test.OpenGLTest ../games/engineoverhaul/ ../engine/engine.cfg 
+
+java -Djava.library.path=$LD_LIBRARY_PATH -Djna.library.path=$LIBRARY_PATH -cp build/:libs/jna/*:libs/jogl/*:libs/jama/*:libs/joal/*:libs/gson/*:libs/ode4j/*:libs/vecmath/*:libs/rift/*:libs/jinput/*:libs/stackalloc/* test.OpenGLTest games/engineoverhaul/ engine/engine.cfg 
