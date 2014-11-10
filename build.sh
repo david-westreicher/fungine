@@ -1,4 +1,4 @@
-export LD_LIBRARY_PATH="/home/david/Documents/workspace/fungine/native"
+export LD_LIBRARY_PATH="native"
 export GALLIUM_HUD=fps,cpu+cpu0+cpu1+cpu2+cpu3:100
 export vblank_mode=0
 
