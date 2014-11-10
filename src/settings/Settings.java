@@ -11,7 +11,7 @@ public class Settings {
 	public static int HEIGHT = 800;
 	public static boolean STEREO = true;
 	public static boolean USE_FULL_SCREEN = false;
-	public static String ENGINE_FOLDER = "engine" + File.separator;
+	public static String ENGINE_FOLDER = "../engine" + File.separator;
 	public static boolean VR = STEREO;
 	public static boolean USE_BROWSER = false;
 	public static boolean SHOW_STATUS = true;

@@ -235,8 +235,8 @@ public class JavaScript {
 		}
 	}
 
-	public static <T> void onUpdate(Class<? extends T> class1, OnUpdate r) {
-		String name = class1.getSimpleName() + ".java";
+	public static <T> void onUpdate(String name, OnUpdate r) {
+		//String name = class1.getSimpleName() + ".java";
 		Object inst = newInstance(name);
 		if (inst != null)
 			r.update((T) inst);

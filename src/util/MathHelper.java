@@ -460,12 +460,13 @@ public class MathHelper {
 		}
 	}
 
+	/*
 	public static int[] toArray(List<Integer> l) {
 		int[] ret = new int[l.size()];
 		for (int i = 0; i < l.size(); i++)
 			ret[i] = l.get(i);
 		return ret;
-	}
+	}*/
 
 	public static float[] toArray(List<Float> l) {
 		float[] ret = new float[l.size()];
