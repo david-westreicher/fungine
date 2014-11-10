@@ -18,7 +18,7 @@ import com.jogamp.common.nio.Buffers;
 
 public abstract class VBO {
 	public enum VertexAttribute {
-		POSITION, COLOR, UV;
+		POSITION, COLOR, UV, NORMAL;
 	};
 
 	private int gpuBuffer = -1;

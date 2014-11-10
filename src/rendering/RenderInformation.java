@@ -3,13 +3,15 @@ package rendering;
 import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GL3;
 
 import rendering.material.Material;
+import rendering.material.Material.Map;
 import rendering.util.VBO;
 import rendering.util.VBO.IndexVBO;
 import rendering.util.VBO.InstanceVBO;
@@ -24,8 +26,8 @@ import world.GameObject;
 //TODO interleaved VBO's
 //TODO shadowShader (no cols/normals/textures ...)
 public class RenderInformation {
-	private static Map<Integer, ShaderScript> shaders = new HashMap<Integer, ShaderScript>();
-	private static Map<String, ObjLoader> objMap = new HashMap<String, ObjLoader>();
+	private static HashMap<Integer, ShaderScript> shaders = new HashMap<Integer, ShaderScript>();
+	private static HashMap<String, ObjLoader> objMap = new HashMap<String, ObjLoader>();
 	private static InstanceVBO instanceBuffer;
 	private List<VBOFloat> vertexAttribs = new ArrayList<VBOFloat>();
 	private IndexVBO[] multiIndices = null;
@@ -57,11 +59,11 @@ public class RenderInformation {
 	}
 
 	public void setMaterials(List<Material> materials) {
-		this.materials = materials;
+		this.materials = (materials == null || materials.size() == 0 ? null
+				: materials);
 	}
 
-	public void render(GL3 gl, FloatBuffer modelViewProjection,
-			List<GameObject> gos) {
+	public void render(GL3 gl, FloatBuffer mvp, List<GameObject> gos) {
 		if (instanceBuffer == null) {
 			instanceBuffer = new InstanceVBO();
 			instanceBuffer.init(gl);
@@ -78,8 +80,7 @@ public class RenderInformation {
 		if (wireFrame)
 			gl.glPolygonMode(GL3.GL_FRONT_AND_BACK, GL3.GL_LINE);
 		shader.execute(gl);
-		ShaderScript.setUniformMatrix4(gl, "modelviewprojection",
-				modelViewProjection, true);
+		ShaderScript.setUniformMatrix4(gl, "modelviewprojection", mvp, true);
 		int attrib = 0;
 		for (VBOFloat vbo : vertexAttribs)
 			vbo.bind(attrib++, gl);
@@ -146,7 +147,8 @@ public class RenderInformation {
 	}
 
 	private void compileShader(GL3 gl) {
-		ShaderUtil.compileFromString(gl, getShaderSource(), description + "",
+		ShaderUtil.compileFromString(gl, getShaderSource(), description + "-"
+				+ descriptionToString(),
 				new ShaderUtil.ShaderCompiledListener() {
 					@Override
 					public void shaderCompiled(ShaderScript shaderprogram) {
@@ -184,9 +186,14 @@ public class RenderInformation {
 				+ ") in mat3 instanceRotation;\n");
 
 		sb.append("out vec3 col;\n");
+		if (hasVBO(VertexAttribute.NORMAL))
+			sb.append("out vec3 normalVec;\n");
 		if (hasVBO(VertexAttribute.UV))
 			sb.append("out vec2 uvCoord;\n");
 		sb.append("void main(){\n");
+		if (hasVBO(VertexAttribute.NORMAL))
+			sb.append("\tnormalVec = normalize(transpose(instanceRotation)*"
+					+ VertexAttribute.NORMAL + ");\n");
 		if (hasVBO(VertexAttribute.COLOR))
 			sb.append("\tcol = " + VertexAttribute.COLOR + "*instanceColor;\n");
 		else
@@ -198,24 +205,47 @@ public class RenderInformation {
 		sb.append("\tgl_Position = modelviewprojection*vec4(transformed,1.0);\n");
 		sb.append("}\n");
 
+		// #################
 		// FRAGMENT shader
+		// #################
 		sb.append(ShaderUtil.FRAGMENT_SPLITTER + "\n");
 		sb.append("#version 330\n");
 		sb.append("in vec3 col;\n");
 		if (hasVBO(VertexAttribute.UV))
 			sb.append("in vec2 uvCoord;\n");
-		if (hasTexture)
-			sb.append("uniform sampler2D tex;\n");
-		sb.append("out vec4 outputColor;\n");
+		if (hasVBO(VertexAttribute.NORMAL))
+			sb.append("in vec3 normalVec;\n");
+
+		// TEXTURES
+		for (Map m : Material.mapValues)
+			if (hasMap(m))
+				sb.append("uniform sampler2D " + m + ";\n");
+
+		sb.append("layout(location = 0) out vec3 outputColor;\n");
+		sb.append("layout(location = 1) out vec3 outputNormal;\n");
 		sb.append("void main(){\n");
+
+		if (hasVBO(VertexAttribute.NORMAL)) {
+			if (hasMap(Map.NORMAL_MAP)) {
+				sb.append("\tvec3 normalMap = texture2D(" + Map.NORMAL_MAP
+						+ ",uvCoord).rgb-vec3(0.5);\n");
+				sb.append("\tnormalMap.z*=0.25;\n");
+				sb.append("\toutputNormal = normalize(normalVec+normalMap);\n");
+				// sb.append("\toutputNormal = normalMap;\n");
+			} else
+				sb.append("\toutputNormal = normalVec;\n");
+		} else
+			sb.append("\toutputNormal = vec3(1,0,0);\n");
+
 		if (hasTexture)
-			sb.append("\toutputColor = texture(tex, uvCoord)*vec4(col,1);\n");
+			sb.append("\toutputColor = texture(" + Map.COLOR_MAP
+					+ ", uvCoord).rgb*col;\n");
 		else
-			sb.append("\toutputColor = vec4(col, 1.0f);\n");
+			sb.append("\toutputColor = col;\n");
 		if (gammaCorrection)
-			sb.append("\toutputColor.rgb = pow(outputColor.rgb,vec3(2.2));\n");
+			sb.append("\toutputColor = pow(outputColor,vec3(2.2));\n");
 		sb.append("}\n");
-		// Log.log(this, sb.toString());
+		Log.log(this, sb.toString());
 		return sb.toString();
 	}
 
@@ -227,7 +257,48 @@ public class RenderInformation {
 			descr |= 1 << 1;
 		if (hasVBO(VertexAttribute.UV))
 			descr |= 1 << 2;
+		if (hasVBO(VertexAttribute.NORMAL))
+			descr |= 1 << 3;
+		if (hasMap(Map.NORMAL_MAP))
+			descr |= 1 << 4;
+		if (hasMap(Map.COLOR_MAP))
+			descr |= 1 << 5;
 		return descr;
+	}
+
+	private boolean hasMap(Map map) {
+		if (materials == null)
+			return false;
+		// TODO set shaderuniform hasMapFactor = 1|0;
+		Set<Map> hasMaps = new HashSet<Map>();
+		for (Material m : materials)
+			if (m.has(map))
+				hasMaps.add(map);
+		for (Map hasMap : hasMaps)
+			for (Material m : materials)
+				if (!m.has(hasMap)) {
+					m.set(hasMap, "img/pano_b.jpg");
+					// Log.err(this, m + "doesn't have " + map);
+				}
+
+		return materials.get(0).has(map);
+	}
+
+	private String descriptionToString() {
+		StringBuilder sb = new StringBuilder();
+		if ((description & (1 << 0)) > 0)
+			sb.append(VertexAttribute.POSITION + ", ");
+		if ((description & (1 << 1)) > 0)
+			sb.append(VertexAttribute.COLOR + ", ");
+		if ((description & (1 << 2)) > 0)
+			sb.append(VertexAttribute.UV + ", ");
+		if ((description & (1 << 3)) > 0)
+			sb.append(VertexAttribute.NORMAL + ", ");
+		if ((description & (1 << 4)) > 0)
+			sb.append(Map.NORMAL_MAP + ", ");
+		if ((description & (1 << 5)) > 0)
+			sb.append(Map.COLOR_MAP + ", ");
+		return sb.toString();
 	}
 
 	private boolean hasVBO(VertexAttribute name) {
@@ -262,18 +333,19 @@ public class RenderInformation {
 		}
 		RenderInformation ri = new RenderInformation();
 		float[] verts = obj.vertices.array();
+
 		ri.addVA(VertexAttribute.POSITION, verts, 3);
 		int[][] multiIndices = new int[obj.indices.length][];
 		for (int i = 0; i < obj.indices.length; i++)
 			multiIndices[i] = obj.indices[i].array();
 		if (obj.correctUVs.size() > 0)
 			ri.addVA(VertexAttribute.UV, obj.uvs.array(), 2);
+		if (obj.correctNormals.size() > 0)
+			ri.addVA(VertexAttribute.NORMAL, obj.normals.array(), 3);
 		ri.setIndexed(multiIndices);
-		// Log.log(RenderInformation.class, Arrays.toString(multiIndices[0]));
 		ri.setDrawType(GL3.GL_TRIANGLES);
 		ri.setMaterials(obj.materials);
 		ri.setGammaCorrection(true);
-		// ri.setInstancedColor(true);
 		return ri;
 	}
 

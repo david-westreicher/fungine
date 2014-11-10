@@ -6,12 +6,12 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Map;
 
+import rendering.material.Material.Map;
 import util.Log;
 
 public class MaterialLibrary {
-	private Map<String, Material> materials = new HashMap<String, Material>();
+	private HashMap<String, Material> materials = new HashMap<String, Material>();
 
 	public MaterialLibrary(String file) {
 		Log.log(this, "openeing material file: " + file);
@@ -29,7 +29,7 @@ public class MaterialLibrary {
 						materials.put(name, currentMaterial);
 					}
 					if (line.startsWith("map_Kd") || line.startsWith("map_Ka")) {
-						currentMaterial.texture = "img/" + split[1];
+						currentMaterial.set(Map.COLOR_MAP, "img/" + split[1]);
 					}
 
 					if (line.startsWith("Kd")) {
@@ -40,14 +40,14 @@ public class MaterialLibrary {
 					}
 
 					if (line.startsWith("map_d")) {
-						currentMaterial.maskMap = "img/" + split[1];
+						currentMaterial.set(Map.MASK_MAP, "img/" + split[1]);
 					}
 					if (line.toLowerCase().startsWith("map_bump")
 							|| line.startsWith("bump")) {
-						currentMaterial.normalMap = "img/" + split[1];
+						currentMaterial.set(Map.NORMAL_MAP, "img/" + split[1]);
 					}
 					if (line.startsWith("spec")) {
-						currentMaterial.specMap = "img/" + split[1];
+						currentMaterial.set(Map.SPEC_MAP, "img/" + split[1]);
 					}
 				}
 				br.close();
