@@ -3,12 +3,12 @@ export GALLIUM_HUD=fps,cpu+cpu0+cpu1+cpu2+cpu3:100
 export vblank_mode=0
 
 if [ ! -d "$LD_LIBRARY_PATH" ]; then
-	echo "You have no native folder! It should contain the dll's/so's for libawesomium and Jinput!"
+	echo "You have no \"native\" folder! It should contain the dll's/so's for libawesomium and Jinput!"
 	exit 0
 fi
 
 if [ ! -d "$1" ]; then
-	echo "The specified gamefolder $1 doesn't exist!"
+	echo "The specified gamefolder \"$1\" doesn't exist!"
 	exit 0
 fi
 
