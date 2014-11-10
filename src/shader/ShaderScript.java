@@ -20,6 +20,7 @@ public class ShaderScript {
 
 	private static ShaderScript activatedShader = null;
 	private static Map<String, Map<Integer, Integer>> locationCache = new HashMap<String, Map<Integer, Integer>>();
+	private static Map<String, Boolean> failedTwice = new HashMap<String, Boolean>();
 	private static final float[] tmpFloatArr = new float[4];
 	public int shaderNum;
 	private String file;
@@ -114,6 +115,8 @@ public class ShaderScript {
 	public static void setUniformTexture(GL2GL3 gl, String string, int num,
 			int texId) {
 		int location = glGetUniformLocation(gl, getActiveShader(), string);
+		if (location == -1)
+			return;
 		gl.glUniform1i(location, num);
 		switch (num) {
 		case 0:
@@ -133,6 +136,7 @@ public class ShaderScript {
 			break;
 		}
 		gl.glBindTexture(GL2.GL_TEXTURE_2D, texId);
+		// TODO need this?
 		if (num != 0)
 			gl.glActiveTexture(GL2.GL_TEXTURE0);
 	}
@@ -245,13 +249,16 @@ public class ShaderScript {
 		location = shaderTolocation.get(shadernum);
 		if (location == null) {
 			location = gl.glGetUniformLocation(shadernum, uniform);
-			if (location == -1) {
+			if (location == -1 && failedTwice.get(uniform) == null) {
 				Log.err(ShaderScript.class, "couldn't find location for "
 						+ ShaderScript.activatedShader + ": " + uniform
 						+ ", because location=" + location
 						+ ", activatedShader=" + shadernum);
-			} else
+				failedTwice.put(uniform, true);
+			} else {
 				shaderTolocation.put(shadernum, location);
+				failedTwice.remove(uniform);
+			}
 		}
 		return location;
 	}

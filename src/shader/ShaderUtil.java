@@ -47,7 +47,8 @@ public class ShaderUtil {
 	public static void compileFromString(GL2GL3 gl, String shader, String name,
 			ShaderCompiledListener r) {
 		String[] shaders = shader.split(FRAGMENT_SPLITTER);
-		Log.log(ShaderUtil.class, "trying to compile: " + name + "\n" + shader);
+		Log.log(ShaderUtil.class, "trying to compile: " + name);// + "\n" +
+																// shader);
 		if (shaders.length != 2)
 			throw new RuntimeException("could'nt parse shader " + name);
 		else

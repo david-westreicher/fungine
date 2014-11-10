@@ -7,7 +7,6 @@ import javax.media.opengl.GL3;
 
 import util.HDRParser;
 import util.HDRParser.HDRData;
-import util.Log;
 
 public class HDRCubemap {
 
@@ -79,23 +78,27 @@ public class HDRCubemap {
 
 	private void fillData(float[] data, float[] rgb, int x0, int y0,
 			boolean flip) {
-		Log.log(this, x0, y0);
-		Log.log(this, flip);
 		int index = 0;
 		if (flip)
 			for (int y = y0 + faceSize - 1; y >= y0; y--) {
 				for (int x = x0 + faceSize - 1; x >= x0; x--) {
-					data[index++] = rgb[(x + y * width) * 3 + 0];
-					data[index++] = rgb[(x + y * width) * 3 + 1];
-					data[index++] = rgb[(x + y * width) * 3 + 2];
+					data[index++] = (float) Math.pow(
+							rgb[(x + y * width) * 3 + 0], 2.2);
+					data[index++] = (float) Math.pow(
+							rgb[(x + y * width) * 3 + 1], 2.2);
+					data[index++] = (float) Math.pow(
+							rgb[(x + y * width) * 3 + 2], 2.2);
 				}
 			}
 		else
 			for (int y = y0; y < y0 + faceSize; y++) {
 				for (int x = x0; x < x0 + faceSize; x++) {
-					data[index++] = rgb[(x + y * width) * 3 + 0];
-					data[index++] = rgb[(x + y * width) * 3 + 1];
-					data[index++] = rgb[(x + y * width) * 3 + 2];
+					data[index++] = (float) Math.pow(
+							rgb[(x + y * width) * 3 + 0], 2.2);
+					data[index++] = (float) Math.pow(
+							rgb[(x + y * width) * 3 + 1], 2.2);
+					data[index++] = (float) Math.pow(
+							rgb[(x + y * width) * 3 + 2], 2.2);
 				}
 			}
 	}

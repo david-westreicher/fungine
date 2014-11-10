@@ -504,8 +504,8 @@ public class HDRParser {
 			DataInputStream in = new DataInputStream(new BufferedInputStream(
 					new FileInputStream(file)));
 			Header header = readHeader(in);
-			System.err.println("Header for file \"" + file + "\":");
-			System.err.println("  " + header);
+			Log.log(HDRParser.class, "Header for file \"" + file + "\":\n"
+					+ header);
 			byte[] data = new byte[header.getWidth() * header.getHeight() * 4];
 			readPixelsRawRLE(in, data, 0, header.getWidth(), header.getHeight());
 			in.close();
