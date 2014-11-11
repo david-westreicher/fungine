@@ -29,6 +29,8 @@ import world.World;
 //TODO remove engine/img -> generate on startup
 //TODO update camera every frame / use relative mouse position, just recenter if outside a specific area
 //TODO remove startOrthoRenderer
+//TODO switch to gradle build
+//TODO update awesomium to 1.7 (needs c++ jna)
 public class Game {
 	public static Game INSTANCE;
 	public GameLoop loop = new GameLoop();
