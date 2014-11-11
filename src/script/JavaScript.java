@@ -169,7 +169,7 @@ public class JavaScript {
 		String filename = s.substring("scripts/".length());
 		OnUpdate updater = onUpdateMap.get(filename);
 		if (updater == null) {
-			if (!filename.startsWith("tmp")) {
+			if (!filename.startsWith("tmp") && !filename.startsWith(".")) {
 				loadRuntimeScript(filename);
 			}
 		} else {
