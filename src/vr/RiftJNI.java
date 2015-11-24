@@ -7,6 +7,7 @@ public class RiftJNI {
 
 	static {
 		if (Settings.VR) {
+			Log.log(RiftJNI.class, System.getProperty("java.library.path"));
 			System.loadLibrary("rift");
 		}
 	}

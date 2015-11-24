@@ -9,8 +9,8 @@ import javax.media.opengl.GL;
 import javax.media.opengl.GL2GL3;
 import javax.media.opengl.GL3;
 
-import rendering.RenderUtil;
-import rendering.TextureHelper;
+import rendering.util.RenderUtil;
+import rendering.util.TextureHelper;
 import settings.Settings;
 import util.GLUtil;
 import util.Log;

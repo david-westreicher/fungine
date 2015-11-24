@@ -18,12 +18,13 @@ import javax.media.opengl.GLAutoDrawable;
 import javax.media.opengl.GLEventListener;
 import javax.media.opengl.GLException;
 import javax.media.opengl.GLProfile;
-import javax.media.opengl.glu.GLU;
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Vector3f;
 
 import manager.UberManager;
-import rendering.material.Material;
+import rendering.util.GLRunnable;
+import rendering.util.NEWTWindow;
+import rendering.util.TextureHelper;
 import settings.Settings;
 import util.GLUtil;
 import util.Log;
@@ -32,12 +33,9 @@ import util.Util;
 import vr.Rift;
 import world.Camera;
 import world.GameObject;
-import world.GameObjectType;
-import world.PointLight;
 import browser.AwesomiumWrapper;
 
 import com.jogamp.opengl.util.awt.Screenshot;
-import com.jogamp.opengl.util.gl2.GLUT;
 
 public class RenderUpdater implements Updatable, GLEventListener {
 	public interface Renderer {
@@ -59,7 +57,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	private FPSRenderer fpsRenderer;
 	public Renderer objectsRenderer = null;
 	private float debugAngle;
-	private OpenGLRendering renderer;
+	private NEWTWindow renderer;
 	protected static final boolean SMOOTHSTEP_INTERP = false;
 	protected static float zFar;
 	protected static float zNear;
@@ -70,19 +68,17 @@ public class RenderUpdater implements Updatable, GLEventListener {
 	protected GL3 gl3;
 	public static float FOV_Y = 69;
 	public static float INTERP;
-	public static GLUT glut = new GLUT();
 	public static float EYE_GAP = 0.23f;
 	public static boolean WIREFRAME = false;
-	public final static GLU glu = new GLU();
 	public final static GLUtil glutil = new GLUtil();
 	public int width;
 	public int height;
-	public RenderState renderState = new RenderState();
+	private DebugRenderer debugRenderer;
 	private static Vector3f tmpVector3f = new Vector3f();
 	private static Vector3f tmp2Vector3f = new Vector3f();
 
 	public RenderUpdater() {
-		renderer = new OpenGLRendering(this);
+		renderer = new NEWTWindow(this);
 	}
 
 	@Override
@@ -143,19 +139,16 @@ public class RenderUpdater implements Updatable, GLEventListener {
 				setupLook(cam, Settings.VR ? Game.vr.getMatrix()
 						: cam.rotationMatrix);
 				renderObjects();
-				renderState.stereo = true;
 				gl.glLoadIdentity();
 				gl.glTranslatef(-Rift.getDip(), 0, 0);
 				setProjection(width, height, Rift.getFOV(), -Rift.getH());
 				setupLook(cam, Settings.VR ? Game.vr.getMatrix()
 						: cam.rotationMatrix);
 				renderObjects();
-				renderState.stereo = false;
 			} else {
 				setupLook(cam);
 				renderObjects();
 			}
-
 			if (takeScreen) {
 				Log.log(this, "taking screenshot");
 				try {
@@ -170,9 +163,8 @@ public class RenderUpdater implements Updatable, GLEventListener {
 			}
 
 			gl.glDisable(GL2.GL_DEPTH_TEST);
-			// if (Game.DEBUG || !Settings.SHOW_STATUS)
-			// renderDebug();
-
+			if (Game.DEBUG || !Settings.SHOW_STATUS)
+				debugRenderer.render(gl3, glutil);
 		}
 
 		startOrthoRender(Settings.STEREO);
@@ -182,8 +174,8 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		if (Settings.USE_BROWSER)
 			browser.render(gl, glutil);
 		// renderCrosshair();
-		// if (!Settings.SHOW_STATUS)
-		// renderText();
+		if (!Settings.SHOW_STATUS)
+			renderText();
 		GameLoop loop = Game.INSTANCE.loop;
 		fpsRenderer.render(gl, glutil, textures, width, loop.timePerRender,
 				loop.timePerTick);
@@ -270,100 +262,18 @@ public class RenderUpdater implements Updatable, GLEventListener {
 
 	private void renderString(String string, int posX, int posY) {
 		// gl.glRasterPos2f(posX, posY);
-		gl.glRasterPos2i(0, 0);
-		gl.glBitmap(0, 0, 0, 0, posX, posY, null);
-		glut.glutBitmapString(GLUT.BITMAP_8_BY_13, string);
-	}
-
-	private void renderDebug() {
-		// bboxes
-		gl.glColor4f(0.5f, 0.5f, 0.5f, 1);
-		// gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_LINE);
-		for (List<GameObject> list : renderObjs.values()) {
-			for (GameObject go : list) {
-				if ((Game.DEBUG || go.marked)) {
-					gl.glColor3fv(go.color, 0);
-					gl.glBegin(GL2.GL_LINES);
-					RenderUtil.drawLinedBox(go.bbox, gl);
-					gl.glEnd();
-					if (go instanceof PointLight) {
-						PointLight l = (PointLight) go;
-						RenderUtil.drawSphere(go.pos, l.radius, l.color, gl,
-								true);
-					}
-					// draw wireframe of object into center
-					debugAngle += 0.01f;
-					startOrthoRender();
-					gl.glPushMatrix();
-					gl.glTranslatef(400, DEBUG_SIZE / 2, 0);
-					gl.glScalef(DEBUG_SIZE, -DEBUG_SIZE, 1);
-					gl.glRotatef(debugAngle, 0, 1, 0);
-					GameObjectRenderer objectRenderer = GameObjectType
-							.getType(go.getType()).renderer;
-					if (objectRenderer == null)
-						return;
-					gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_LINE);
-					objectRenderer.drawSimple(gl);
-					gl.glPolygonMode(GL2.GL_FRONT_AND_BACK, GL2.GL_FILL);
-					gl.glPopMatrix();
-					gl.glPushMatrix();
-					List<Material> mats = objectRenderer.getMaterials();
-					gl.glColor4f(1, 1, 1, 1);
-					gl.glDisable(GL2.GL_CULL_FACE);
-					gl.glEnable(GL2.GL_TEXTURE_2D);
-					gl.glTranslatef(400, DEBUG_SIZE / 2, 0);
-					if (mats != null && mats.size() > 0) {
-						for (int i = 0; i < Math.min(3, mats.size()); i++) {
-							Material mat = mats.get(i);
-							if (mat != null) {
-								if (mat.texture != null) {
-									gl.glTranslatef(DEBUG_SIZE, 0, 0);
-									Util.drawTexture(gl, mat.texture,
-											DEBUG_SIZE / 2, DEBUG_SIZE / 2);
-								}
-								if (mat.normalMap != null) {
-									gl.glTranslatef(DEBUG_SIZE, 0, 0);
-									Util.drawTexture(gl, mat.normalMap,
-											DEBUG_SIZE / 2, DEBUG_SIZE / 2);
-								}
-							}
-						}
-					}
-					gl.glDisable(GL2.GL_TEXTURE_2D);
-					gl.glEnable(GL2.GL_CULL_FACE);
-					gl.glPopMatrix();
-					endOrthoRender();
-				}
-			}
-		}
-
-		gl.glBegin(GL2.GL_LINES);
-		gl.glColor4f(1, 0, 0, 1);
-		for (float line[][] : debugLines) {
-			gl.glVertex3fv(line[0], 0);
-			gl.glVertex3fv(line[1], 0);
-		}
-		{
-			gl.glColor4f(1, 0, 0, 1);
-			gl.glVertex3f(0, 0, 0);
-			gl.glVertex3f(1, 0, 0);
-			gl.glColor4f(0, 1, 0, 1);
-			gl.glVertex3f(0, 0, 0);
-			gl.glVertex3f(0, 1, 0);
-			gl.glColor4f(0, 0, 1, 1);
-			gl.glVertex3f(0, 0, 0);
-			gl.glVertex3f(0, 0, 1);
-		}
-		gl.glEnd();
+		// gl.glRasterPos2i(0, 0);
+		// gl.glBitmap(0, 0, 0, 0, posX, posY, null);
+		// glut.glutBitmapString(GLUT.BITMAP_8_BY_13, string);
 	}
 
 	protected void renderObjects() {
 		if (objectsRenderer != null)
-			try {
-				objectsRenderer.renderObjects(gl3, glutil, renderObjs);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
+			// try {
+			objectsRenderer.renderObjects(gl3, glutil, renderObjs);
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
 	}
 
 	@Override
@@ -371,6 +281,10 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		gl = arg0.getGL().getGL2();
 		UberManager.clearNow(gl);
 		textures.dispose(gl);
+		fpsRenderer.dispose(gl);
+		debugRenderer.dispose(gl3);
+		if (objectsRenderer != null)
+			objectsRenderer.dispose(gl3);
 		Log.log(this, "gl dispose");
 	}
 
@@ -393,7 +307,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		gl.glDepthFunc(GL2.GL_LEQUAL);
 		// culling
 		// gl.glDisable(GL2.GL_CULL_FACE);
-		gl.glLineWidth(4);
 		gl.glFrontFace(GL2.GL_CCW);
 		gl.glEnable(GL2.GL_CULL_FACE);
 		gl.glCullFace(GL2.GL_BACK);
@@ -406,6 +319,7 @@ public class RenderUpdater implements Updatable, GLEventListener {
 
 		fpsRenderer = new FPSRenderer(textures, gl);
 		browser.init(textures, arg0.getGL().getGL3());
+		debugRenderer = new DebugRenderer(arg0.getGL().getGL3());
 	}
 
 	public void setProjection(int width, int height) {
@@ -439,7 +353,6 @@ public class RenderUpdater implements Updatable, GLEventListener {
 		queue.clear();
 		contextExecutions.clear();
 		browser.dispose(gl);
-		glu.destroy();
 		renderer.dispose();
 	}
 

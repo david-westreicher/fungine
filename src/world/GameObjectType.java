@@ -7,29 +7,36 @@ import java.util.Map;
 import javax.media.opengl.GL2;
 
 import physics.AbstractCollisionShape;
-import rendering.GLRunnable;
-import rendering.GameObjectRenderer;
 import rendering.RenderInformation;
-import rendering.RenderState;
 import rendering.RenderUpdater;
+import rendering.util.GLRunnable;
 import script.JavaScript;
 
 public class GameObjectType extends VariableHolder {
 	private static Map<String, GameObjectType> allTypes = new HashMap<String, GameObjectType>();
 
-	public GameObjectRenderer renderer = null;
 	private String runtimeScript = null;
 	public AbstractCollisionShape shape = null;
 	public String name;
-	public float shininess = (float) (Math.random() * 2000);
-	public float reflective = 0;
-	public boolean airShader = false;
-	public RenderState renderState = new RenderState();
 	public RenderInformation renderInformation = null;
 
 	public GameObjectType(String name) {
+		GameObjectType old = allTypes.get(name);
+		if (old != null)
+			old.dispose();
 		allTypes.put(name, this);
 		this.name = name;
+	}
+
+	private void dispose() {
+		if (renderInformation != null)
+			RenderUpdater.executeInOpenGLContext(new GLRunnable() {
+
+				@Override
+				public void run(GL2 gl) {
+					renderInformation.dispose(gl);
+				}
+			});
 	}
 
 	public static GameObjectType getType(String name) {
@@ -38,8 +45,8 @@ public class GameObjectType extends VariableHolder {
 
 	@Override
 	public String toString() {
-		return "GameObjectType [renderer=" + renderer + ", shape=" + shape
-				+ ", name=" + name + ", shininess=" + shininess + "]";
+		return "GameObjectType [renderer=" + renderInformation + ", name="
+				+ name + "]";
 	}
 
 	public static Collection<GameObjectType> getTypes() {

@@ -1,5 +1,7 @@
 package util;
 
+import java.util.List;
+
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Matrix4f;
 import javax.vecmath.Quat4f;
@@ -40,6 +42,7 @@ public class MathHelper {
 	private static Matrix3f tmpMatrix = new Matrix3f();
 	private static final float[] tmpDist = new float[] { 0, 0, 0 };
 	private static double[] tmpDist2 = new double[] { 0, 0, 0 };
+	private static Quat4f tmpQuat = new Quat4f();
 
 	public static Tansformation getTransformation(float realPoints[][],
 			float currPoints[][]) {
@@ -455,5 +458,38 @@ public class MathHelper {
 			fish[i + 1] = tmp.y / tmp.w;
 			fish[i + 2] = tmp.z / tmp.w;
 		}
+	}
+
+	/*
+	 * public static int[] toArray(List<Integer> l) { int[] ret = new
+	 * int[l.size()]; for (int i = 0; i < l.size(); i++) ret[i] = l.get(i);
+	 * return ret; }
+	 */
+
+	public static float[] toArray(List<Float> l) {
+		float[] ret = new float[l.size()];
+		for (int i = 0; i < l.size(); i++)
+			ret[i] = l.get(i);
+		return ret;
+	}
+
+	public static float[] copy(float[] pos) {
+		float[] ret = new float[pos.length];
+		for (int i = 0; i < pos.length; i++)
+			ret[i] = pos[i];
+		return ret;
+	}
+
+	public static Quat4f setQuaternionFromVec(float[] vec1, float[] vec2) {
+		Vector3f v1 = tmpVector;
+		tmpVector.set(vec1);
+		Vector3f v2 = tmp2Vector;
+		tmp2Vector.set(vec2);
+		v1.normalize();
+		v2.normalize();
+		float w = 1 + v1.dot(v2);
+		v1.cross(v1, v2);
+		tmpQuat.set(v1.x, v1.y, v1.z, w);
+		return tmpQuat;
 	}
 }

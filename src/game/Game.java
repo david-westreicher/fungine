@@ -1,14 +1,7 @@
 package game;
 
 import input.Input;
-import manager.SoundManager;
-import physics.OdePhysics;
-import rendering.DeferredRenderer;
-import rendering.GiRenderer;
-import rendering.NiceRenderer;
-import rendering.OpenGLRendering;
-import rendering.SimpleRenderer;
-import rendering.TestSkinningRenderer;
+import rendering.util.NEWTWindow;
 import script.JavaScript;
 import settings.Settings;
 import util.Factory;
@@ -16,11 +9,28 @@ import util.FolderWatcher;
 import util.Log;
 import util.Stoppable;
 import util.Util;
-import util.XMLToObjectParser;
+import util.WorkerPool;
 import vr.VRFactory;
 import world.Camera;
 import world.World;
 
+//TODO use data-oriented approach for gamebojects
+//TODO refactor drawTexture
+//TODO use array textures for rgb/normal/spec
+//TODO send all go's data to GPU once after gamemechanics (currently send every frame -.- )
+//TODO use glMapBuffer/glMapBufferRange to update per frame vbo's (go's data), maybe with doublebuffering?
+//TODO use VAO(binds all the buffers, attribPointer, divisor) for renderinformation
+//TODO folderwatcher allocates too many string :(
+//TODO rename repeatedrunnable/repreatedthread
+//TODO nicer way to handle textures?
+//TODO implement simple file-modify listener (listener for ubermanager, shaderutil, javascript)
+//TODO use fbx-conv to load models/bones
+//TODO cleanup renderupdater
+//TODO remove engine/img -> generate on startup
+//TODO update camera every frame / use relative mouse position, just recenter if outside a specific area
+//TODO remove startOrthoRenderer
+//TODO switch to gradle build
+//TODO update awesomium to 1.7 (needs c++ jna)
 public class Game {
 	public static Game INSTANCE;
 	public GameLoop loop = new GameLoop();
@@ -31,6 +41,7 @@ public class Game {
 	public Camera cam = new Camera();
 	public boolean exitFlag = false;
 	public boolean fullscreenFlag = Settings.USE_FULL_SCREEN;
+	public static WorkerPool workerPool;
 	public static VRFactory.VR vr;
 
 	public Game() {
@@ -43,12 +54,10 @@ public class Game {
 		FolderWatcher f2 = new FolderWatcher(Settings.ENGINE_FOLDER);
 		f2.addFolderListener(new GameWatcher(this));
 		f2.start();
+		workerPool = new WorkerPool();
+		workerPool.start();
 		loop.startPause();
 		loop.start();
-	}
-
-	public void parseXML() {
-		new XMLToObjectParser().parse();
 	}
 
 	public void restart() {
@@ -71,48 +80,20 @@ public class Game {
 		loop.endPause();
 	}
 
-	public void addComponent(String c) {
-		c = c.toLowerCase();
-		if (c.contains("renderer")) {
-			if (c.equals("renderer") || Settings.LOW_GRAPHICS) {
-				loop.renderer = new SimpleRenderer();
-			} else if (c.equals("deferredrenderer")) {
-				loop.renderer = new DeferredRenderer();
-			} else if (c.equals("skinrenderer")) {
-				loop.renderer = new TestSkinningRenderer();
-			} else if (c.equals("nicerenderer")) {
-				loop.renderer = new NiceRenderer();
-			} else if (c.equals("girenderer")) {
-				loop.renderer = new GiRenderer();
-			} else {
-				System.err.println("Can't add component: " + c);
-			}
-		} else {
-			if (c.equals("gamemechanics")) {
-				loop.mechanics = new GameMechanics();
-			} else if (c.equals("sound")) {
-				loop.sound = new SoundManager();
-			} else if (c.equals("physics")) {
-				loop.mechanics.physics = new OdePhysics();
-			} else {
-				System.err.println("Can't add component: " + c);
-			}
-		}
-	}
-
 	public void exit() {
 		Log.log(this, "game exit");
 		// loop.startPause();
 		loop.exit();
+		workerPool.dispose();
 		Stoppable.stopAll();
 	}
 
 	public void hideMouse(boolean b) {
-		OpenGLRendering.hideMouse(b);
+		NEWTWindow.hideMouse(b);
 	}
 
 	public void centerMouse() {
-		OpenGLRendering.centerMouse();
+		NEWTWindow.centerMouse();
 	}
 
 	public void log(Object o) {

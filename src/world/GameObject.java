@@ -5,9 +5,7 @@ import java.util.Arrays;
 
 import javax.vecmath.Matrix3f;
 import javax.vecmath.Quat4f;
-import javax.vecmath.Vector3f;
 
-import util.Log;
 import util.MathHelper;
 import util.MathHelper.Tansformation;
 
@@ -16,22 +14,20 @@ public class GameObject extends VariableHolder {
 	public float[] bbox = new float[6];
 	public float[] pos = new float[3];
 	public float[] oldPos = new float[3];
-	public float[] size = new float[] { 10, 10, 10 };
+	public float[] size = new float[] { 1, 1, 1 };
 	public float[] rotation = new float[3];
 	public float[] color = new float[] { (float) Math.random(),
 			(float) Math.random(), (float) Math.random() };
 	public transient PhysicsData physics = null;
 	private String type;
-	public float[] rotationMatrixArray = new float[9];
 	public Matrix3f rotationMatrix = new Matrix3f(1, 0, 0, 0, 1, 0, 0, 0, 1);
-	public float alpha = 1;
 	public boolean marked;
 	public boolean render = true;
-	public float angle;
 	public Quat4f quaternion;
 
 	public GameObject(String name) {
 		setType(name);
+		beforeUpdate();
 	}
 
 	public String getType() {
@@ -44,25 +40,13 @@ public class GameObject extends VariableHolder {
 	}
 
 	public void updateRotation() {
-		GameObjectType type = GameObjectType.getType(this.type);
 		if (quaternion != null) {
 			rotationMatrix.set(quaternion);
-		} else if (type != null && type.shape == null && get("parent") == null) {
-			MathHelper.setRotationMatrix(rotationMatrix, rotation);
+		} else {
+			GameObjectType type = GameObjectType.getType(this.type);
+			if (type != null && type.shape == null && get("parent") == null)
+				MathHelper.setRotationMatrix(rotationMatrix, rotation);
 		}
-		updateRotationMatrixArray();
-	}
-
-	private void updateRotationMatrixArray() {
-		rotationMatrixArray[0] = rotationMatrix.m00;
-		rotationMatrixArray[1] = rotationMatrix.m01;
-		rotationMatrixArray[2] = rotationMatrix.m02;
-		rotationMatrixArray[3] = rotationMatrix.m10;
-		rotationMatrixArray[4] = rotationMatrix.m11;
-		rotationMatrixArray[5] = rotationMatrix.m12;
-		rotationMatrixArray[6] = rotationMatrix.m20;
-		rotationMatrixArray[7] = rotationMatrix.m21;
-		rotationMatrixArray[8] = rotationMatrix.m22;
 	}
 
 	protected void setTo(float[] oldPos2, float[] pos2) {
@@ -147,7 +131,7 @@ public class GameObject extends VariableHolder {
 	public void setType(String name) {
 		GameObjectType goType = GameObjectType.getType(name);
 		if (goType == null) {
-			Log.err(this, "GameObjectType " + name + " doesn't exist!");
+			// Log.err(this, "GameObjectType " + name + " doesn't exist!");
 			return;
 		}
 		if (goType.shape != null || name.equals(Joint.JOINT_OBJECT_TYPE_NAME))
@@ -162,7 +146,6 @@ public class GameObject extends VariableHolder {
 
 	public void setRotation(Quat4f o) {
 		rotationMatrix.set(o);
-		updateRotationMatrixArray();
 	}
 
 	public GameObjectType getGameObjectType() {
@@ -184,16 +167,6 @@ public class GameObject extends VariableHolder {
 
 	public void setQuaternion(Quat4f q) {
 		setQuaternion(q.x, q.y, q.z, q.w);
-	}
-
-	public void setQuaternionFromVec(float vec1[], float vec2[]) {
-		Vector3f v1 = new Vector3f(vec1);
-		Vector3f v2 = new Vector3f(vec2);
-		v1.normalize();
-		v2.normalize();
-		double w = 1 + v1.dot(v2);
-		v1.cross(v1, v2);
-		setQuaternion(v1.x, v1.y, v1.z, w);
 	}
 
 	public void setPos(float[] p, float s) {

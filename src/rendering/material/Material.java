@@ -1,6 +1,8 @@
 package rendering.material;
 
-import javax.media.opengl.GL2;
+import java.util.Arrays;
+
+import javax.media.opengl.GL3;
 
 import manager.UberManager;
 import shader.ShaderScript;
@@ -9,77 +11,47 @@ import com.jogamp.opengl.util.texture.Texture;
 
 public class Material {
 
+	public enum Map {
+		NORMAL_MAP, COLOR_MAP, MASK_MAP, SPEC_MAP
+	}
+
+	public static final Map mapValues[] = Map.values();
+
 	public String name;
-	public float ns;
-	public String texture;
-	public String normalMap;
-	public String specMap;
-	public String displacementMap;
-	public String maskMap;
-	public float[] color = null;
+	private String[] mapFiles;
+	// TODO do we need this?
+	public float[] color;
 
 	public Material(String name) {
 		this.name = name;
+		this.mapFiles = new String[mapValues.length];
 	}
 
-	public void activate(GL2 gl) {
-		if (color != null)
-			gl.glColor3fv(color, 0);
-		Texture colorTexture = UberManager.getTexture(texture);
-		Texture normalTexture = UberManager.getTexture(normalMap);
-		Texture specTexture = UberManager.getTexture(specMap);
-		Texture displacementTexture = UberManager.getTexture(displacementMap);
-		if (colorTexture != null) {
-			ShaderScript.setUniformTexture(gl, "tex", 0,
-					colorTexture.getTextureObject(gl));
-			ShaderScript.setUniform(gl, "hasTexture", true);
-		} else
-			ShaderScript.setUniform(gl, "hasTexture", false);
-		if (normalTexture != null) {
-			ShaderScript.setUniformTexture(gl, "normalMap", 1,
-					normalTexture.getTextureObject(gl));
-			ShaderScript.setUniform(gl, "hasNormalMap", true);
-		} else
-			ShaderScript.setUniform(gl, "hasNormalMap", false);
-		if (specTexture != null) {
-			ShaderScript.setUniformTexture(gl, "specMap", 2,
-					specTexture.getTextureObject(gl));
-			ShaderScript.setUniform(gl, "hasSpecMap", true);
-		} else
-			ShaderScript.setUniform(gl, "hasSpecMap", false);
-		if (displacementTexture != null) {
-			ShaderScript.setUniformTexture(gl, "displacementMap", 3,
-					displacementTexture.getTextureObject(gl));
-			ShaderScript.setUniform(gl, "hasDisplacement", true);
-		} else
-			ShaderScript.setUniform(gl, "hasDisplacement", false);
-		activateMaskMap(gl);
+	public void activate(GL3 gl) {
+		int index = 0;
+		for (int i = 0; i < mapValues.length; i++) {
+			String mapFile = mapFiles[i];
+			if (mapFile == null)
+				continue;
+			Texture tex = UberManager.getTexture(mapFile);
+			if (tex != null) {
+				ShaderScript.setUniformTexture(gl, mapValues[i].toString(),
+						index++, tex.getTextureObject(gl));
+			}
+		}
 	}
 
 	@Override
 	public String toString() {
-		return "Material [name=" + name + ", ns=" + ns + ", texture=" + texture
-				+ ", normalMap=" + normalMap + ", maskMap=" + maskMap + "]";
+		return "Material [name=" + name + ", maps=" + Arrays.toString(mapFiles)
+				+ "]";
 	}
 
-	public static void deactivate(GL2 gl) {
-		if (ShaderScript.getActiveShader(gl) != null) {
-			ShaderScript.setUniform(gl, "hasTexture", false);
-			ShaderScript.setUniform(gl, "hasNormalMap", false);
-			ShaderScript.setUniform(gl, "hasSpecMap", false);
-			ShaderScript.setUniform(gl, "hasDisplacement", false);
-			ShaderScript.setUniform(gl, "hasMask", false);
-		}
+	public boolean has(Map map) {
+		return mapFiles[map.ordinal()] != null;
 	}
 
-	public void activateMaskMap(GL2 gl) {
-		Texture maskTexture = UberManager.getTexture(maskMap);
-		if (maskTexture != null) {
-			ShaderScript.setUniformTexture(gl, "maskMap", 4,
-					maskTexture.getTextureObject(gl));
-			ShaderScript.setUniform(gl, "hasMask", true);
-		} else
-			ShaderScript.setUniform(gl, "hasMask", false);
+	public void set(Map map, String mapFile) {
+		mapFiles[map.ordinal()] = mapFile;
 	}
-
 }

@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.media.opengl.GL;
 import javax.media.opengl.GL2;
 import javax.media.opengl.GL2GL3;
+import javax.media.opengl.GL3;
 import javax.vecmath.Vector3f;
 
 import util.Log;
@@ -18,7 +19,8 @@ import com.jogamp.opengl.util.texture.Texture;
 public class ShaderScript {
 
 	private static ShaderScript activatedShader = null;
-	private static Map<String, Integer> locationCache = new HashMap<String, Integer>();
+	private static Map<String, Map<Integer, Integer>> locationCache = new HashMap<String, Map<Integer, Integer>>();
+	private static Map<String, Boolean> failedTwice = new HashMap<String, Boolean>();
 	private static final float[] tmpFloatArr = new float[4];
 	public int shaderNum;
 	private String file;
@@ -49,7 +51,7 @@ public class ShaderScript {
 		gl.glUseProgram(0);
 	}
 
-	public static void setUniform(GL2 gl, String str, float[] pos) {
+	public static void setUniform(GL2GL3 gl, String str, float[] pos) {
 		int location = glGetUniformLocation(gl, getActiveShader(), str);
 		switch (pos.length) {
 		case 2:
@@ -113,6 +115,8 @@ public class ShaderScript {
 	public static void setUniformTexture(GL2GL3 gl, String string, int num,
 			int texId) {
 		int location = glGetUniformLocation(gl, getActiveShader(), string);
+		if (location == -1)
+			return;
 		gl.glUniform1i(location, num);
 		switch (num) {
 		case 0:
@@ -132,68 +136,53 @@ public class ShaderScript {
 			break;
 		}
 		gl.glBindTexture(GL2.GL_TEXTURE_2D, texId);
+		// TODO need this?
 		if (num != 0)
 			gl.glActiveTexture(GL2.GL_TEXTURE0);
 	}
 
-	public static void setUniformCubemap(GL2 gl, String string, int num,
-			Texture cubeMap) {
+	public static void setUniformCubemap(GL3 gl, String string, int num,
+			int cubemapTex) {
 		int location = glGetUniformLocation(gl, getActiveShader(), string);
 		gl.glUniform1i(location, num);
 		switch (num) {
 		case 0:
-			gl.glActiveTexture(GL2.GL_TEXTURE0);
+			gl.glActiveTexture(GL3.GL_TEXTURE0);
 			break;
 		case 1:
-			gl.glActiveTexture(GL2.GL_TEXTURE1);
+			gl.glActiveTexture(GL3.GL_TEXTURE1);
 			break;
 		case 2:
-			gl.glActiveTexture(GL2.GL_TEXTURE2);
+			gl.glActiveTexture(GL3.GL_TEXTURE2);
 			break;
 		case 3:
-			gl.glActiveTexture(GL2.GL_TEXTURE3);
+			gl.glActiveTexture(GL3.GL_TEXTURE3);
 			break;
 		case 4:
-			gl.glActiveTexture(GL2.GL_TEXTURE4);
+			gl.glActiveTexture(GL3.GL_TEXTURE4);
 			break;
 		case 5:
-			gl.glActiveTexture(GL2.GL_TEXTURE5);
+			gl.glActiveTexture(GL3.GL_TEXTURE5);
 			break;
 		case 6:
-			gl.glActiveTexture(GL2.GL_TEXTURE6);
+			gl.glActiveTexture(GL3.GL_TEXTURE6);
 			break;
 		case 7:
-			gl.glActiveTexture(GL2.GL_TEXTURE7);
+			gl.glActiveTexture(GL3.GL_TEXTURE7);
 			break;
 		case 8:
-			gl.glActiveTexture(GL2.GL_TEXTURE8);
+			gl.glActiveTexture(GL3.GL_TEXTURE8);
 			break;
 		case 9:
-			gl.glActiveTexture(GL2.GL_TEXTURE9);
+			gl.glActiveTexture(GL3.GL_TEXTURE9);
 			break;
 		case 10:
-			gl.glActiveTexture(GL2.GL_TEXTURE10);
+			gl.glActiveTexture(GL3.GL_TEXTURE10);
 			break;
 		}
-		bindCube(gl, cubeMap);
+		gl.glBindTexture(GL3.GL_TEXTURE_CUBE_MAP, cubemapTex);
 		if (num != 0)
-			gl.glActiveTexture(GL2.GL_TEXTURE0);
-	}
-
-	public static void bindCube(GL2 gl, Texture cubeMap) {
-		gl.glTexEnvf(GL2.GL_TEXTURE_ENV, GL2.GL_TEXTURE_ENV_MODE,
-				GL2.GL_MODULATE);
-		gl.glEnable(GL2.GL_TEXTURE_CUBE_MAP);
-		gl.glEnable(GL2.GL_TEXTURE_GEN_S);
-		gl.glEnable(GL2.GL_TEXTURE_GEN_T);
-		gl.glEnable(GL2.GL_TEXTURE_GEN_R);
-
-		gl.glTexGeni(GL2.GL_S, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_REFLECTION_MAP);
-		gl.glTexGeni(GL2.GL_T, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_REFLECTION_MAP);
-		gl.glTexGeni(GL2.GL_R, GL2.GL_TEXTURE_GEN_MODE, GL2.GL_REFLECTION_MAP);
-
-		cubeMap.bind(gl);
-		cubeMap.enable(gl);
+			gl.glActiveTexture(GL3.GL_TEXTURE0);
 	}
 
 	public static void releaseCube(GL gl, Texture cubeMap) {
@@ -249,16 +238,26 @@ public class ShaderScript {
 				rotationMatrixArray, 0);
 	}
 
-	private static int glGetUniformLocation(GL2GL3 gl, int shadernum, String str) {
-		Integer location = locationCache.get(shadernum + str);
+	private static int glGetUniformLocation(GL2GL3 gl, int shadernum,
+			String uniform) {
+		Integer location = null;
+		Map<Integer, Integer> shaderTolocation = locationCache.get(uniform);
+		if (shaderTolocation == null) {
+			shaderTolocation = new HashMap<Integer, Integer>();
+			locationCache.put(uniform, shaderTolocation);
+		}
+		location = shaderTolocation.get(shadernum);
 		if (location == null) {
-			location = gl.glGetUniformLocation(shadernum, str);
-			if (location == -1) {
+			location = gl.glGetUniformLocation(shadernum, uniform);
+			if (location == -1 && failedTwice.get(uniform) == null) {
 				Log.err(ShaderScript.class, "couldn't find location for "
-						+ ShaderScript.activatedShader + ": " + str
+						+ ShaderScript.activatedShader + ": " + uniform
 						+ ", because location=" + location
 						+ ", activatedShader=" + shadernum);
-				locationCache.put(shadernum + str, location);
+				failedTwice.put(uniform, true);
+			} else {
+				shaderTolocation.put(shadernum, location);
+				failedTwice.remove(uniform);
 			}
 		}
 		return location;

@@ -369,7 +369,7 @@ public class AwesomiumHelper {
 
 	}
 
-	public static class awe_webkeyboardevent extends Structure {
+	public static class awe_webkeyboardevent extends com.sun.jna.Structure {
 		public static class ByValue extends awe_webkeyboardevent implements
 				Structure.ByValue {
 

@@ -17,6 +17,7 @@ import util.Log;
 import com.jogamp.common.nio.Buffers;
 
 public class ShaderUtil {
+	public static final String FRAGMENT_SPLITTER = "//fragment";
 
 	public interface ShaderCompiledListener {
 		public void shaderCompiled(ShaderScript shaderprogram);
@@ -45,7 +46,9 @@ public class ShaderUtil {
 
 	public static void compileFromString(GL2GL3 gl, String shader, String name,
 			ShaderCompiledListener r) {
-		String[] shaders = shader.split("//fragment");
+		String[] shaders = shader.split(FRAGMENT_SPLITTER);
+		Log.log(ShaderUtil.class, "trying to compile: " + name);// + "\n" +
+																// shader);
 		if (shaders.length != 2)
 			throw new RuntimeException("could'nt parse shader " + name);
 		else
@@ -60,29 +63,39 @@ public class ShaderUtil {
 		int shaderprogram = 0;
 		gl.glShaderSource(v, 1, new String[] { vertexShader }, (int[]) null, 0);
 		gl.glCompileShader(v);
-		checkCompileError(gl, v, name + " vertex shader");
+		if (checkCompileError(gl, v, name + " vertex shader", true))
+			return;
 		gl.glShaderSource(f, 1, new String[] { fragmentShader }, (int[]) null,
 				0);
 		gl.glCompileShader(f);
-		checkCompileError(gl, f, name + " fragment shader");
+		if (checkCompileError(gl, f, name + " fragment shader", true))
+			return;
 		shaderprogram = gl.glCreateProgram();
 
 		gl.glAttachShader(shaderprogram, v);
 		gl.glAttachShader(shaderprogram, f);
 		gl.glLinkProgram(shaderprogram);
+		if (checkCompileError(gl, shaderprogram, name + " linked shader", false))
+			return;
 		gl.glValidateProgram(shaderprogram);
 		if (shaderprogram != 0) {
 			r.shaderCompiled(new ShaderScript(shaderprogram, name));
 		}
 	}
 
-	public static void checkCompileError(GL2GL3 gl, int id, String effect) {
+	public static boolean checkCompileError(GL2GL3 gl, int id, String effect,
+			boolean isCompile) {
 		IntBuffer status = Buffers.newDirectIntBuffer(1);
-		gl.glGetShaderiv(id, GL2.GL_COMPILE_STATUS, status);
+		if (isCompile)
+			gl.glGetShaderiv(id, GL2.GL_COMPILE_STATUS, status);
+		else
+			gl.glGetProgramiv(id, GL2.GL_LINK_STATUS, status);
 		if (status.get() == GL.GL_FALSE) {
 			getInfoLog(gl, id, effect);
+			return true;
 		} else {
 			Log.log("Shader Successfully compiled " + effect);
+			return false;
 		}
 	}
 

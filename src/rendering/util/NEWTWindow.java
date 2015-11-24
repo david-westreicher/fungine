@@ -1,4 +1,4 @@
-package rendering;
+package rendering.util;
 
 import game.Game;
 import input.CanvasListener;
@@ -20,8 +20,7 @@ import com.jogamp.newt.event.WindowAdapter;
 import com.jogamp.newt.event.WindowEvent;
 import com.jogamp.newt.opengl.GLWindow;
 
-public class OpenGLRendering {
-	// private GLCanvas canvas;
+public class NEWTWindow {
 	private static GLWindow window;
 	private static Robot robot;
 	private static Point screenLocation = new Point();
@@ -38,26 +37,12 @@ public class OpenGLRendering {
 
 	private boolean disposed;
 
-	public OpenGLRendering(final GLEventListener r) {
+	public NEWTWindow(final GLEventListener r) {
 
 		GLProfile glp = GLProfile.getDefault();
 		logAvailableImplementations(glp);
 		GLCapabilities caps = new GLCapabilities(glp);
 		caps.setDoubleBuffered(true);
-		/*
-		 * frame = Util.createFrame(); canvas = new GLCanvas(caps);
-		 * canvas.setAutoSwapBufferMode(true); canvas.addGLEventListener(r);
-		 * Container pane = frame.getContentPane(); pane.setLayout(new
-		 * BoxLayout(pane, BoxLayout.X_AXIS)); canvas.setMaximumSize(new
-		 * Dimension( Settings.STEREO ? Settings.WIDTH * 2 : Settings.WIDTH,
-		 * Settings.HEIGHT)); canvas.setMinimumSize(new Dimension(
-		 * Settings.STEREO ? Settings.WIDTH * 2 : Settings.WIDTH,
-		 * Settings.HEIGHT)); // canvas.setPreferredSize(new Dimension(0, 0));
-		 * pane.add(canvas); CanvasListener l = new CanvasListener();
-		 * canvas.addMouseMotionListener(l); canvas.addMouseListener(l);
-		 * canvas.addMouseWheelListener(l); canvas.addKeyListener(l); Util.c =
-		 * canvas; frame.setVisible(true);
-		 */
 		window = GLWindow.create(caps);
 		window.setSize(Settings.STEREO ? Settings.WIDTH * 2 : Settings.WIDTH,
 				Settings.HEIGHT);
@@ -67,7 +52,7 @@ public class OpenGLRendering {
 		window.setAutoSwapBufferMode(true);
 		window.setVisible(true);
 		window.setPosition(window.getScreen().getWidth() - window.getWidth(),
-				50);
+				true ? 50 : window.getScreen().getHeight() - window.getHeight());
 		window.setTitle("fungine");
 		CanvasListener c = new CanvasListener();
 		window.addMouseListener(c);

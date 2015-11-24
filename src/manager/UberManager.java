@@ -6,21 +6,19 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import javax.media.opengl.GL2;
 import javax.media.opengl.GLException;
 
-import rendering.GLRunnable;
 import rendering.RenderUpdater;
+import rendering.util.GLRunnable;
 import settings.Settings;
 import shader.Shader;
 import shader.ShaderScript;
 import shader.ShaderUtil;
 import util.Log;
-import util.RepeatedRunnable;
 import browser.AwesomiumWrapper;
 
 import com.jogamp.opengl.util.texture.Texture;
@@ -32,13 +30,7 @@ public class UberManager {
 	private static List<String> loadingTextures = new ArrayList<String>();
 	private static List<Shader> loadingShaders = new ArrayList<Shader>();
 	private static Map<String, Texture> textures = new HashMap<String, Texture>();
-	private static Worker worker;
 	private static Map<Shader, ShaderScript> shaders = new HashMap<Shader, ShaderScript>();
-
-	static {
-		worker = new Worker();
-		worker.start();
-	}
 
 	public static Texture getTexture(final String name) {
 		return getTexture(name, false);
@@ -73,7 +65,6 @@ public class UberManager {
 								Texture text;
 								try {
 									text = TextureIO.newTexture(textData);
-
 									text.bind(gl);
 									text.setTexParameteri(gl,
 											GL2.GL_TEXTURE_WRAP_S,
@@ -140,30 +131,6 @@ public class UberManager {
 			textures.get(s).destroy(gl);
 		}
 		textures.clear();
-	}
-
-	public static final class Worker extends RepeatedRunnable {
-		private List<Runnable> jobs = new LinkedList<Runnable>();
-
-		public Worker() {
-			super("Ubermanager Loader");
-		}
-
-		public void addJob(Runnable job) {
-			synchronized (jobs) {
-				jobs.add(job);
-			}
-		}
-
-		@Override
-		protected void executeRepeatedly() {
-			Runnable job = null;
-			synchronized (jobs) {
-				job = jobs.size() == 0 ? null : jobs.remove(0);
-			}
-			if (job != null)
-				job.run();
-		}
 	}
 
 	public static ShaderScript getShader(final Shader shader) {
